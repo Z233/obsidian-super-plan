@@ -31,11 +31,11 @@ export class Parser {
 				.map((cell) => cell.trim());
 			return {
 				activity,
-				length: Number(length),
+				length,
 				start,
-				f: f === "x",
-				r: r === "x",
-				actLen: Number(actLen),
+				f,
+				r,
+				actLen,
 			} as ActivityData;
 		});
 

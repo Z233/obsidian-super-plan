@@ -2,6 +2,12 @@ export const getMarkdownTableHeader =
 	() => `| **Activity** | **Length** | **Start** | **F** | **R** | **ActLen** |
 | ------------ | ---------- | --------- | ----- | ----- | ---------- |`;
 
+export const getMarkdownEndRow = () =>
+	`| END          | 0          | 00:00     | x     |       | 0          |`;
+
+export const getMarkdownRow = () =>
+	`| END          | 0          | 00:00     | x     |       | 0          |`;
+
 function tryParse2Int(value?: string) {
 	const ret = parseInt(value!);
 	return isNaN(ret) ? 0 : ret;

@@ -1,11 +1,13 @@
 export type ActivityData = {
 	activity: string;
-	length: number;
+	length: string;
 	start: string;
-	f: boolean;
-	r: boolean;
-	actLen: number;
+	f: string;
+	r: string;
+	actLen: string;
 };
+
+export type ActivityCellType = keyof ActivityData;
 
 export type Activity = {
 	activity: string;
@@ -16,3 +18,15 @@ export type Activity = {
 	isRound: boolean;
 	actLen: number;
 };
+
+// https://stackoverflow.com/a/52490977
+export type Tuple<T, N extends number> = N extends N
+	? number extends N
+		? T[]
+		: _TupleOf<T, N, []>
+	: never;
+type _TupleOf<T, N extends number, R extends unknown[]> = R["length"] extends N
+	? R
+	: _TupleOf<T, N, [T, ...R]>;
+
+export type Maybe<T> = T | null | undefined;

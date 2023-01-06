@@ -31,12 +31,12 @@ export class Plan {
 			const startMins = parseTime2Mins(data.start);
 			return {
 				activity: data.activity,
-				length: data.length,
+				length: +data.length,
 				start: startMins,
-				stop: startMins + data.actLen,
-				isFixed: data.f,
-				isRound: data.r,
-				actLen: data.actLen,
+				stop: startMins + +data.actLen,
+				isFixed: data.f === "x" ? true : false,
+				isRound: data.r === "x" ? true : false,
+				actLen: +data.actLen,
 			};
 		});
 	}
@@ -44,11 +44,11 @@ export class Plan {
 	private generateData(activities: Activity[]): ActivityData[] {
 		return activities.map((a) => ({
 			activity: a.activity,
-			length: a.length,
+			length: a.length.toString(),
 			start: parseMins2Time(a.start),
-			f: a.isFixed,
-			r: a.isRound,
-			actLen: a.actLen,
+			f: a.isFixed ? "x" : "",
+			r: a.isRound ? "x" : "",
+			actLen: a.actLen.toString(),
 		}));
 	}
 }
