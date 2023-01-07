@@ -139,11 +139,6 @@ export default class SuperPlan extends Plugin {
 		this.registerDomEvent(document, "click", (evt: MouseEvent) => {
 			// console.log("click", evt);
 		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(
-			window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
-		);
 	}
 
 	onunload() {
@@ -160,38 +155,43 @@ export default class SuperPlan extends Plugin {
 			return arr.contains(cellType);
 		};
 
-		if (this.settings.bindEnter) {
-			keymaps.push({
-				key: "Enter",
-				run: (): boolean =>
-					this.newPerformTableActionCM6((pe) => {
-						const focusedCellType = pe.getCursorCellType();
-						if (!focusedCellType) return;
+		keymaps.push({
+			key: "Enter",
+			run: (): boolean =>
+				this.newPerformPlanActionCM6((pe) => {
+					const focusedCellType = pe.getCursorCellType();
+					if (!focusedCellType) return;
 
-						if (shouldNextRow(focusedCellType)) {
-							pe.insertActivity();
-						} else {
-							pe.nextCell();
-						}
-					})(),
-				preventDefault: true,
-			});
-		}
+					if (shouldNextRow(focusedCellType)) {
+						pe.insertActivity();
+					} else {
+						pe.nextCell();
+					}
+				})(),
+			preventDefault: true,
+		});
 
-		if (this.settings.bindTab) {
-			keymaps.push({
-				key: "Tab",
-				run: (): boolean =>
-					this.newPerformTableActionCM6((pe: PlanEditor) =>
-						pe.nextCell()
-					)(),
-				shift: (): boolean =>
-					this.newPerformTableActionCM6((pe: PlanEditor) =>
-						pe.previousCell()
-					)(),
-				preventDefault: true,
-			});
-		}
+		keymaps.push({
+			key: "Tab",
+			run: (): boolean =>
+				this.newPerformPlanActionCM6((pe: PlanEditor) =>
+					pe.nextCell()
+				)(),
+			shift: (): boolean =>
+				this.newPerformPlanActionCM6((pe: PlanEditor) =>
+					pe.previousCell()
+				)(),
+			preventDefault: true,
+		});
+
+		keymaps.push({
+			key: "Ctrl-Delete",
+			run: () =>
+				this.newPerformPlanActionCM6((pe: PlanEditor) =>
+					pe.deleteRow()
+				)(),
+			preventDefault: true,
+		});
 
 		return Prec.override(keymap.of(keymaps));
 	};
@@ -205,7 +205,7 @@ export default class SuperPlan extends Plugin {
 		}
 	};
 
-	private readonly newPerformTableActionCM6 =
+	private readonly newPerformPlanActionCM6 =
 		(fn: (te: PlanEditor) => void): (() => boolean) =>
 		(): boolean => {
 			const leaf = this.app.workspace.activeLeaf!;
@@ -217,7 +217,7 @@ export default class SuperPlan extends Plugin {
 					this.settings
 				);
 
-				if (pe.cursorIsInTable()) {
+				if (pe.cursorIsInPlan()) {
 					fn(pe);
 					return true;
 				}
@@ -240,7 +240,7 @@ export default class SuperPlan extends Plugin {
 			);
 
 			if (checking) {
-				return pe.cursorIsInTable();
+				return pe.cursorIsInPlan();
 			}
 
 			fn(pe);

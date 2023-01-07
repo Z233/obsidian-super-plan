@@ -8,6 +8,8 @@ export const getMarkdownEndRow = () =>
 export const getMarkdownRow = () =>
 	`| END          | 0          | 00:00     | x     |       | 0          |`;
 
+export const removeSpacing = (value: string) => value.replace(/\s+/gm, '')
+
 function tryParse2Int(value?: string) {
 	const ret = parseInt(value!);
 	return isNaN(ret) ? 0 : ret;

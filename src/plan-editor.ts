@@ -12,10 +12,11 @@ import {
 } from "@tgrosinger/md-advanced-tables";
 import { FormattedTable } from "@tgrosinger/md-advanced-tables/lib/formatter";
 import { App, Editor, TFile } from "obsidian";
-import { ActivityDataColumnMap, PlanTableLiteral } from "./constants";
+import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
 import { ObsidianTextEditor } from "./obsidian-text-editor";
 import { PlanEditorSettings } from "./settings";
 import { ActivityCellType, ActivityData } from "./types";
+import { removeSpacing } from "./utils/helper";
 
 export class PlanEditor {
 	private readonly app: App;
@@ -37,7 +38,7 @@ export class PlanEditor {
 	}
 
 	private get tableInfo() {
-		return this.te._findTable(this.settings.asOptions())!;
+		return this.te._findTable(this.settings.asOptions());
 	}
 
 	private get focusPosition() {
@@ -55,7 +56,7 @@ export class PlanEditor {
 
 	private getActivityRow(activityData: Partial<ActivityData>) {
 		return Array.from(
-			{ length: this.tableInfo.table.getHeaderWidth() },
+			{ length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
 			(v, i) =>
 				new TableCell(activityData[ActivityDataColumnMap[i]] ?? "")
 		);
@@ -83,10 +84,20 @@ export class PlanEditor {
 		return null;
 	};
 
+	public readonly cursorIsInPlan = (): boolean => {
+		if (!this.tableInfo) return false;
+		const headerLine = this.tableInfo.lines[0];
+		return (
+			removeSpacing(headerLine) === removeSpacing(PlanLinesLiteral.header)
+		);
+	};
+
 	public readonly cursorIsInTable = (): boolean =>
 		this.te.cursorIsInTable(this.settings.asOptions());
 
 	public readonly insertActivity = (): void => {
+		if (!this.tableInfo) return;
+
 		const table = this.tableInfo.table;
 		const range = this.tableInfo.range;
 		const lines = this.tableInfo.lines;
@@ -94,7 +105,6 @@ export class PlanEditor {
 		let newFocus = this.focusPosition!;
 		const newFocusRow = newFocus.row;
 		const isLastRow = newFocusRow === lines.length - 1;
-		console.log("isLastRow", isLastRow);
 
 		// move focus
 		if (newFocus.row <= 1) {
@@ -142,6 +152,8 @@ export class PlanEditor {
 	};
 
 	public readonly nextCell = (): void => {
+		if (!this.tableInfo) return;
+
 		const columnCount = this.tableInfo.table.getRows()[0].getCells().length;
 		const isLastColumn = this.tableInfo.focus.column === columnCount - 1;
 
@@ -161,10 +173,10 @@ export class PlanEditor {
 	public readonly insertPlanTable = () => {
 		const table = readTable(
 			[
-				PlanTableLiteral.header,
-				PlanTableLiteral.divider,
-				PlanTableLiteral.newActivityRow,
-				PlanTableLiteral.endRow,
+				PlanLinesLiteral.header,
+				PlanLinesLiteral.divider,
+				PlanLinesLiteral.newActivityRow,
+				PlanLinesLiteral.endRow,
 			],
 			this.settings.asOptions()
 		);
@@ -172,6 +184,10 @@ export class PlanEditor {
 		const row = this.ote.getCursorPosition().row;
 		this.ote.replaceLines(row, row + 1, completedTable.table.toLines());
 		this.ote.setCursorPosition(new Point(row + 2, 2));
+	};
+
+	public readonly deleteRow = (): void => {
+		this.te.deleteRow(this.settings.asOptions());
 	};
 }
 

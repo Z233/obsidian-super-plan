@@ -1,6 +1,6 @@
 import { ActivityData, Tuple } from "./types";
 
-export const PlanTableLiteral = {
+export const PlanLinesLiteral = {
 	header:         `| **Activity** | **Length** | **Start** | **F** | **R** | **ActLen** |`,
   divider:        `| ------------ | ---------- | --------- | ----- | ----- | ---------- |`,
 	newActivityRow: `|              | 0          | 00:00     | x     |       | 0          |`,
