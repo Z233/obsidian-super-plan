@@ -10,14 +10,8 @@ import {
 import { PlanFile } from "./file";
 import { Parser } from "./parser";
 import { PlanEditor } from "./plan-editor";
-import { PlanMarkdown } from "./plan-md";
 import { PlansMarkdown } from "./plans-md";
 import { PlanEditorSettings } from "./settings";
-import {
-	getMarkdownEndRow,
-	getMarkdownRow,
-	getMarkdownTableHeader,
-} from "./utils/helper";
 import { KeyBinding, keymap } from "@codemirror/view";
 import { Extension, Prec } from "@codemirror/state";
 import { ActivityCellType, Maybe } from "./types";

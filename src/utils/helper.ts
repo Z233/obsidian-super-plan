@@ -1,3 +1,5 @@
+import { ActivitiesData, ActivityData } from "src/types";
+
 export const getMarkdownTableHeader =
 	() => `| **Activity** | **Length** | **Start** | **F** | **R** | **ActLen** |
 | ------------ | ---------- | --------- | ----- | ----- | ---------- |`;
@@ -8,7 +10,7 @@ export const getMarkdownEndRow = () =>
 export const getMarkdownRow = () =>
 	`| END          | 0          | 00:00     | x     |       | 0          |`;
 
-export const removeSpacing = (value: string) => value.replace(/\s+/gm, '')
+export const removeSpacing = (value: string) => value.replace(/\s+/gm, "");
 
 function tryParse2Int(value?: string) {
 	const ret = parseInt(value!);
@@ -31,5 +33,5 @@ export function parseTime2Mins(value: string) {
 export function parseMins2Time(value: number) {
 	const hours = Math.floor(value / 60);
 	const mins = value - hours * 60;
-	return `${paddingZero(hours)}:${paddingZero(mins)}` as const;
+	return `${paddingZero(hours % 24)}:${paddingZero(mins)}` as const;
 }

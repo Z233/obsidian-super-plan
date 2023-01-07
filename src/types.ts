@@ -7,6 +7,8 @@ export type ActivityData = {
 	actLen: string;
 };
 
+export type ActivitiesData = ActivityData[];
+
 export type ActivityCellType = keyof ActivityData;
 
 export type Activity = {
@@ -18,6 +20,8 @@ export type Activity = {
 	isRound: boolean;
 	actLen: number;
 };
+
+export type Activities = Activity[];
 
 // https://stackoverflow.com/a/52490977
 export type Tuple<T, N extends number> = N extends N

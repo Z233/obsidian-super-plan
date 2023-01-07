@@ -1,47 +1,61 @@
-import { Activity, ActivityData } from "./types";
+import { Activities, ActivitiesData, Activity, ActivityData } from "./types";
 import { parseMins2Time, parseTime2Mins } from "./utils/helper";
 import { schedule } from "./utils/schedule";
 
 export class Plan {
-	private activitiesData: ActivityData[];
+	private activities: Activities;
+	private readonly startMins: number;
+	private readonly endMins: number;
 
 	constructor(activitiesData: ActivityData[]) {
-		this.activitiesData = activitiesData;
+		this.startMins = parseTime2Mins(activitiesData[0].start);
+		this.endMins = parseTime2Mins(
+			activitiesData[activitiesData.length - 1].start
+		);
+
+		if (this.endMins < this.startMins) {
+			this.endMins = this.endMins + 24 * 60;
+		}
+
+		this.activities = this.convertData(activitiesData);
 	}
 
 	schedule() {
-		const duration = this.getDurationMins(this.activitiesData);
-		const scheduledActivities = schedule(
-			duration,
-			this.convertData(this.activitiesData)
-		);
-		return this.generateData(scheduledActivities);
+		const duration = this.endMins - this.startMins;
+		const scheduledActivities = schedule(duration, this.activities);
+		this.activities = scheduledActivities;
 	}
 
-	private getDurationMins(activitiesData: ActivityData[]) {
-		const startMins = parseTime2Mins(activitiesData[0].start);
-		const endMins = parseTime2Mins(
-			activitiesData[activitiesData.length - 1].start
-		);
-		return endMins - startMins;
+	getData() {
+		return this.generateData(this.activities);
 	}
 
-	private convertData(activitiesData: ActivityData[]): Activity[] {
-		return activitiesData.map((data) => {
-			const startMins = parseTime2Mins(data.start);
+	private convertData(activitiesData: ActivityData[]): Activities {
+		return activitiesData.map((data, i) => {
+			const startMins =
+				i === activitiesData.length - 1
+					? this.endMins
+					: parseTime2Mins(data.start);
+
+			const actLen = +data.actLen;
+
 			return {
 				activity: data.activity,
 				length: +data.length,
 				start: startMins,
-				stop: startMins + +data.actLen,
-				isFixed: data.f === "x" ? true : false,
-				isRound: data.r === "x" ? true : false,
-				actLen: +data.actLen,
+				stop: startMins + actLen,
+				isFixed: this.check(data.f),
+				isRound: this.check(data.r),
+				actLen: actLen,
 			};
 		});
 	}
 
-	private generateData(activities: Activity[]): ActivityData[] {
+	private check(value: string) {
+		return value === "x" ? true : false;
+	}
+
+	private generateData(activities: Activity[]): ActivitiesData {
 		return activities.map((a) => ({
 			activity: a.activity,
 			length: a.length.toString(),

@@ -14,8 +14,9 @@ import { FormattedTable } from "@tgrosinger/md-advanced-tables/lib/formatter";
 import { App, Editor, TFile } from "obsidian";
 import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
 import { ObsidianTextEditor } from "./obsidian-text-editor";
+import { Plan } from "./plan";
 import { PlanEditorSettings } from "./settings";
-import { ActivityCellType, ActivityData } from "./types";
+import { ActivitiesData, ActivityCellType, ActivityData } from "./types";
 import { removeSpacing } from "./utils/helper";
 
 export class PlanEditor {
@@ -23,6 +24,8 @@ export class PlanEditor {
 	private readonly settings: PlanEditorSettings;
 	private readonly te: TableEditor;
 	private readonly ote: ObsidianTextEditor;
+
+	private plan: Plan | null = null;
 
 	constructor(
 		app: App,
@@ -35,6 +38,29 @@ export class PlanEditor {
 
 		this.ote = new ObsidianTextEditor(app, file, editor, settings);
 		this.te = new TableEditor(this.ote);
+
+		this.initPlan();
+	}
+
+	private initPlan() {
+		if (!this.tableInfo) return;
+		const table = this.tableInfo.table;
+		const activitiesRows = table
+			.getRows()
+			.slice(2)
+			.map((row) => row.getCells().map((cell) => cell.content));
+
+		const activitiesData: ActivitiesData = activitiesRows.map((row) =>
+			row.reduce(
+				(data, v, i) => ({
+					...data,
+					[ActivityDataColumnMap[i]]: v,
+				}),
+				{} as ActivityData
+			)
+		);
+
+		this.plan = new Plan(activitiesData);
 	}
 
 	private get tableInfo() {
@@ -54,12 +80,59 @@ export class PlanEditor {
 		return null;
 	}
 
-	private getActivityRow(activityData: Partial<ActivityData>) {
+	private createActivityRow(activityData: Partial<ActivityData>) {
 		return Array.from(
 			{ length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
 			(v, i) =>
 				new TableCell(activityData[ActivityDataColumnMap[i]] ?? "")
 		);
+	}
+
+	private get shouldSchedule() {
+		if (!this.plan) return false;
+		const cellsTriggerSchedule: ActivityCellType[] = [
+			"length",
+			"start",
+			"f",
+			"r",
+		];
+		const cursorCellType = this.getCursorCellType();
+		return (
+			!!cursorCellType && cellsTriggerSchedule.contains(cursorCellType)
+		);
+	}
+
+	private schedule() {
+		if (!this.shouldSchedule || !this.tableInfo) return;
+
+		this.plan!.schedule();
+		const activitiesData = this.plan!.getData();
+
+		const focus = this.tableInfo.focus;
+		const range = this.tableInfo.range;
+		const table = this.tableInfo.table;
+		const lines = this.tableInfo.lines;
+
+		const rows = activitiesData.map(
+			(data) => new TableRow(this.createActivityRow(data), "", "")
+		);
+
+		const [header, delimiter] = table.getRows();
+
+		const newTable = new Table([header, delimiter, ...rows]);
+
+		// format
+		const formatted = formatTable(newTable, this.settings.asOptions());
+
+		this.ote.transact(() => {
+			this.te._updateLines(
+				range.start.row,
+				range.end.row + 1,
+				formatted.table.toLines(),
+				lines
+			);
+			this.te._moveToFocus(range.start.row, formatted.table, focus);
+		});
 	}
 
 	public readonly getCursorCellType = (): ActivityCellType | null => {
@@ -116,7 +189,7 @@ export class PlanEditor {
 		}
 		newFocus = newFocus.setColumn(0);
 		// insert an empty row
-		const row = this.getActivityRow({
+		const row = this.createActivityRow({
 			length: "0",
 		});
 		const altered = insertRow(
@@ -157,7 +230,7 @@ export class PlanEditor {
 		const columnCount = this.tableInfo.table.getRows()[0].getCells().length;
 		const isLastColumn = this.tableInfo.focus.column === columnCount - 1;
 
-		this.te.format(this.settings.asOptions());
+		this.schedule();
 
 		this.te.moveFocus(
 			isLastColumn ? 1 : 0,
@@ -183,7 +256,7 @@ export class PlanEditor {
 		const completedTable = completeTable(table, this.settings.asOptions());
 		const row = this.ote.getCursorPosition().row;
 		this.ote.replaceLines(row, row + 1, completedTable.table.toLines());
-		this.ote.setCursorPosition(new Point(row + 2, 2));
+		this.ote.setCursorPosition(new Point(row + 2, 8));
 	};
 
 	public readonly deleteRow = (): void => {

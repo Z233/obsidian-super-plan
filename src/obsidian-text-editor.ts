@@ -12,7 +12,6 @@ import { App, TFile, Editor } from "obsidian";
 import { ActivityDataColumnMap } from "./constants";
 import { PlanEditorSettings } from "./settings";
 import { ActivityData } from "./types";
-import { getMarkdownTableHeader } from "./utils/helper";
 
 export class ObsidianTextEditor extends ITextEditor {
 	private readonly app: App;
