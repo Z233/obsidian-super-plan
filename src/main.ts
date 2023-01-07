@@ -12,9 +12,10 @@ import { Parser } from "./parser";
 import { PlanEditor } from "./plan-editor";
 import { PlansMarkdown } from "./plans-md";
 import { PlanEditorSettings } from "./settings";
-import { KeyBinding, keymap } from "@codemirror/view";
+import { KeyBinding, keymap, EditorView, ViewUpdate } from "@codemirror/view";
 import { Extension, Prec } from "@codemirror/state";
-import { ActivityCellType, Maybe } from "./types";
+import { PlanCell, Maybe } from "./types";
+import { PlanManager } from "./plan-manager";
 
 // Remember to rename these classes and interfaces!
 
@@ -30,43 +31,15 @@ export default class SuperPlan extends Plugin {
 		this.parser = new Parser();
 		this.plansMd = new PlansMarkdown(this.file, this.parser);
 
-		// this.file.on("modify", async () => {
-		// 	const plans = await this.planMd.parsePlans();
-		// 	plans.forEach((p) => p.schedule());
-		// });
-
-		// this.registerInterval(
-		// 	window.setInterval(async () => {
-		// 		const planMds = await this.plansMd.parsePlanMds();
-		// 		planMds.forEach((markdown) => {
-		// 			const planMd = new PlanMarkdown(markdown, this.plansMd);
-		// 			planMd.schedule();
-		// 		});
-		// 	}, 1000)
-		// );
-
 		await this.loadSettings();
+
+		new PlanManager(this);
 
 		this.cmEditors = [];
 		this.registerCodeMirror((cm) => {
 			this.cmEditors.push(cm);
 			cm.on("keydown", this.handleKeyDown);
 		});
-
-		// CM6 editor extension for remapping keys
-		this.registerEditorExtension(this.makeEditorExtension());
-
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon(
-			"dice",
-			"Sample Plugin",
-			(evt: MouseEvent) => {
-				// Called when the user clicks the icon.
-				new Notice("Still work!");
-			}
-		);
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass("my-plugin-ribbon-class");
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
@@ -141,55 +114,6 @@ export default class SuperPlan extends Plugin {
 		});
 	}
 
-	// makeEditorExtension is used to bind Tab and Enter in the new CM6 Live Preview editor.
-	private readonly makeEditorExtension = (): Extension => {
-		const keymaps: KeyBinding[] = [];
-		const shouldNextRow = (cellType: ActivityCellType) => {
-			const arr: ActivityCellType[] = ["actLen", "r"];
-			return arr.contains(cellType);
-		};
-
-		keymaps.push({
-			key: "Enter",
-			run: (): boolean =>
-				this.newPerformPlanActionCM6((pe) => {
-					const focusedCellType = pe.getCursorCellType();
-					if (!focusedCellType) return;
-
-					if (shouldNextRow(focusedCellType)) {
-						pe.insertActivity();
-					} else {
-						pe.nextCell();
-					}
-				})(),
-			preventDefault: true,
-		});
-
-		keymaps.push({
-			key: "Tab",
-			run: (): boolean =>
-				this.newPerformPlanActionCM6((pe: PlanEditor) =>
-					pe.nextCell()
-				)(),
-			shift: (): boolean =>
-				this.newPerformPlanActionCM6((pe: PlanEditor) =>
-					pe.previousCell()
-				)(),
-			preventDefault: true,
-		});
-
-		keymaps.push({
-			key: "Ctrl-Delete",
-			run: () =>
-				this.newPerformPlanActionCM6((pe: PlanEditor) =>
-					pe.deleteRow()
-				)(),
-			preventDefault: true,
-		});
-
-		return Prec.override(keymap.of(keymaps));
-	};
-
 	private readonly handleKeyDown = (
 		cm: CodeMirror.Editor,
 		event: KeyboardEvent
@@ -199,8 +123,8 @@ export default class SuperPlan extends Plugin {
 		}
 	};
 
-	private readonly newPerformPlanActionCM6 =
-		(fn: (te: PlanEditor) => void): (() => boolean) =>
+	readonly newPerformPlanActionCM6 =
+		(fn: (pe: PlanEditor) => void): (() => boolean) =>
 		(): boolean => {
 			const leaf = this.app.workspace.activeLeaf!;
 			if (leaf.view instanceof MarkdownView) {

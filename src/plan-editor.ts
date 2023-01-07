@@ -10,13 +10,23 @@ import {
 	insertRow,
 	Focus,
 } from "@tgrosinger/md-advanced-tables";
-import { FormattedTable } from "@tgrosinger/md-advanced-tables/lib/formatter";
+import {
+	deleteRow,
+	FormattedTable,
+} from "@tgrosinger/md-advanced-tables/lib/formatter";
+import { isEqual } from "lodash-es";
 import { App, Editor, TFile } from "obsidian";
 import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
 import { ObsidianTextEditor } from "./obsidian-text-editor";
 import { Plan } from "./plan";
 import { PlanEditorSettings } from "./settings";
-import { ActivitiesData, ActivityCellType, ActivityData } from "./types";
+import {
+	ActivitiesData,
+	PlanCell,
+	ActivityData,
+	Maybe,
+	PlanCellType,
+} from "./types";
 import { removeSpacing } from "./utils/helper";
 
 export class PlanEditor {
@@ -25,7 +35,7 @@ export class PlanEditor {
 	private readonly te: TableEditor;
 	private readonly ote: ObsidianTextEditor;
 
-	private plan: Plan | null = null;
+	// private readonly plan: Plan | null = null;
 
 	constructor(
 		app: App,
@@ -39,11 +49,14 @@ export class PlanEditor {
 		this.ote = new ObsidianTextEditor(app, file, editor, settings);
 		this.te = new TableEditor(this.ote);
 
-		this.initPlan();
+		// const activitiesData = this.getActivitiesData();
+		// if (activitiesData.length > 0) {
+		// 	this.plan = new Plan(activitiesData);
+		// }
 	}
 
-	private initPlan() {
-		if (!this.tableInfo) return;
+	private getActivitiesData(): ActivitiesData {
+		if (!this.tableInfo) return [];
 		const table = this.tableInfo.table;
 		const activitiesRows = table
 			.getRows()
@@ -60,27 +73,14 @@ export class PlanEditor {
 			)
 		);
 
-		this.plan = new Plan(activitiesData);
+		return activitiesData;
 	}
 
 	private get tableInfo() {
 		return this.te._findTable(this.settings.asOptions());
 	}
 
-	private get focusPosition() {
-		const rowOffset = this.tableInfo?.range.start.row;
-		if (rowOffset !== undefined) {
-			const cursor = this.ote.getCursorPosition();
-			const focus = this.tableInfo?.table.focusOfPosition(
-				cursor,
-				rowOffset
-			);
-			return focus;
-		}
-		return null;
-	}
-
-	private createActivityRow(activityData: Partial<ActivityData>) {
+	private createActivityCells(activityData: Partial<ActivityData>) {
 		return Array.from(
 			{ length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
 			(v, i) =>
@@ -89,32 +89,35 @@ export class PlanEditor {
 	}
 
 	private get shouldSchedule() {
-		if (!this.plan) return false;
-		const cellsTriggerSchedule: ActivityCellType[] = [
+		// if (!this.plan) return false;
+		const cellsTriggerSchedule: PlanCellType[] = [
 			"length",
 			"start",
 			"f",
 			"r",
 		];
-		const cursorCellType = this.getCursorCellType();
-		return (
-			!!cursorCellType && cellsTriggerSchedule.contains(cursorCellType)
-		);
+		const cursorCell = this.getCursorCell();
+		return !!cursorCell && cellsTriggerSchedule.contains(cursorCell.type);
 	}
 
-	private schedule() {
+	private schedule(activitiesData: ActivitiesData) {
 		if (!this.shouldSchedule || !this.tableInfo) return;
 
-		this.plan!.schedule();
-		const activitiesData = this.plan!.getData();
+		const plan = new Plan(activitiesData);
+		plan.schedule();
+		const scheduledActivitiesData = plan.getData();
 
-		const focus = this.tableInfo.focus;
-		const range = this.tableInfo.range;
-		const table = this.tableInfo.table;
-		const lines = this.tableInfo.lines;
+		// if (isEqual(activitiesData, scheduledActivitiesData)) return;
 
-		const rows = activitiesData.map(
-			(data) => new TableRow(this.createActivityRow(data), "", "")
+		const { table, range, lines, focus } = this.tableInfo;
+
+		const selectionRange = window.getSelection()?.getRangeAt(0);
+		const shouldSelectCell =
+			!!selectionRange &&
+			selectionRange.endOffset > selectionRange.startOffset;
+
+		const rows = scheduledActivitiesData.map(
+			(data) => new TableRow(this.createActivityCells(data), "", "")
 		);
 
 		const [header, delimiter] = table.getRows();
@@ -124,38 +127,46 @@ export class PlanEditor {
 		// format
 		const formatted = formatTable(newTable, this.settings.asOptions());
 
-		this.ote.transact(() => {
-			this.te._updateLines(
-				range.start.row,
-				range.end.row + 1,
-				formatted.table.toLines(),
-				lines
-			);
-			this.te._moveToFocus(range.start.row, formatted.table, focus);
-		});
+		this.te._updateLines(
+			range.start.row,
+			range.end.row + 1,
+			formatted.table.toLines(),
+			lines
+		);
+		this.te._moveToFocus(range.start.row, formatted.table, focus);
+		if (shouldSelectCell) {
+			this.te.selectCell(this.settings.asOptions());
+		}
 	}
 
-	public readonly getCursorCellType = (): ActivityCellType | null => {
-		const tableInfo = this.tableInfo;
-		const table = tableInfo?.table;
-		if (table) {
-			const cursor = this.ote.getCursorPosition();
-			const rowOffset = tableInfo.range.start.row;
+	public readonly getCursorCell = (): PlanCell | null => {
+		if (!this.tableInfo) return null;
+		const table = this.tableInfo.table;
+		const cursor = this.ote.getCursorPosition();
+		const rowOffset = this.tableInfo!.range.start.row;
 
-			const focus = table.focusOfPosition(cursor, rowOffset);
+		const focus = table.focusOfPosition(cursor, rowOffset);
 
-			if (focus) {
-				const focusedRow = table.getRows()[focus.row];
-				const focusedCell = table.getFocusedCell(focus);
-				const focusedCellIndex = focusedRow
-					.getCells()
-					.findIndex((c) => c === focusedCell);
-				return ActivityDataColumnMap[focusedCellIndex];
-			}
+		if (focus) {
+			const focusedRow = table.getRows()[focus.row];
+			const focusedCell = table.getFocusedCell(focus);
+			const focusedCellIndex = focusedRow
+				.getCells()
+				.findIndex((c) => c === focusedCell);
+			return {
+				type: ActivityDataColumnMap[focusedCellIndex],
+				cell: focusedCell!,
+				row: focusedRow,
+				table,
+			};
 		}
 
 		return null;
 	};
+
+	getFocusInTable() {
+		return this.tableInfo?.focus;
+	}
 
 	public readonly cursorIsInPlan = (): boolean => {
 		if (!this.tableInfo) return false;
@@ -171,11 +182,9 @@ export class PlanEditor {
 	public readonly insertActivity = (): void => {
 		if (!this.tableInfo) return;
 
-		const table = this.tableInfo.table;
-		const range = this.tableInfo.range;
-		const lines = this.tableInfo.lines;
+		const { table, range, lines, focus } = this.tableInfo;
 
-		let newFocus = this.focusPosition!;
+		let newFocus = focus;
 		const newFocusRow = newFocus.row;
 		const isLastRow = newFocusRow === lines.length - 1;
 
@@ -187,9 +196,9 @@ export class PlanEditor {
 				isLastRow ? newFocusRow : newFocusRow + 1
 			);
 		}
-		newFocus = newFocus.setColumn(0);
+		newFocus = newFocus.setColumn(1);
 		// insert an empty row
-		const row = this.createActivityRow({
+		const row = this.createActivityCells({
 			length: "0",
 		});
 		const altered = insertRow(
@@ -230,8 +239,6 @@ export class PlanEditor {
 		const columnCount = this.tableInfo.table.getRows()[0].getCells().length;
 		const isLastColumn = this.tableInfo.focus.column === columnCount - 1;
 
-		this.schedule();
-
 		this.te.moveFocus(
 			isLastColumn ? 1 : 0,
 			isLastColumn ? -columnCount + 1 : 1,
@@ -261,6 +268,53 @@ export class PlanEditor {
 
 	public readonly deleteRow = (): void => {
 		this.te.deleteRow(this.settings.asOptions());
+	};
+
+	readonly onFocusCellChanged = (lastActiveCell: Maybe<PlanCell>) => {
+		if (!this.tableInfo) return;
+
+		const activitiesData = this.getActivitiesData();
+		if (lastActiveCell?.type === "start") {
+			const { cell: lastCell, row, table: lastTable } = lastActiveCell;
+			const rows = lastTable.getRows();
+			const rowIndex = rows.findIndex((r) => r === row);
+			const columnIndex = rows[rowIndex]
+				.getCells()
+				.findIndex((c) => c === lastCell);
+
+			const { table, range, lines, focus } = this.tableInfo;
+			const cell = table.getCellAt(rowIndex, columnIndex);
+
+			if (cell?.content !== lastCell.content) {
+				const updatedActivityData = {
+					...activitiesData[rowIndex - 2],
+					f: "x",
+				};
+				activitiesData[rowIndex - 2] = updatedActivityData;
+				const cells = this.createActivityCells(updatedActivityData);
+				const newRow = new TableRow(cells, "", "");
+
+				let altered = table;
+				altered = deleteRow(altered, rowIndex);
+				altered = insertRow(altered, rowIndex, newRow);
+
+				// format
+				const formatted = formatTable(
+					altered,
+					this.settings.asOptions()
+				);
+
+				this.te._updateLines(
+					range.start.row,
+					range.end.row + 1,
+					formatted.table.toLines(),
+					lines
+				);
+				this.te._moveToFocus(range.start.row, formatted.table, focus);
+			}
+		}
+
+		this.schedule(activitiesData);
 	};
 }
 

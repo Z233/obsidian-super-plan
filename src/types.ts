@@ -1,3 +1,10 @@
+import {
+	Focus,
+	Table,
+	TableCell,
+	TableRow,
+} from "@tgrosinger/md-advanced-tables";
+
 export type ActivityData = {
 	activity: string;
 	length: string;
@@ -9,7 +16,13 @@ export type ActivityData = {
 
 export type ActivitiesData = ActivityData[];
 
-export type ActivityCellType = keyof ActivityData;
+export type PlanCellType = keyof ActivityData;
+export type PlanCell = {
+	type: PlanCellType;
+	cell: TableCell;
+	row: TableRow;
+	table: Table;
+};
 
 export type Activity = {
 	activity: string;
