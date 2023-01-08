@@ -42,3 +42,10 @@ export function parseMins2Time(value: number) {
 	const mins = value - hours * 60;
 	return `${paddingZero(hours % 24)}:${paddingZero(mins)}` as const;
 }
+
+export function getNowMins() {
+	const date = new Date();
+	const hours = date.getHours();
+	const mins = date.getMinutes();
+	return hours * 60 + mins;
+}

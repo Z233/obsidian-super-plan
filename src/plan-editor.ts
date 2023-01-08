@@ -27,7 +27,12 @@ import {
 	Maybe,
 	PlanCellType,
 } from "./types";
-import { getActivityDataKey, removeSpacing } from "./utils/helper";
+import {
+	getActivityDataKey,
+	getNowMins,
+	parseMins2Time,
+	removeSpacing,
+} from "./utils/helper";
 
 export class PlanEditor {
 	private readonly app: App;
@@ -223,6 +228,23 @@ export class PlanEditor {
 			this.te._moveToFocus(range.start.row, formatted.table, newFocus);
 		});
 		this.te.resetSmartCursor();
+	};
+
+	public readonly startActivity = (): void => {
+		const focus = this.tableInfo?.focus;
+		if (!focus) return;
+		const index = focus.row - 2;
+		const activitiesData = this.getActivitiesData();
+		const cursorActivityData = activitiesData[index];
+
+		const updatedActivityData: ActivityData = {
+			...cursorActivityData,
+			start: parseMins2Time(getNowMins()),
+			f: "x",
+		};
+		activitiesData[index] = updatedActivityData;
+
+		this.schedule(activitiesData);
 	};
 
 	public readonly insertActivityAbove = (): void => {

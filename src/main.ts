@@ -12,9 +12,6 @@ import { Parser } from "./parser";
 import { PlanEditor } from "./plan-editor";
 import { PlansMarkdown } from "./plans-md";
 import { PlanEditorSettings } from "./settings";
-import { KeyBinding, keymap, EditorView, ViewUpdate } from "@codemirror/view";
-import { Extension, Prec } from "@codemirror/state";
-import { PlanTableState, Maybe } from "./types";
 import { PlanManager } from "./plan-manager";
 
 // Remember to rename these classes and interfaces!
@@ -60,6 +57,14 @@ export default class SuperPlan extends Plugin {
 			name: "Insert activity",
 			editorCheckCallback: this.newPerformTableAction((pe) => {
 				pe.insertActivity();
+			}),
+		});
+
+		this.addCommand({
+			id: "start-activity",
+			name: "Start activity",
+			editorCheckCallback: this.newPerformTableAction((pe) => {
+				pe.startActivity();
 			}),
 		});
 
