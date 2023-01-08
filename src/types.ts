@@ -17,11 +17,12 @@ export type ActivityData = {
 export type ActivitiesData = ActivityData[];
 
 export type PlanCellType = keyof ActivityData;
-export type PlanCell = {
+export type PlanTableState = {
 	type: PlanCellType;
 	cell: TableCell;
 	row: TableRow;
 	table: Table;
+	focus: Focus
 };
 
 export type Activity = {

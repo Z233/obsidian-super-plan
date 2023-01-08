@@ -22,12 +22,12 @@ import { Plan } from "./plan";
 import { PlanEditorSettings } from "./settings";
 import {
 	ActivitiesData,
-	PlanCell,
+	PlanTableState,
 	ActivityData,
 	Maybe,
 	PlanCellType,
 } from "./types";
-import { removeSpacing } from "./utils/helper";
+import { getActivityDataKey, removeSpacing } from "./utils/helper";
 
 export class PlanEditor {
 	private readonly app: App;
@@ -83,31 +83,28 @@ export class PlanEditor {
 	private createActivityCells(activityData: Partial<ActivityData>) {
 		return Array.from(
 			{ length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
-			(v, i) =>
-				new TableCell(activityData[ActivityDataColumnMap[i]] ?? "")
+			(v, i) => new TableCell(activityData[getActivityDataKey(i)] ?? "")
 		);
 	}
 
-	private get shouldSchedule() {
-		// if (!this.plan) return false;
+	private shouldSchedule(type: PlanCellType) {
 		const cellsTriggerSchedule: PlanCellType[] = [
 			"length",
 			"start",
 			"f",
 			"r",
 		];
-		const cursorCell = this.getCursorCell();
-		return !!cursorCell && cellsTriggerSchedule.contains(cursorCell.type);
+		return cellsTriggerSchedule.contains(type);
 	}
 
 	private schedule(activitiesData: ActivitiesData) {
-		if (!this.shouldSchedule || !this.tableInfo) return;
+		if (!this.tableInfo) return;
 
 		const plan = new Plan(activitiesData);
 		plan.schedule();
 		const scheduledActivitiesData = plan.getData();
 
-		// if (isEqual(activitiesData, scheduledActivitiesData)) return;
+		if (isEqual(activitiesData, scheduledActivitiesData)) return;
 
 		const { table, range, lines, focus } = this.tableInfo;
 
@@ -137,9 +134,11 @@ export class PlanEditor {
 		if (shouldSelectCell) {
 			this.te.selectCell(this.settings.asOptions());
 		}
+
+		return formatted.table;
 	}
 
-	public readonly getCursorCell = (): PlanCell | null => {
+	public readonly getState = (): PlanTableState | null => {
 		if (!this.tableInfo) return null;
 		const table = this.tableInfo.table;
 		const cursor = this.ote.getCursorPosition();
@@ -154,10 +153,11 @@ export class PlanEditor {
 				.getCells()
 				.findIndex((c) => c === focusedCell);
 			return {
-				type: ActivityDataColumnMap[focusedCellIndex],
+				type: getActivityDataKey(focusedCellIndex),
 				cell: focusedCell!,
 				row: focusedRow,
 				table,
+				focus,
 			};
 		}
 
@@ -270,51 +270,69 @@ export class PlanEditor {
 		this.te.deleteRow(this.settings.asOptions());
 	};
 
-	readonly onFocusCellChanged = (lastActiveCell: Maybe<PlanCell>) => {
-		if (!this.tableInfo) return;
+	readonly executeSchedule = (
+		lastState: Maybe<PlanTableState>,
+		setFixed = false
+	): Maybe<PlanTableState> => {
+		if (
+			!this.tableInfo ||
+			!lastState ||
+			!this.shouldSchedule(lastState.type)
+		)
+			return;
 
 		const activitiesData = this.getActivitiesData();
-		if (lastActiveCell?.type === "start") {
-			const { cell: lastCell, row, table: lastTable } = lastActiveCell;
-			const rows = lastTable.getRows();
-			const rowIndex = rows.findIndex((r) => r === row);
-			const columnIndex = rows[rowIndex]
-				.getCells()
-				.findIndex((c) => c === lastCell);
+		const { cell: lastCell, row: lastRow, table: lastTable } = lastState;
+		const rows = lastTable.getRows();
+		const rowIndex = rows.findIndex((r) => r === lastRow);
+		const columnIndex = rows[rowIndex]
+			.getCells()
+			.findIndex((c) => c === lastCell);
 
-			const { table, range, lines, focus } = this.tableInfo;
-			const cell = table.getCellAt(rowIndex, columnIndex);
+		const { table, range, lines, focus } = this.tableInfo;
+		const cell = table.getCellAt(rowIndex, columnIndex);
 
-			if (cell?.content !== lastCell.content) {
-				const updatedActivityData = {
-					...activitiesData[rowIndex - 2],
-					f: "x",
-				};
-				activitiesData[rowIndex - 2] = updatedActivityData;
-				const cells = this.createActivityCells(updatedActivityData);
-				const newRow = new TableRow(cells, "", "");
+		if (!cell) return;
 
-				let altered = table;
-				altered = deleteRow(altered, rowIndex);
-				altered = insertRow(altered, rowIndex, newRow);
+		if (lastState.type === "start" && setFixed) {
+			const updatedActivityData = {
+				...activitiesData[rowIndex - 2],
+				f: "x",
+				start: lastCell.content,
+			};
+			activitiesData[rowIndex - 2] = updatedActivityData;
+			const cells = this.createActivityCells(updatedActivityData);
+			const newRow = new TableRow(cells, "", "");
 
-				// format
-				const formatted = formatTable(
-					altered,
-					this.settings.asOptions()
-				);
+			let altered = table;
+			altered = deleteRow(altered, rowIndex);
+			altered = insertRow(altered, rowIndex, newRow);
 
-				this.te._updateLines(
-					range.start.row,
-					range.end.row + 1,
-					formatted.table.toLines(),
-					lines
-				);
-				this.te._moveToFocus(range.start.row, formatted.table, focus);
-			}
+			// format
+			const formatted = formatTable(altered, this.settings.asOptions());
+
+			this.te._updateLines(
+				range.start.row,
+				range.end.row + 1,
+				formatted.table.toLines(),
+				lines
+			);
+			this.te._moveToFocus(range.start.row, formatted.table, focus);
 		}
 
-		this.schedule(activitiesData);
+		const scheduledTable = this.schedule(activitiesData);
+		if (!scheduledTable) return;
+
+		const scheduledRow = scheduledTable.getRows()[rowIndex];
+		const scheduledCell = scheduledTable.getCellAt(rowIndex, columnIndex)!;
+
+		return {
+			cell: scheduledCell,
+			focus,
+			row: scheduledRow,
+			table: scheduledTable,
+			type: getActivityDataKey(columnIndex),
+		};
 	};
 }
 

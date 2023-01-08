@@ -1,4 +1,5 @@
-import { ActivitiesData, ActivityData } from "src/types";
+import { ActivityDataColumnMap } from "src/constants";
+import { ActivitiesData, ActivityData, PlanCellType } from "src/types";
 
 export const getMarkdownTableHeader =
 	() => `| **Activity** | **Length** | **Start** | **F** | **R** | **ActLen** |
@@ -11,6 +12,12 @@ export const getMarkdownRow = () =>
 	`| END          | 0          | 00:00     | x     |       | 0          |`;
 
 export const removeSpacing = (value: string) => value.replace(/\s+/gm, "");
+
+export const getActivityDataKey = (index: number) =>
+	ActivityDataColumnMap[index] as PlanCellType;
+
+export const getActivityDataIndex = (key: PlanCellType) =>
+	ActivityDataColumnMap[key] as number;
 
 function tryParse2Int(value?: string) {
 	const ret = parseInt(value!);

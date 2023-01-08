@@ -12,6 +12,7 @@ import { App, TFile, Editor } from "obsidian";
 import { ActivityDataColumnMap } from "./constants";
 import { PlanEditorSettings } from "./settings";
 import { ActivityData } from "./types";
+import { getActivityDataIndex } from "./utils/helper";
 
 export class ObsidianTextEditor extends ITextEditor {
 	private readonly app: App;
@@ -139,7 +140,7 @@ export class ObsidianTextEditor extends ITextEditor {
 		let modifiedRow = row;
 		Object.keys(activityData).forEach((k: keyof ActivityData) => {
 			modifiedRow = modifiedRow.setCellAt(
-				ActivityDataColumnMap.findIndex((v) => v === k)!,
+				getActivityDataIndex(k),
 				activityData[k]!
 			);
 		});

@@ -14,7 +14,7 @@ import { PlansMarkdown } from "./plans-md";
 import { PlanEditorSettings } from "./settings";
 import { KeyBinding, keymap, EditorView, ViewUpdate } from "@codemirror/view";
 import { Extension, Prec } from "@codemirror/state";
-import { PlanCell, Maybe } from "./types";
+import { PlanTableState, Maybe } from "./types";
 import { PlanManager } from "./plan-manager";
 
 // Remember to rename these classes and interfaces!
