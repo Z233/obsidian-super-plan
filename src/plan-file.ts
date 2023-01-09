@@ -5,7 +5,7 @@ import { _createIsTableRowRegex } from "@tgrosinger/md-advanced-tables/lib/table
 
 const DEFAULT_FILE = "super-plan.md";
 
-export class PlanFileManager {
+export class PlanFile {
 	private readonly vault: Vault;
 	private readonly parser: Parser;
 	private readonly settings: SuperPlanSettings;
@@ -22,5 +22,16 @@ export class PlanFileManager {
 
 	getTodayPlanFileContent() {
 		return this.vault.adapter.read(this.todayPlanFilePath);
+	}
+
+	async updateTodayPlanFile(content: string) {
+		try {
+			return await this.vault.adapter.write(
+				this.todayPlanFilePath,
+				content
+			);
+		} catch (error) {
+			console.error(error);
+		}
 	}
 }

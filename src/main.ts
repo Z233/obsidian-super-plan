@@ -7,7 +7,7 @@ import {
 	Plugin,
 	Setting,
 } from "obsidian";
-import { PlanFileManager } from "./plan-file-manager";
+import { PlanFile } from "./plan-file";
 import { Parser } from "./parser";
 import { PlanEditor } from "./plan-editor";
 import { SuperPlanSettings } from "./settings";
@@ -21,7 +21,7 @@ import { timer } from "./timer";
 export default class SuperPlan extends Plugin {
 	settings: SuperPlanSettings;
 
-	private fileManager: PlanFileManager;
+	private file: PlanFile;
 	private parser: Parser;
 	private cmEditors: CodeMirror.Editor[];
 	private tracker: PlanTracker;
@@ -30,13 +30,13 @@ export default class SuperPlan extends Plugin {
 		await this.loadSettings();
 
 		this.parser = new Parser(this.settings);
-		this.fileManager = new PlanFileManager(
-			this.app.vault,
-			this.parser,
-			this.settings
-		);
+		this.file = new PlanFile(this.app.vault, this.parser, this.settings);
 
-		this.tracker = new PlanTracker(this.addStatusBarItem());
+		this.tracker = new PlanTracker(
+			this.parser,
+			this.file,
+			this.addStatusBarItem()
+		);
 		this.tracker.init();
 
 		new PlanManager(this);
@@ -69,7 +69,7 @@ export default class SuperPlan extends Plugin {
 			id: "start-activity",
 			name: "Start activity",
 			editorCheckCallback: this.newPerformTableAction((pe) => {
-				pe.startActivity();
+				pe.startCursorActivity();
 			}),
 		});
 
@@ -119,12 +119,12 @@ export default class SuperPlan extends Plugin {
 	}
 
 	async onTick() {
-		const content = await this.fileManager.getTodayPlanFileContent();
+		const content = await this.file.getTodayPlanFileContent();
 		const planTable = this.parser.findPlanTable(content);
 		if (planTable) {
 			const activitiesData = this.parser.transformTable(planTable);
 
-			this.tracker.setData(activitiesData);
+			this.tracker.setData(activitiesData, planTable);
 		}
 	}
 
@@ -204,7 +204,6 @@ class SampleModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		contentEl.setText("Woah!");
 	}
 
 	onClose() {

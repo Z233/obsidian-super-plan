@@ -14,7 +14,7 @@ import { deleteRow } from "@tgrosinger/md-advanced-tables/lib/formatter";
 import type { FormattedTable } from "@tgrosinger/md-advanced-tables/lib/formatter";
 import { isEqual } from "lodash-es";
 import type { App, Editor, TFile } from "obsidian";
-import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
+import { PlanLinesLiteral } from "./constants";
 import { ObsidianTextEditor } from "./obsidian-text-editor";
 import type { Parser } from "./parser";
 import { Plan } from "./plan";
@@ -216,7 +216,17 @@ export class PlanEditor {
 		this.te.resetSmartCursor();
 	};
 
-	public readonly startActivity = (): void => {
+	public readonly startActivity = (activityData: ActivityData) => {
+		const activitiesData = this.getActivitiesData();
+
+		const updatedActivityData: ActivityData = {
+			...activityData,
+			start: parseMins2Time(getNowMins()),
+			f: "x",
+		};
+	};
+
+	public readonly startCursorActivity = (): void => {
 		const focus = this.tableInfo?.focus;
 		if (!focus) return;
 		const index = focus.row - 2;

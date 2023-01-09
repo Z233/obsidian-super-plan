@@ -1,8 +1,16 @@
 import type { SuperPlanSettings } from "./settings";
 import type { ActivitiesData, ActivityData } from "./types";
-import { readTable, Table } from "@tgrosinger/md-advanced-tables";
+import {
+	readTable,
+	Table,
+	TableCell,
+	TableRow,
+	insertRow,
+	formatTable,
+} from "@tgrosinger/md-advanced-tables";
 import { _createIsTableRowRegex } from "@tgrosinger/md-advanced-tables/lib/table-editor";
-import { ActivityDataColumnMap } from "./constants";
+import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
+import { getActivityDataKey } from "./utils/helper";
 
 export class Parser {
 	private readonly settings: SuperPlanSettings;
@@ -47,5 +55,34 @@ export class Parser {
 		);
 
 		return activitiesData;
+	}
+
+	transformActivitiesData(activitiesData: ActivitiesData): Table {
+		const emptyTable = readTable(
+			[PlanLinesLiteral.header, PlanLinesLiteral.divider],
+			this.settings.asOptions()
+		);
+
+		const activitiesRows = activitiesData.map(
+			(data) =>
+				new TableRow(
+					Array.from(
+						{ length: emptyTable.getHeaderWidth() },
+						(_, i) =>
+							new TableCell(data[getActivityDataKey(i) ?? ""])
+					),
+					"",
+					""
+				)
+		);
+
+		const table = activitiesRows.reduce(
+			(t, row, i) => insertRow(t, 2 + i, row),
+			emptyTable
+		);
+
+		const formatted = formatTable(table, this.settings.asOptions());
+
+		return formatted.table;
 	}
 }

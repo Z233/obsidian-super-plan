@@ -31,6 +31,12 @@ export class Plan {
 		this.activities = scheduledActivities;
 	}
 
+	update(index: number, activity: Activity) {
+		const origin = this.activities[index];
+		if (!origin) return;
+		this.activities[index] = activity;
+	}
+
 	getData() {
 		return this.generateData(this.activities);
 	}
