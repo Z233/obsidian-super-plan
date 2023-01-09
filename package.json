@@ -22,6 +22,7 @@
 		"esbuild": "0.14.47",
 		"obsidian": "latest",
 		"tslib": "2.4.0",
+		"typed-event-emitter": "^3.0.0",
 		"typescript": "4.7.4"
 	},
 	"dependencies": {

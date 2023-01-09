@@ -18,8 +18,9 @@ import { isEqual } from "lodash-es";
 import { App, Editor, TFile } from "obsidian";
 import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
 import { ObsidianTextEditor } from "./obsidian-text-editor";
+import { Parser } from "./parser";
 import { Plan } from "./plan";
-import { PlanEditorSettings } from "./settings";
+import { SuperPlanSettings } from "./settings";
 import {
 	ActivitiesData,
 	PlanTableState,
@@ -36,9 +37,10 @@ import {
 
 export class PlanEditor {
 	private readonly app: App;
-	private readonly settings: PlanEditorSettings;
+	private readonly settings: SuperPlanSettings;
 	private readonly te: TableEditor;
 	private readonly ote: ObsidianTextEditor;
+	private readonly parser: Parser;
 
 	// private readonly plan: Plan | null = null;
 
@@ -46,10 +48,12 @@ export class PlanEditor {
 		app: App,
 		file: TFile,
 		editor: Editor,
-		settings: PlanEditorSettings
+		parser: Parser,
+		settings: SuperPlanSettings
 	) {
 		this.app = app;
 		this.settings = settings;
+		this.parser = parser;
 
 		this.ote = new ObsidianTextEditor(app, file, editor, settings);
 		this.te = new TableEditor(this.ote);
@@ -62,23 +66,7 @@ export class PlanEditor {
 
 	private getActivitiesData(): ActivitiesData {
 		if (!this.tableInfo) return [];
-		const table = this.tableInfo.table;
-		const activitiesRows = table
-			.getRows()
-			.slice(2)
-			.map((row) => row.getCells().map((cell) => cell.content));
-
-		const activitiesData: ActivitiesData = activitiesRows.map((row) =>
-			row.reduce(
-				(data, v, i) => ({
-					...data,
-					[ActivityDataColumnMap[i]]: v,
-				}),
-				{} as ActivityData
-			)
-		);
-
-		return activitiesData;
+		return this.parser.transformTable(this.tableInfo.table);
 	}
 
 	private get tableInfo() {

@@ -3,7 +3,7 @@ import { parseMins2Time, parseTime2Mins } from "./utils/helper";
 import { schedule } from "./utils/schedule";
 
 export class Plan {
-	private activities: Activities;
+	activities: Activities;
 	private readonly startMins: number;
 	private readonly endMins: number;
 

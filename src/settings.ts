@@ -4,33 +4,28 @@ import {
 	optionsWithDefaults,
 } from "@tgrosinger/md-advanced-tables";
 
-export const defaultSettings: Partial<ISettings> = {
-	formatType: FormatType.NORMAL,
-	showRibbonIcon: true,
-	bindEnter: true,
-	bindTab: true,
-};
-
-export interface ISettings {
+interface PlanEditorSettings {
 	formatType: FormatType;
-	showRibbonIcon: boolean;
-	bindEnter: boolean;
-	bindTab: boolean;
 }
 
-export class PlanEditorSettings implements ISettings {
-	public formatType: FormatType;
-	public showRibbonIcon: boolean;
+interface PlanTrackerSettings {
+	planFolder: string;
+}
 
-	public bindEnter: boolean;
-	public bindTab: boolean;
+type ISettings = PlanEditorSettings & PlanTrackerSettings;
+
+export const defaultSettings: Partial<ISettings> = {
+	formatType: FormatType.NORMAL,
+};
+
+export class SuperPlanSettings implements ISettings {
+	public formatType: FormatType;
+	public planFolder: string;
 
 	constructor(loadedData: Partial<ISettings>) {
 		const allFields = { ...defaultSettings, ...loadedData };
 		this.formatType = allFields.formatType!;
-		this.showRibbonIcon = allFields.showRibbonIcon!;
-		this.bindEnter = allFields.bindEnter!;
-		this.bindTab = allFields.bindTab!;
+		this.planFolder = allFields.planFolder!;
 	}
 
 	public asOptions(): Options {

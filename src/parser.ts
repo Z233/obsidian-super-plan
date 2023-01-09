@@ -1,44 +1,51 @@
-import { ActivityData } from "./types";
-
-const PLAN_TABLE_PATTERN = `\\|\\s*\\*\\*Activity\\*\\*\\s*\\|\\s*\\*\\*Length\\*\\*\\s*\\|\\s*\\*\\*Start\\*\\*\\s*\\|\\s*\\*\\*F\\*\\*\\s*\\|\\s*\\*\\*R\\*\\*\\s*\\|\\s*\\*\\*ActLen\\*\\*\\s*\\|[\\s\\S]*?END\\s*\\|\\s*0\\s*\\|[\\s\\S]*?\\|\\s*x\\s*\\|\\s*\\|\\s*0\\s*\\|`;
+import { readTable, Table } from "@tgrosinger/md-advanced-tables";
+import { _createIsTableRowRegex } from "@tgrosinger/md-advanced-tables/lib/table-editor";
+import { ActivityDataColumnMap } from "./constants";
+import { SuperPlanSettings } from "./settings";
+import { ActivitiesData, ActivityData } from "./types";
 
 export class Parser {
-	parseMarkdown(mdContent: string) {
-		const ret: string[] = [];
-		const re = new RegExp(PLAN_TABLE_PATTERN, "gm");
-		let match;
-		while ((match = re.exec(mdContent)) !== null) {
-			if (match.index === re.lastIndex) {
-				re.lastIndex++;
-			}
+	private readonly settings: SuperPlanSettings;
 
-			const planTableMd = match[0];
-			ret.push(planTableMd);
-		}
-		return ret;
+	constructor(settings: SuperPlanSettings) {
+		this.settings = settings;
 	}
 
-	private parseTableMarkdown(tableMdContent: string): ActivityData[] {
-		const rows = tableMdContent
-			.split("\n")
-			.slice(2)
-			.filter((row) => row.trim() !== "");
+	findPlanTable(content: string) {
+		const re = _createIsTableRowRegex(
+			this.settings.asOptions().leftMarginChars
+		);
+		const rows = content.split("\n");
 
-		const data = rows.map((row) => {
-			const [activity, length, start, f, r, actLen] = row
-				.split("|")
-				.slice(1, -1)
-				.map((cell) => cell.trim());
-			return {
-				activity,
-				length,
-				start,
-				f,
-				r,
-				actLen,
-			} as ActivityData;
+		const lines: string[] = [];
+		rows.forEach((row) => {
+			if (re.test(row)) {
+				lines.push(row);
+			}
 		});
 
-		return data;
+		if (!lines.length) return;
+
+		const table = readTable(lines, this.settings.asOptions());
+		return table;
+	}
+
+	transformTable(table: Table): ActivitiesData {
+		const activitiesRows = table
+			.getRows()
+			.slice(2)
+			.map((row) => row.getCells().map((cell) => cell.content));
+
+		const activitiesData: ActivitiesData = activitiesRows.map((row) =>
+			row.reduce(
+				(data, v, i) => ({
+					...data,
+					[ActivityDataColumnMap[i]]: v,
+				}),
+				{} as ActivityData
+			)
+		);
+
+		return activitiesData;
 	}
 }

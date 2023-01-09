@@ -7,28 +7,37 @@ import {
 	Plugin,
 	Setting,
 } from "obsidian";
-import { PlanFile } from "./file";
+import { PlanFileManager } from "./plan-file-manager";
 import { Parser } from "./parser";
 import { PlanEditor } from "./plan-editor";
-import { PlansMarkdown } from "./plans-md";
-import { PlanEditorSettings } from "./settings";
+import { SuperPlanSettings } from "./settings";
 import { PlanManager } from "./plan-manager";
+import { SuperPlanSettingsTab } from "./settings-tab";
+import { PlanTracker } from "./plan-tracker";
+import { timer } from "./timer";
 
 // Remember to rename these classes and interfaces!
 
 export default class SuperPlan extends Plugin {
-	settings: PlanEditorSettings;
-	file: PlanFile;
-	parser: Parser;
-	plansMd: PlansMarkdown;
+	settings: SuperPlanSettings;
+
+	private fileManager: PlanFileManager;
+	private parser: Parser;
 	private cmEditors: CodeMirror.Editor[];
+	private tracker: PlanTracker;
 
 	async onload() {
-		this.file = new PlanFile(this.app.vault);
-		this.parser = new Parser();
-		this.plansMd = new PlansMarkdown(this.file, this.parser);
-
 		await this.loadSettings();
+
+		this.parser = new Parser(this.settings);
+		this.fileManager = new PlanFileManager(
+			this.app.vault,
+			this.parser,
+			this.settings
+		);
+
+		this.tracker = new PlanTracker(this.addStatusBarItem());
+		this.tracker.init();
 
 		new PlanManager(this);
 
@@ -37,10 +46,6 @@ export default class SuperPlan extends Plugin {
 			this.cmEditors.push(cm);
 			cm.on("keydown", this.handleKeyDown);
 		});
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText("Status Bar Text");
 
 		this.addCommand({
 			id: "insert-plan-table",
@@ -106,17 +111,28 @@ export default class SuperPlan extends Plugin {
 			},
 		});
 
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, "click", (evt: MouseEvent) => {
-			// console.log("click", evt);
-		});
+		this.addSettingTab(new SuperPlanSettingsTab(this.app, this));
+
+		this.registerInterval(timer.intervalId);
+
+		timer.onTick(this.onTick.bind(this));
+	}
+
+	async onTick() {
+		const content = await this.fileManager.getTodayPlanFileContent();
+		const planTable = this.parser.findPlanTable(content);
+		if (planTable) {
+			const activitiesData = this.parser.transformTable(planTable);
+
+			this.tracker.setData(activitiesData);
+		}
 	}
 
 	onunload() {
 		this.cmEditors.forEach((cm) => {
 			cm.off("keydown", this.handleKeyDown);
 		});
+		timer.removeListener();
 	}
 
 	private readonly handleKeyDown = (
@@ -137,6 +153,7 @@ export default class SuperPlan extends Plugin {
 					this.app,
 					leaf.view.file,
 					leaf.view.editor,
+					this.parser,
 					this.settings
 				);
 
@@ -159,6 +176,7 @@ export default class SuperPlan extends Plugin {
 				this.app,
 				view.file,
 				editor,
+				this.parser,
 				this.settings
 			);
 
@@ -171,7 +189,7 @@ export default class SuperPlan extends Plugin {
 
 	async loadSettings() {
 		const settingsOptions = Object.assign({}, await this.loadData());
-		this.settings = new PlanEditorSettings(settingsOptions);
+		this.settings = new SuperPlanSettings(settingsOptions);
 	}
 
 	async saveSettings() {

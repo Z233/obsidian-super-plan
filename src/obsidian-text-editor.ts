@@ -10,7 +10,7 @@ import {
 } from "@tgrosinger/md-advanced-tables";
 import { App, TFile, Editor } from "obsidian";
 import { ActivityDataColumnMap } from "./constants";
-import { PlanEditorSettings } from "./settings";
+import { SuperPlanSettings } from "./settings";
 import { ActivityData } from "./types";
 import { getActivityDataIndex } from "./utils/helper";
 
@@ -18,13 +18,13 @@ export class ObsidianTextEditor extends ITextEditor {
 	private readonly app: App;
 	private readonly file: TFile;
 	private readonly editor: Editor;
-	private readonly settings: PlanEditorSettings;
+	private readonly settings: SuperPlanSettings;
 
 	constructor(
 		app: App,
 		file: TFile,
 		editor: Editor,
-		settings: PlanEditorSettings
+		settings: SuperPlanSettings
 	) {
 		super();
 		this.app = app;
