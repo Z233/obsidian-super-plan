@@ -1,10 +1,8 @@
-import { isEqual } from "lodash-es";
 import { Plan } from "./plan";
 import { timer } from "./timer";
 import type { ActivitiesData, Activity, Maybe } from "./types";
 import { getNowMins } from "./utils/helper";
 import StatusBar from "./components/StatusBar.svelte";
-import type { PlanEditor } from "./plan-editor";
 import type { Parser } from "./parser";
 import type { Table } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";

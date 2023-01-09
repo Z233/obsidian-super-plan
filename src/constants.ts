@@ -1,5 +1,3 @@
-import type { ActivityData, Tuple } from "./types";
-
 export const PlanLinesLiteral = {
 	header: `| F   | Activity | Length | Start | R   | ActLen |`,
 	divider: `| --- | -------- | ------ | ----- | --- | ------ |`,
@@ -7,14 +5,10 @@ export const PlanLinesLiteral = {
 	endRow: `| x   | END      | 0      | 00:00 |     | 0      |`,
 };
 
-// export const ActivityDataColumnMap: Readonly<Tuple<keyof ActivityData, 6>> = [
-// 	"f",
-// 	"activity",
-// 	"length",
-// 	"start",
-// 	"r",
-// 	"actLen",
-// ] as const;
+export const DEFAULT_PLAN_NOTE_CONTENT = `## Plan\n${Object.values(
+	PlanLinesLiteral
+).join("\n")}
+`;
 
 export enum ActivityDataColumnMap {
 	"f",
