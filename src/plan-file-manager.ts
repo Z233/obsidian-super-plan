@@ -1,8 +1,7 @@
-import { readTable } from "@tgrosinger/md-advanced-tables";
+import type { Vault } from "obsidian";
+import type { Parser } from "./parser";
+import type { SuperPlanSettings } from "./settings";
 import { _createIsTableRowRegex } from "@tgrosinger/md-advanced-tables/lib/table-editor";
-import { Vault } from "obsidian";
-import { Parser } from "./parser";
-import { SuperPlanSettings } from "./settings";
 
 const DEFAULT_FILE = "super-plan.md";
 
@@ -24,5 +23,4 @@ export class PlanFileManager {
 	getTodayPlanFileContent() {
 		return this.vault.adapter.read(this.todayPlanFilePath);
 	}
-
 }

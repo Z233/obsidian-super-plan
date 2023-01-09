@@ -1,5 +1,5 @@
 import { ActivityDataColumnMap } from "src/constants";
-import { ActivitiesData, ActivityData, PlanCellType } from "src/types";
+import type { PlanCellType } from "src/types";
 
 export const getMarkdownTableHeader =
 	() => `| **Activity** | **Length** | **Start** | **F** | **R** | **ActLen** |

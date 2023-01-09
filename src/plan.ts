@@ -1,4 +1,9 @@
-import { Activities, ActivitiesData, Activity, ActivityData } from "./types";
+import type {
+	Activities,
+	ActivitiesData,
+	Activity,
+	ActivityData,
+} from "./types";
 import { parseMins2Time, parseTime2Mins } from "./utils/helper";
 import { schedule } from "./utils/schedule";
 

@@ -1,4 +1,4 @@
-import { ActivityData, Tuple } from "./types";
+import type { ActivityData, Tuple } from "./types";
 
 export const PlanLinesLiteral = {
 	header: `| F   | Activity | Length | Start | R   | ActLen |`,

@@ -10,18 +10,16 @@ import {
 	insertRow,
 	Focus,
 } from "@tgrosinger/md-advanced-tables";
-import {
-	deleteRow,
-	FormattedTable,
-} from "@tgrosinger/md-advanced-tables/lib/formatter";
+import { deleteRow } from "@tgrosinger/md-advanced-tables/lib/formatter";
+import type { FormattedTable } from "@tgrosinger/md-advanced-tables/lib/formatter";
 import { isEqual } from "lodash-es";
-import { App, Editor, TFile } from "obsidian";
+import type { App, Editor, TFile } from "obsidian";
 import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
 import { ObsidianTextEditor } from "./obsidian-text-editor";
-import { Parser } from "./parser";
+import type { Parser } from "./parser";
 import { Plan } from "./plan";
-import { SuperPlanSettings } from "./settings";
-import {
+import type { SuperPlanSettings } from "./settings";
+import type {
 	ActivitiesData,
 	PlanTableState,
 	ActivityData,

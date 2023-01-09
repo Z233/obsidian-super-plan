@@ -1,8 +1,8 @@
 import {
 	FormatType,
-	Options,
 	optionsWithDefaults,
 } from "@tgrosinger/md-advanced-tables";
+import type { Options } from "@tgrosinger/md-advanced-tables";
 
 interface PlanEditorSettings {
 	formatType: FormatType;

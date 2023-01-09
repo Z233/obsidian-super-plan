@@ -1,35 +1,29 @@
 import { isEqual } from "lodash-es";
 import { Plan } from "./plan";
 import { timer } from "./timer";
-import { ActivitiesData, Activity, Maybe } from "./types";
+import type { ActivitiesData, Activity, Maybe } from "./types";
 import { getNowMins } from "./utils/helper";
-
-interface State {
-	activity: Maybe<Activity>;
-}
+import StatusBar from "./components/StatusBar.svelte";
 
 export class PlanTracker {
 	private plan: Maybe<Plan>;
-	private readonly bar: HTMLElement;
-	private nowActivity: Maybe<Activity>;
-	private nowActivityEl: HTMLElement;
+	private readonly statusBarContainer: HTMLElement;
+	private statusBarComp: StatusBar;
+
+	private now: Maybe<Activity>;
+	private next: Maybe<Activity>;
 
 	constructor(statusBar: HTMLElement) {
-		this.bar = statusBar;
+		this.statusBarContainer = statusBar;
 	}
 
 	init() {
-		const nowContainer = this.bar.createDiv({
-			cls: "now-container",
-		});
-
-		nowContainer.createEl("strong", {
-			text: "Now",
-			prepend: true,
-		});
-
-		this.nowActivityEl = nowContainer.createSpan({
-			text: "00:00 Coding",
+		this.statusBarComp = new StatusBar({
+			target: this.statusBarContainer,
+			props: {
+				now: this.now,
+				next: this.next,
+			},
 		});
 
 		timer.onTick(this.onTick.bind(this));
@@ -38,16 +32,18 @@ export class PlanTracker {
 	private onTick() {
 		if (!this.plan) return;
 		const nowMins = getNowMins();
-		const active = this.plan.activities.find(
+
+		const nowIndex = this.plan.activities.findIndex(
 			(a) => nowMins >= a.start && nowMins < a.stop
 		);
-		if (isEqual(active, this.nowActivity)) {
-			this.nowActivity = active;
-			this.onActivityChanged();
-		}
-	}
+		const now = this.plan.activities[nowIndex];
+		const next = this.plan.activities[nowIndex + 1];
 
-	private onActivityChanged() {}
+		this.statusBarComp.$set({
+			now,
+			next,
+		});
+	}
 
 	setData(activitiesData: ActivitiesData) {
 		this.plan = new Plan(activitiesData);

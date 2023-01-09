@@ -1,8 +1,8 @@
+import type { SuperPlanSettings } from "./settings";
+import type { ActivitiesData, ActivityData } from "./types";
 import { readTable, Table } from "@tgrosinger/md-advanced-tables";
 import { _createIsTableRowRegex } from "@tgrosinger/md-advanced-tables/lib/table-editor";
 import { ActivityDataColumnMap } from "./constants";
-import { SuperPlanSettings } from "./settings";
-import { ActivitiesData, ActivityData } from "./types";
 
 export class Parser {
 	private readonly settings: SuperPlanSettings;

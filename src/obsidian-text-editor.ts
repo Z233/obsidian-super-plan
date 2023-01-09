@@ -1,3 +1,6 @@
+import type { SuperPlanSettings } from "./settings";
+import type { ActivityData } from "./types";
+import type { App, TFile, Editor } from "obsidian";
 import {
 	Point,
 	Range,
@@ -8,10 +11,7 @@ import {
 	readTable,
 	formatTable,
 } from "@tgrosinger/md-advanced-tables";
-import { App, TFile, Editor } from "obsidian";
 import { ActivityDataColumnMap } from "./constants";
-import { SuperPlanSettings } from "./settings";
-import { ActivityData } from "./types";
 import { getActivityDataIndex } from "./utils/helper";
 
 export class ObsidianTextEditor extends ITextEditor {

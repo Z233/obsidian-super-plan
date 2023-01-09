@@ -1,4 +1,4 @@
-import {
+import type {
 	Focus,
 	Table,
 	TableCell,
@@ -22,7 +22,7 @@ export type PlanTableState = {
 	cell: TableCell;
 	row: TableRow;
 	table: Table;
-	focus: Focus
+	focus: Focus;
 };
 
 export type Activity = {

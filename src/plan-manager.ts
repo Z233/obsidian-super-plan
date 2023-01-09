@@ -1,9 +1,11 @@
-import { Extension, Prec } from "@codemirror/state";
-import { EditorView, KeyBinding, keymap } from "@codemirror/view";
-import { Focus, TableRow } from "@tgrosinger/md-advanced-tables";
-import SuperPlan from "./main";
-import { PlanEditor } from "./plan-editor";
-import { PlanTableState, Maybe, PlanCellType } from "./types";
+import type { Extension } from "@codemirror/state";
+import type { KeyBinding } from "@codemirror/view";
+import type { Focus, TableRow } from "@tgrosinger/md-advanced-tables";
+import type SuperPlan from "./main";
+import type { PlanEditor } from "./plan-editor";
+import type { PlanTableState, Maybe, PlanCellType } from "./types";
+import { Prec } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
 import { isEqual, debounce } from "lodash-es";
 import { getActivityDataIndex } from "./utils/helper";
 
