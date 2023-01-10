@@ -30,7 +30,10 @@ jobs:
               with:
                   cmd: build
 
-            - uses: actions/upload-artifact@v3
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3
               with:
                   name: artifact
-                  path: main.js
+                  path: |
+                      main.js
+                      manifest.json
