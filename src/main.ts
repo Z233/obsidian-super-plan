@@ -73,7 +73,6 @@ export default class SuperPlan extends Plugin {
 			}),
 		});
 
-
 		this.addSettingTab(new SuperPlanSettingsTab(this.app, this));
 
 		this.registerInterval(timer.intervalId);

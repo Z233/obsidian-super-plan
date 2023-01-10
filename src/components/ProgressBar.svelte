@@ -1,5 +1,33 @@
+<script lang="ts">
+	import { ButtonComponent } from "obsidian";
+	import type { TooltipOptions } from "obsidian";
+	import type { Maybe } from "src/types";
+	import { onMount } from "svelte";
+
+	export let leftMins = 0;
+
+	const tooltipOptions: TooltipOptions = {
+		placement: "top",
+	};
+
+	let tooltipEl: HTMLDivElement;
+	let tooltipButtonComp: Maybe<ButtonComponent> = null;
+	$: tooltipButtonComp?.setTooltip(`Left: ${leftMins} mins`, tooltipOptions);
+
+	onMount(() => {
+		tooltipButtonComp = new ButtonComponent(tooltipEl);
+	});
+</script>
+
 <div class="progress-bar-container">
 	<div class="progress" />
+	<div class="tooltip-container" bind:this={tooltipEl} />
+	<style>
+		.tooltip-container > button {
+			width: 100%;
+			opacity: 0;
+		}
+	</style>
 </div>
 
 <style>
@@ -20,5 +48,9 @@
 		height: 100%;
 		width: var(--progress-value);
 		background: var(--color-purple);
+	}
+
+	.tooltip-container {
+		width: 100%;
 	}
 </style>

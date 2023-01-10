@@ -67,9 +67,10 @@ export class PlanTracker {
 			this.file.updateTodayPlanFile(updatedContent);
 		}
 
-		const durationSecs =
-			(nowMins - now.start) * 60 + new Date().getSeconds();
-		const totalSecs = now.actLen * 60;
+		const durationMins = nowMins - now.start;
+		const durationSecs = durationMins * 60 + new Date().getSeconds();
+		const totalMins = now.actLen;
+		const totalSecs = totalMins * 60;
 		const progress = (durationSecs / totalSecs) * 100;
 
 		const next = this.plan.activities[nowIndex + 1];
@@ -78,6 +79,7 @@ export class PlanTracker {
 			now,
 			next,
 			progress,
+			leftMins: totalMins - durationMins,
 		});
 	}
 

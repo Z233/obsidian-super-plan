@@ -6,6 +6,7 @@
 	export let now: Maybe<Activity>;
 	export let next: Maybe<Activity>;
 	export let progress = 0;
+	export let leftMins = 0;
 </script>
 
 <div class="container">
@@ -13,7 +14,7 @@
 		<strong>Now</strong>
 		<span>{parseMins2Time(now.start)}</span>
 		<span>{now.activity}</span>
-		<ProgressBar --progress-value={`${progress}%`} />
+		<ProgressBar {leftMins} --progress-value={`${progress}%`} />
 
 		{#if next}
 			<strong>Next</strong>
