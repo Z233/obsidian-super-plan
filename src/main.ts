@@ -35,6 +35,7 @@ export default class SuperPlan extends Plugin {
 		this.tracker = new PlanTracker(
 			this.parser,
 			this.file,
+			this.settings,
 			this.addStatusBarItem()
 		);
 		this.tracker.init();
@@ -97,11 +98,11 @@ export default class SuperPlan extends Plugin {
 		timer.removeListener();
 	}
 
+	// TODO: handle key for CM5
 	private readonly handleKeyDown = (
 		cm: CodeMirror.Editor,
 		event: KeyboardEvent
 	): void => {
-		console.log(event.key);
 		if (["Tab", "Enter"].contains(event.key)) {
 		}
 	};
@@ -151,7 +152,7 @@ export default class SuperPlan extends Plugin {
 
 	async loadSettings() {
 		const settingsOptions = Object.assign({}, await this.loadData());
-		this.settings = new SuperPlanSettings(settingsOptions);
+		this.settings = new SuperPlanSettings(this, settingsOptions);
 	}
 
 	async saveSettings() {

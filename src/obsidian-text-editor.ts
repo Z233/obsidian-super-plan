@@ -11,7 +11,7 @@ import {
 	readTable,
 	formatTable,
 } from "@tgrosinger/md-advanced-tables";
-import { ActivityDataColumnMap } from "./constants";
+import { ActivityDataColumn } from "./constants";
 import { getActivityDataIndex } from "./utils/helper";
 
 export class ObsidianTextEditor extends ITextEditor {

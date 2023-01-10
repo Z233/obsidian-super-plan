@@ -10,11 +10,18 @@ export const DEFAULT_PLAN_NOTE_CONTENT = `## Plan\n${Object.values(
 ).join("\n")}
 `;
 
-export enum ActivityDataColumnMap {
+export const DEFAULT_CIRCLE_PROGRESS_SIZE = 16;
+
+export enum ActivityDataColumn {
 	"f",
 	"activity",
 	"length",
 	"start",
 	"r",
 	"actLen",
+}
+
+export enum ProgressType {
+	BAR = "BAR",
+	CIRCLE = "CIRCLE",
 }

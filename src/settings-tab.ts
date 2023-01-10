@@ -1,4 +1,5 @@
 import { App, normalizePath, PluginSettingTab, Setting } from "obsidian";
+import { ProgressType } from "./constants";
 import { FileSuggest, FileSuggestMode, FolderSuggest } from "./file-suggester";
 import type SuperPlan from "./main";
 
@@ -28,6 +29,8 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
+
+		const createSetting = () => new Setting(containerEl);
 
 		new Setting(containerEl)
 			.setName("Plan Note Folder")
@@ -87,12 +90,26 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
 				dropdown.addOption("DD-MM-YYYY", "DD-MM-YYYY");
 				dropdown.addOption("YYYYMMDD", "YYYYMMDD");
 				return dropdown
-					.setValue(
-						this.plugin.settings.fileNameDateFormat ?? "YYYMMDD"
-					)
+					.setValue(this.plugin.settings.fileNameDateFormat)
 					.onChange((value: string) => {
 						this.plugin.settings.fileNameDateFormat = value;
 						this.plugin.saveData(this.plugin.settings);
+					});
+			});
+
+		containerEl.createEl("h2", { text: "Status Bar" });
+
+		createSetting()
+			.setName("Progress Type")
+			.addDropdown((dropdown) => {
+				dropdown.addOption(ProgressType.BAR, "Bar");
+				dropdown.addOption(ProgressType.CIRCLE, "Circle");
+				return dropdown
+					.setValue(this.plugin.settings.progressType)
+					.onChange((value: ProgressType) => {
+						this.plugin.settings.update({
+							progressType: value,
+						});
 					});
 			});
 	}

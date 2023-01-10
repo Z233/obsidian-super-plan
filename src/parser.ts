@@ -9,7 +9,7 @@ import {
 	formatTable,
 } from "@tgrosinger/md-advanced-tables";
 import { _createIsTableRowRegex } from "@tgrosinger/md-advanced-tables/lib/table-editor";
-import { ActivityDataColumnMap, PlanLinesLiteral } from "./constants";
+import { ActivityDataColumn, PlanLinesLiteral } from "./constants";
 import { getActivityDataKey } from "./utils/helper";
 
 export class Parser {
@@ -48,7 +48,7 @@ export class Parser {
 			row.reduce(
 				(data, v, i) => ({
 					...data,
-					[ActivityDataColumnMap[i]]: v,
+					[ActivityDataColumn[i]]: v,
 				}),
 				{} as ActivityData
 			)

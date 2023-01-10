@@ -6,11 +6,13 @@ import StatusBar from "./components/StatusBar.svelte";
 import type { Parser } from "./parser";
 import type { Table } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";
+import type { SuperPlanSettings } from "./settings";
 
 export class PlanTracker {
 	private readonly statusBarContainer: HTMLElement;
 	private readonly parser: Parser;
 	private readonly file: PlanFile;
+	private readonly settings: SuperPlanSettings;
 
 	private plan: Maybe<Plan>;
 	private table: Maybe<Table>;
@@ -20,9 +22,15 @@ export class PlanTracker {
 	private now: Maybe<Activity>;
 	private next: Maybe<Activity>;
 
-	constructor(parser: Parser, file: PlanFile, statusBar: HTMLElement) {
+	constructor(
+		parser: Parser,
+		file: PlanFile,
+		settings: SuperPlanSettings,
+		statusBar: HTMLElement
+	) {
 		this.parser = parser;
 		this.file = file;
+		this.settings = settings;
 		this.statusBarContainer = statusBar;
 	}
 
@@ -32,7 +40,16 @@ export class PlanTracker {
 			props: {
 				now: this.now,
 				next: this.next,
+				progressType: this.settings.progressType,
 			},
+		});
+
+		this.settings.onUpdate((options) => {
+			if (options["progressType"]) {
+				this.statusBarComp.$set({
+					progressType: options.progressType,
+				});
+			}
 		});
 
 		timer.onTick(this.onTick.bind(this));

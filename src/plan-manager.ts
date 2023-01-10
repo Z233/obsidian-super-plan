@@ -42,13 +42,6 @@ export class PlanManager {
 						const beforeCell = before && getStartCell(before.row);
 						const scheduled = pe.executeSchedule(this.lastState);
 
-						// console.log(this.lastState?.type);
-
-						// console.log({
-						// 	scheduled: scheduled && getStartCell(scheduled.row),
-						// 	before: before && getStartCell(before.row),
-						// });
-
 						// set isFixed to true when user manually input start time
 						if (
 							this.lastState?.type === "start" &&

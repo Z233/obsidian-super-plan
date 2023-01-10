@@ -6,7 +6,7 @@ import {
 	Vault,
 	type TAbstractFile,
 } from "obsidian";
-import { ActivityDataColumnMap } from "src/constants";
+import { ActivityDataColumn } from "src/constants";
 import type { PlanCellType } from "src/types";
 import { TemplaterError } from "./error";
 
@@ -23,10 +23,10 @@ export const getMarkdownRow = () =>
 export const removeSpacing = (value: string) => value.replace(/\s+/gm, "");
 
 export const getActivityDataKey = (index: number) =>
-	ActivityDataColumnMap[index] as PlanCellType;
+	ActivityDataColumn[index] as PlanCellType;
 
 export const getActivityDataIndex = (key: PlanCellType) =>
-	ActivityDataColumnMap[key] as number;
+	ActivityDataColumn[key] as number;
 
 function tryParse2Int(value?: string) {
 	const ret = parseInt(value!);
