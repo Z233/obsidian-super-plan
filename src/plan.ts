@@ -4,13 +4,19 @@ import type {
 	Activity,
 	ActivityData,
 } from "./types";
-import { parseMins2Time, parseTime2Mins } from "./utils/helper";
+import {
+	parseMins2Time,
+	parseMins2TodayUnix,
+	parseTime2Mins,
+} from "./utils/helper";
 import { schedule } from "./utils/schedule";
 
 export class Plan {
 	activities: Activities;
 	private readonly startMins: number;
 	private readonly endMins: number;
+	readonly startUnix: number;
+	readonly endUnix: number;
 
 	constructor(activitiesData: ActivityData[]) {
 		this.startMins = parseTime2Mins(activitiesData[0].start);
@@ -21,6 +27,9 @@ export class Plan {
 		if (this.endMins < this.startMins) {
 			this.endMins = this.endMins + 24 * 60;
 		}
+
+		this.startUnix = parseMins2TodayUnix(this.startMins);
+		this.endUnix = parseMins2TodayUnix(this.endMins);
 
 		this.activities = this.convertData(activitiesData);
 	}

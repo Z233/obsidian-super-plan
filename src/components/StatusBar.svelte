@@ -9,6 +9,7 @@
 	export let next: Maybe<Activity>;
 	export let progress = 0;
 	export let leftMins = 0;
+	export let isAllDone = false;
 
 	export let progressType: ProgressType = ProgressType.BAR;
 </script>
@@ -30,8 +31,12 @@
 			<span>{parseMins2Time(next.start)}</span>
 			<span>{next.activity}</span>
 		{/if}
-	{:else}
+	{:else if !isAllDone}
 		<span>No Activity</span>
+	{/if}
+
+	{#if isAllDone}
+		<span>All Done</span>
 	{/if}
 </div>
 

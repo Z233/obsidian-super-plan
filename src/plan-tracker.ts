@@ -7,6 +7,7 @@ import type { Parser } from "./parser";
 import type { Table } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";
 import type { SuperPlanSettings } from "./settings";
+import moment from "moment";
 
 export class PlanTracker {
 	private readonly statusBarContainer: HTMLElement;
@@ -63,7 +64,19 @@ export class PlanTracker {
 			(a) => nowMins >= a.start && nowMins < a.stop
 		);
 		const now = this.plan.activities[nowIndex];
-		if (!now) return;
+		if (!now) {
+			const nowUnix = moment().unix();
+
+			if (nowUnix > this.plan.endUnix) {
+				this.statusBarComp.$set({
+					now: null,
+					next: null,
+					isAllDone: true,
+				});
+				return;
+			}
+			return;
+		}
 
 		if (!now.isFixed && this.table) {
 			this.plan.update(nowIndex, {
@@ -97,6 +110,7 @@ export class PlanTracker {
 			next,
 			progress,
 			leftMins: totalMins - durationMins,
+			isAllDone: false,
 		});
 	}
 

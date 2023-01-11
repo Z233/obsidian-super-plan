@@ -1,3 +1,4 @@
+import moment from "moment";
 import {
 	type App,
 	TFolder,
@@ -57,6 +58,12 @@ export function getNowMins() {
 	const hours = date.getHours();
 	const mins = date.getMinutes();
 	return hours * 60 + mins;
+}
+
+export function parseMins2TodayUnix(mins: number) {
+	const todayDate = moment().format("YYYY-MM-DD 00:00");
+	const todayUnix = moment(todayDate).unix();
+	return todayUnix + mins * 60;
 }
 
 export function resolve_tfolder(app: App, folder_str: string): TFolder {
