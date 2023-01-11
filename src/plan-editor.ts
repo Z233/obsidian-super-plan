@@ -27,6 +27,7 @@ import type {
 	PlanCellType,
 } from "./types";
 import {
+	getActivityDataIndex,
 	getActivityDataKey,
 	getNowMins,
 	parseMins2Time,
@@ -76,6 +77,10 @@ export class PlanEditor {
 			{ length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
 			(v, i) => new TableCell(activityData[getActivityDataKey(i)] ?? "")
 		);
+	}
+
+	private createActivityRow(activityData: Partial<ActivityData>) {
+		return new TableRow(this.createActivityCells(activityData), "", "");
 	}
 
 	private shouldSchedule(type: PlanCellType) {
@@ -216,22 +221,27 @@ export class PlanEditor {
 		this.te.resetSmartCursor();
 	};
 
-	public readonly startActivity = (activityData: ActivityData) => {
-		const activitiesData = this.getActivitiesData();
-
-		const updatedActivityData: ActivityData = {
-			...activityData,
-			start: parseMins2Time(getNowMins()),
-			f: "x",
-		};
-	};
-
-	public readonly startCursorActivity = (): void => {
+	getCursorActivityData(): Maybe<{
+		index: number;
+		data: ActivityData;
+	}> {
 		const focus = this.tableInfo?.focus;
-		if (!focus) return;
+		if (!focus) return null;
 		const index = focus.row - 2;
 		const activitiesData = this.getActivitiesData();
 		const cursorActivityData = activitiesData[index];
+
+		return {
+			index,
+			data: cursorActivityData,
+		};
+	}
+
+	public readonly startActivity = (): void => {
+		const cursor = this.getCursorActivityData();
+		if (!cursor) return;
+		const { data: cursorActivityData, index } = cursor;
+		const activitiesData = this.getActivitiesData();
 
 		const updatedActivityData: ActivityData = {
 			...cursorActivityData,
@@ -245,6 +255,59 @@ export class PlanEditor {
 
 	public readonly insertActivityAbove = (): void => {
 		this.te.insertRow(this.settings.asOptions());
+	};
+
+	public readonly splitActivity = (
+		firstLength: number,
+		secondLength: number
+	) => {
+		const cursor = this.getCursorActivityData();
+		if (!cursor) return;
+		const { data, index: rowIndex } = cursor;
+
+		const firstActivityData: ActivityData = {
+			...data,
+			activity: `${data.activity} (#1)`,
+			length: firstLength.toString(),
+		};
+
+		const secondActivityData: ActivityData = {
+			...data,
+			activity: `${data.activity} (#2)`,
+			length: secondLength.toString(),
+			f: "",
+		};
+
+		const { table, range, lines, focus } = this.tableInfo!;
+		const firstIndex = rowIndex + 2;
+		let altered = table;
+		altered = deleteRow(altered, firstIndex);
+		altered = insertRow(
+			altered,
+			firstIndex,
+			this.createActivityRow(firstActivityData)
+		);
+		altered = insertRow(
+			altered,
+			firstIndex + 1,
+			this.createActivityRow(secondActivityData)
+		);
+
+		const formatted = formatTable(altered, this.settings.asOptions());
+
+		this.te._updateLines(
+			range.start.row,
+			range.end.row + 1,
+			formatted.table.toLines(),
+			lines
+		);
+		this.te._moveToFocus(
+			range.start.row,
+			formatted.table,
+			focus
+				.setRow(firstIndex + 1)
+				.setColumn(getActivityDataIndex("activity"))
+		);
 	};
 
 	public readonly nextRow = (): void => {

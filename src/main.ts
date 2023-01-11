@@ -15,6 +15,7 @@ import { PlanManager } from "./plan-manager";
 import { SuperPlanSettingsTab } from "./settings-tab";
 import { PlanTracker } from "./plan-tracker";
 import { timer } from "./timer";
+import { SplitConfirmModal } from "./modals";
 
 // Remember to rename these classes and interfaces!
 
@@ -70,7 +71,15 @@ export default class SuperPlan extends Plugin {
 			id: "start-activity",
 			name: "Start activity",
 			editorCheckCallback: this.newPerformTableAction((pe) => {
-				pe.startCursorActivity();
+				pe.startActivity();
+			}),
+		});
+
+		this.addCommand({
+			id: "split-activity",
+			name: "Split activity",
+			editorCheckCallback: this.newPerformTableAction((pe) => {
+				new SplitConfirmModal(this.app, pe).open();
 			}),
 		});
 
