@@ -92,8 +92,9 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
 				return dropdown
 					.setValue(this.plugin.settings.fileNameDateFormat)
 					.onChange((value: string) => {
-						this.plugin.settings.fileNameDateFormat = value;
-						this.plugin.saveData(this.plugin.settings);
+						this.plugin.settings.update({
+							fileNameDateFormat: value,
+						});
 					});
 			});
 

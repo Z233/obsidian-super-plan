@@ -44,8 +44,9 @@
 		<div class="tooltip-container" use:tooltipAction={leftMins} />
 		<style>
 			.tooltip-container > button {
-				width: 100%;
 				opacity: 0;
+				position: absolute;
+				height: 100%;
 			}
 		</style>
 	</div>
@@ -74,5 +75,7 @@
 	.tooltip-container {
 		position: absolute;
 		inset: 0;
+		display: grid;
+		place-items: center;
 	}
 </style>
