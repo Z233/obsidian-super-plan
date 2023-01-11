@@ -19,14 +19,15 @@ export class Plan {
 	readonly endUnix: number;
 
 	constructor(activitiesData: ActivityData[]) {
-		this.endMins = parseTime2Mins(
-			activitiesData[activitiesData.length - 1].start
-		);
 		this.activities = this.convertData(activitiesData);
 
 		this.startMins = this.activities[0].start;
+		this.endMins = this.activities[this.activities.length - 1].start;
+
 		this.startUnix = parseMins2TodayUnix(this.startMins);
 		this.endUnix = parseMins2TodayUnix(this.endMins);
+
+		this.schedule();
 	}
 
 	schedule() {
@@ -45,34 +46,27 @@ export class Plan {
 		return this.generateData(this.activities);
 	}
 
-	private delayEndMins(mins: number) {
-		const dayMins = 24 * 60;
-		this.endMins += dayMins;
-		return mins + dayMins;
-	}
-
 	private convertData(activitiesData: ActivityData[]): Activities {
 		const activities: Activities = [];
+		let offsetCount = 0;
 		for (let i = 0; i < activitiesData.length; i++) {
 			const data = activitiesData[i];
-			const prev = activities[i - 1];
-
-			const startMins =
-				i === activitiesData.length - 1
-					? this.endMins
-					: parseTime2Mins(data.start);
 
 			const actLen = +data.actLen;
 			const isFixed = this.check(data.f);
 
+			let startMins = parseTime2Mins(data.start) + offsetCount * 24 * 60;
+
+			if (i > 0 && activities[i - 1].start > startMins) {
+				offsetCount++;
+				startMins += offsetCount * 24 * 60;
+			}
+
 			activities.push({
 				activity: data.activity,
 				length: +data.length,
-				start:
-					startMins < ~~prev?.start && isFixed
-						? this.delayEndMins(startMins)
-						: startMins,
-				stop: startMins + actLen,
+				start: startMins,
+				stop: 0,
 				isFixed,
 				isRound: this.check(data.r),
 				actLen: actLen,
