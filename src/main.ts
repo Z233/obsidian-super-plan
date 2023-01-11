@@ -10,7 +10,7 @@ import {
 import { PlanFile } from "./plan-file";
 import { Parser } from "./parser";
 import { PlanEditor } from "./plan-editor";
-import { SuperPlanSettings } from "./settings";
+import { defaultSettings, SuperPlanSettings } from "./settings";
 import { PlanManager } from "./plan-manager";
 import { SuperPlanSettingsTab } from "./settings-tab";
 import { PlanTracker } from "./plan-tracker";
@@ -151,11 +151,15 @@ export default class SuperPlan extends Plugin {
 		};
 
 	async loadSettings() {
-		const settingsOptions = Object.assign({}, await this.loadData());
+		const settingsOptions = Object.assign(
+			defaultSettings,
+			await this.loadData()
+		);
 		this.settings = new SuperPlanSettings(this, settingsOptions);
+		this.saveData(this.settings.serialize());
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
+		await this.saveData(this.settings.serialize());
 	}
 }

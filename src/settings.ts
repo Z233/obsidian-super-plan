@@ -22,6 +22,7 @@ type ISettings = PlanEditorSettings & PlanTrackerSettings;
 
 export const defaultSettings: Partial<ISettings> = {
 	formatType: FormatType.NORMAL,
+	planFolder: "/",
 	noteTemplate: "",
 	fileNamePrefix: "",
 	fileNameDateFormat: "DD-MM-YYYY",
@@ -45,12 +46,7 @@ export class SuperPlanSettings implements ISettings {
 		this.plugin = plugin;
 
 		const allFields = { ...defaultSettings, ...loadedData };
-		this.formatType = allFields.formatType;
-		this.planFolder = allFields.planFolder;
-		this.noteTemplate = allFields.noteTemplate;
-		this.fileNamePrefix = allFields.fileNamePrefix;
-		this.fileNameDateFormat = allFields.fileNameDateFormat;
-		this.progressType = allFields.progressType;
+		Object.assign(this, allFields);
 	}
 
 	asOptions(): Options {
@@ -59,11 +55,21 @@ export class SuperPlanSettings implements ISettings {
 
 	update(options: Partial<ISettings>) {
 		Object.assign(this, options);
-		this.plugin.saveData(this);
+		this.plugin.saveSettings();
 		this.updateCbs.forEach((fn) => fn(options));
 	}
 
 	onUpdate(cb: SettingsUpdateCallback) {
 		this.updateCbs.push(cb);
+	}
+
+	serialize() {
+		const obj: Record<string, string> = {};
+		for (const key in this) {
+			if (typeof this[key] === "string") {
+				obj[key] = this[key] as any as string;
+			}
+		}
+		return obj;
 	}
 }
