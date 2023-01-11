@@ -8,7 +8,7 @@
 	const size = DEFAULT_CIRCLE_PROGRESS_SIZE;
 
 	const dashArray = 2 * Math.PI * (size / 4);
-	const dashOffset = dashArray - (dashArray * progress) / 100;
+	$: dashOffset = dashArray - (dashArray * progress) / 100;
 </script>
 
 <div
