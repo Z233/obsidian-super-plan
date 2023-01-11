@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ProgressType } from "src/constants";
+	import { NO_ACTIVITY_NAME_PLACEHOLDER, ProgressType } from "src/constants";
 	import type { Activity, Maybe } from "src/types";
 	import { parseMins2Time } from "src/utils/helper";
 	import ProgressBar from "./ProgressBar.svelte";
@@ -12,13 +12,16 @@
 	export let isAllDone = false;
 
 	export let progressType: ProgressType = ProgressType.BAR;
+
+	const formatActivityName = (name: string) =>
+		name.trim().length > 0 ? name : NO_ACTIVITY_NAME_PLACEHOLDER;
 </script>
 
 <div class="container">
 	{#if now}
 		<strong>Now</strong>
 		<span>{parseMins2Time(now.start)}</span>
-		<span>{now.activity}</span>
+		<span>{formatActivityName(now.activity)}</span>
 
 		{#if progressType === ProgressType.BAR}
 			<ProgressBar {leftMins} --progress-value={`${progress}%`} />
@@ -29,7 +32,7 @@
 		{#if next}
 			<strong>Next</strong>
 			<span>{parseMins2Time(next.start)}</span>
-			<span>{next.activity}</span>
+			<span>{formatActivityName(next.activity)}</span>
 		{/if}
 	{:else if !isAllDone}
 		<span>No Activity</span>

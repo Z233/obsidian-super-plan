@@ -11,6 +11,7 @@ export const DEFAULT_PLAN_NOTE_CONTENT = `## Plan\n${Object.values(
 `;
 
 export const DEFAULT_CIRCLE_PROGRESS_SIZE = 16;
+export const NO_ACTIVITY_NAME_PLACEHOLDER = "[No Name]";
 
 export enum ActivityDataColumn {
 	"f",
