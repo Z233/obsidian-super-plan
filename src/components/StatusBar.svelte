@@ -32,10 +32,12 @@
 			<span>{formatActivityName(now.activity)}</span>
 		</div>
 
-		{#if progressType === ProgressType.BAR}
-			<ProgressBar {leftMins} --progress-value={`${progress}%`} />
-		{:else if progressType === ProgressType.CIRCLE}
-			<ProgressCircle {leftMins} {progress} />
+		{#if !isAllDone}
+			{#if progressType === ProgressType.BAR}
+				<ProgressBar {leftMins} --progress-value={`${progress}%`} />
+			{:else if progressType === ProgressType.CIRCLE}
+				<ProgressCircle {leftMins} {progress} />
+			{/if}
 		{/if}
 
 		{#if next}
@@ -52,10 +54,6 @@
 		{/if}
 	{:else if !isAllDone}
 		<span>No Activity</span>
-	{/if}
-
-	{#if isAllDone}
-		<span>All Done</span>
 	{/if}
 </div>
 

@@ -105,6 +105,8 @@ export default class SuperPlan extends Plugin {
 				this.lastActivitiesData = activitiesData;
 				this.tracker.setData(activitiesData, tableInfo);
 			}
+		} else {
+			this.tracker.setData(null, null);
 		}
 	}
 

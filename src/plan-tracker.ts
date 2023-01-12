@@ -98,6 +98,7 @@ export class PlanTracker {
 			return {
 				now: null,
 				next: null,
+				isAllDone: false
 			};
 		const nowMins = getNowMins();
 		const nowIndex = findLastIndex(
@@ -106,13 +107,14 @@ export class PlanTracker {
 		);
 		const now = this.plan.activities[nowIndex];
 
-		if (!now) {
-			const nowUnix = moment().unix();
-
+		if (
+			nowIndex === this.plan.activities.length - 1 &&
+			nowMins >= now.stop
+		) {
 			return {
-				now: null,
+				now,
 				next: null,
-				isAllDone: nowUnix > this.plan.endUnix,
+				isAllDone: true,
 			};
 		}
 
@@ -162,8 +164,11 @@ export class PlanTracker {
 		}
 	}
 
-	setData(activitiesData: ActivitiesData, tableInfo: PlanTableInfo) {
-		this.plan = new Plan(activitiesData);
+	setData(
+		activitiesData: Maybe<ActivitiesData>,
+		tableInfo: Maybe<PlanTableInfo>
+	) {
+		this.plan = activitiesData ? new Plan(activitiesData) : null;
 		this.tableInfo = tableInfo;
 		this.updateStatusBar(this.getStatusBarProps());
 	}
