@@ -8,6 +8,7 @@ import type { Table } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";
 import type { SuperPlanSettings } from "./settings";
 import moment from "moment";
+import { findLastIndex } from "lodash-es";
 
 export class PlanTracker {
 	private readonly statusBarContainer: HTMLElement;
@@ -60,8 +61,9 @@ export class PlanTracker {
 		if (!this.plan) return;
 		const nowMins = getNowMins();
 
-		const nowIndex = this.plan.activities.findIndex(
-			(a) => nowMins >= a.start && nowMins < a.stop
+		const nowIndex = findLastIndex(
+			this.plan.activities,
+			(a) => nowMins >= a.start && a.isFixed
 		);
 		const now = this.plan.activities[nowIndex];
 		if (!now) {
@@ -73,29 +75,30 @@ export class PlanTracker {
 					next: null,
 					isAllDone: true,
 				});
-				return;
 			}
+
 			return;
 		}
 
-		if (!now.isFixed && this.table) {
-			this.plan.update(nowIndex, {
-				...now,
-				isFixed: true,
-			});
+		// Set activity to fixed
+		// if (!now.isFixed && this.table) {
+		// 	this.plan.update(nowIndex, {
+		// 		...now,
+		// 		isFixed: true,
+		// 	});
 
-			const newTable = this.parser.transformActivitiesData(
-				this.plan.getData()
-			);
+		// 	const newTable = this.parser.transformActivitiesData(
+		// 		this.plan.getData()
+		// 	);
 
-			const content = await this.file.getTodayPlanFileContent();
-			const updatedContent = content.replace(
-				this.table.toLines().join("\n"),
-				newTable.toLines().join("\n")
-			);
+		// 	const content = await this.file.getTodayPlanFileContent();
+		// 	const updatedContent = content.replace(
+		// 		this.table.toLines().join("\n"),
+		// 		newTable.toLines().join("\n")
+		// 	);
 
-			this.file.updateTodayPlanFile(updatedContent);
-		}
+		// 	this.file.updateTodayPlanFile(updatedContent);
+		// }
 
 		const durationMins = nowMins - now.start;
 		const durationSecs = durationMins * 60 + new Date().getSeconds();
@@ -108,7 +111,7 @@ export class PlanTracker {
 		this.statusBarComp.$set({
 			now,
 			next,
-			progress,
+			progress: progress <= 100 ? progress : 100,
 			leftMins: totalMins - durationMins,
 			isAllDone: false,
 		});
