@@ -8,7 +8,9 @@ import type { Table } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";
 import type { SuperPlanSettings } from "./settings";
 import moment from "moment";
-import { findLastIndex } from "lodash-es";
+import { findLastIndex, isEqual } from "lodash-es";
+
+type StatusBarProps = StatusBar["$$prop_def"];
 
 export class PlanTracker {
 	private readonly statusBarContainer: HTMLElement;
@@ -21,8 +23,11 @@ export class PlanTracker {
 
 	private statusBarComp: StatusBar;
 
+	private prev: Maybe<Activity>;
 	private now: Maybe<Activity>;
 	private next: Maybe<Activity>;
+
+	private lastSendNotificationActivity: Maybe<Activity>;
 
 	constructor(
 		parser: Parser,
@@ -57,48 +62,32 @@ export class PlanTracker {
 		timer.onTick(this.onTick.bind(this));
 	}
 
-	private async onTick() {
-		if (!this.plan) return;
-		const nowMins = getNowMins();
+	private updateStatusBar(props: StatusBarProps) {
+		this.statusBarComp.$set(props);
+	}
 
+	private getStatusBarProps(): StatusBarProps {
+		if (!this.plan)
+			return {
+				now: null,
+				next: null,
+			};
+		const nowMins = getNowMins();
 		const nowIndex = findLastIndex(
 			this.plan.activities,
 			(a) => nowMins >= a.start && a.isFixed
 		);
 		const now = this.plan.activities[nowIndex];
+
 		if (!now) {
 			const nowUnix = moment().unix();
 
-			if (nowUnix > this.plan.endUnix) {
-				this.statusBarComp.$set({
-					now: null,
-					next: null,
-					isAllDone: true,
-				});
-			}
-
-			return;
+			return {
+				now: null,
+				next: null,
+				isAllDone: nowUnix > this.plan.endUnix,
+			};
 		}
-
-		// Set activity to fixed
-		// if (!now.isFixed && this.table) {
-		// 	this.plan.update(nowIndex, {
-		// 		...now,
-		// 		isFixed: true,
-		// 	});
-
-		// 	const newTable = this.parser.transformActivitiesData(
-		// 		this.plan.getData()
-		// 	);
-
-		// 	const content = await this.file.getTodayPlanFileContent();
-		// 	const updatedContent = content.replace(
-		// 		this.table.toLines().join("\n"),
-		// 		newTable.toLines().join("\n")
-		// 	);
-
-		// 	this.file.updateTodayPlanFile(updatedContent);
-		// }
 
 		const durationMins = nowMins - now.start;
 		const durationSecs = durationMins * 60 + new Date().getSeconds();
@@ -108,17 +97,47 @@ export class PlanTracker {
 
 		const next = this.plan.activities[nowIndex + 1];
 
-		this.statusBarComp.$set({
+		return {
 			now,
 			next,
 			progress: progress <= 100 ? progress : 100,
 			leftMins: totalMins - durationMins,
 			isAllDone: false,
-		});
+		};
+	}
+
+	private async onTick() {
+		if (!this.plan) return;
+
+		const props = this.getStatusBarProps();
+		this.updateStatusBar(props);
+
+		const { now } = props;
+
+		if (!isEqual(now, this.now)) {
+			this.prev = this.now;
+			this.now = now;
+		}
+
+		const nowMins = getNowMins();
+
+		if (
+			this.prev &&
+			this.now &&
+			nowMins >= this.now.stop &&
+			this.lastSendNotificationActivity !== this.now
+		) {
+			new Notification("Time to start next activity!");
+			this.lastSendNotificationActivity = this.now;
+
+			// TODO: Jump to next activity row
+			// notification.addEventListener("click", () => {});
+		}
 	}
 
 	setData(activitiesData: ActivitiesData, table: Table) {
 		this.plan = new Plan(activitiesData);
 		this.table = table;
+		this.updateStatusBar(this.getStatusBarProps());
 	}
 }

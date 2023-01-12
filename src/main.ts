@@ -16,6 +16,8 @@ import { SuperPlanSettingsTab } from "./settings-tab";
 import { PlanTracker } from "./plan-tracker";
 import { timer } from "./timer";
 import { SplitConfirmModal } from "./modals";
+import type { ActivitiesData, Maybe } from "./types";
+import { isEqual } from "lodash-es";
 
 // Remember to rename these classes and interfaces!
 
@@ -87,16 +89,20 @@ export default class SuperPlan extends Plugin {
 
 		this.registerInterval(timer.intervalId);
 
+		this.tick();
 		timer.onTick(this.tick.bind(this));
 	}
 
+	private lastActivitiesData: Maybe<ActivitiesData> = null;
 	async tick() {
 		const content = await this.file.getTodayPlanFileContent();
 		const planTable = this.parser.findPlanTable(content);
 		if (planTable) {
 			const activitiesData = this.parser.transformTable(planTable);
-
-			this.tracker.setData(activitiesData, planTable);
+			if (!isEqual(activitiesData, this.lastActivitiesData)) {
+				this.lastActivitiesData = activitiesData;
+				this.tracker.setData(activitiesData, planTable);
+			}
 		}
 	}
 
