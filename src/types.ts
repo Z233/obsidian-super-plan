@@ -3,7 +3,25 @@ import type {
 	Table,
 	TableCell,
 	TableRow,
+	Range,
 } from "@tgrosinger/md-advanced-tables";
+
+export type PlanTableInfo = {
+	/**
+	 * The range of the table
+	 */
+	range: Range;
+
+	/**
+	 * An array of lines in the range.
+	 */
+	lines: string[];
+
+	/**
+	 * A table object read from the text editor.
+	 */
+	table: Table;
+};
 
 export type ActivityData = {
 	activity: string;

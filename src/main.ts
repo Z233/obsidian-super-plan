@@ -36,6 +36,7 @@ export default class SuperPlan extends Plugin {
 		this.file = new PlanFile(this.app.vault, this.parser, this.settings);
 
 		this.tracker = new PlanTracker(
+			this.app,
 			this.parser,
 			this.file,
 			this.settings,
@@ -96,12 +97,13 @@ export default class SuperPlan extends Plugin {
 	private lastActivitiesData: Maybe<ActivitiesData> = null;
 	async tick() {
 		const content = await this.file.getTodayPlanFileContent();
-		const planTable = this.parser.findPlanTable(content);
-		if (planTable) {
-			const activitiesData = this.parser.transformTable(planTable);
+		const tableInfo = this.parser.findPlanTable(content);
+		if (tableInfo) {
+			const { table } = tableInfo;
+			const activitiesData = this.parser.transformTable(table);
 			if (!isEqual(activitiesData, this.lastActivitiesData)) {
 				this.lastActivitiesData = activitiesData;
-				this.tracker.setData(activitiesData, planTable);
+				this.tracker.setData(activitiesData, tableInfo);
 			}
 		}
 	}
@@ -125,12 +127,12 @@ export default class SuperPlan extends Plugin {
 	readonly newPerformPlanActionCM6 =
 		(fn: (pe: PlanEditor) => void): (() => boolean) =>
 		(): boolean => {
-			const leaf = this.app.workspace.activeLeaf!;
-			if (leaf.view instanceof MarkdownView) {
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (view) {
 				const pe = new PlanEditor(
 					this.app,
-					leaf.view.file,
-					leaf.view.editor,
+					view.file,
+					view.editor,
 					this.parser,
 					this.settings
 				);

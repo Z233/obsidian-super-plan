@@ -1,25 +1,28 @@
 import { Plan } from "./plan";
 import { timer } from "./timer";
-import type { ActivitiesData, Activity, Maybe } from "./types";
+import type { ActivitiesData, Activity, Maybe, PlanTableInfo } from "./types";
 import { getNowMins } from "./utils/helper";
 import StatusBar from "./components/StatusBar.svelte";
 import type { Parser } from "./parser";
-import type { Table } from "@tgrosinger/md-advanced-tables";
+import { Point } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";
 import type { SuperPlanSettings } from "./settings";
 import moment from "moment";
 import { findLastIndex, isEqual } from "lodash-es";
+import type { App, Workspace } from "obsidian";
+import { PlanEditor } from "./plan-editor";
 
 type StatusBarProps = StatusBar["$$prop_def"];
 
 export class PlanTracker {
-	private readonly statusBarContainer: HTMLElement;
+	private readonly statusBarEl: HTMLElement;
 	private readonly parser: Parser;
 	private readonly file: PlanFile;
 	private readonly settings: SuperPlanSettings;
+	private readonly app: App;
 
 	private plan: Maybe<Plan>;
-	private table: Maybe<Table>;
+	private tableInfo: Maybe<PlanTableInfo>;
 
 	private statusBarComp: StatusBar;
 
@@ -30,24 +33,27 @@ export class PlanTracker {
 	private lastSendNotificationActivity: Maybe<Activity>;
 
 	constructor(
+		app: App,
 		parser: Parser,
 		file: PlanFile,
 		settings: SuperPlanSettings,
 		statusBar: HTMLElement
 	) {
+		this.app = app;
 		this.parser = parser;
 		this.file = file;
 		this.settings = settings;
-		this.statusBarContainer = statusBar;
+		this.statusBarEl = statusBar;
 	}
 
 	init() {
 		this.statusBarComp = new StatusBar({
-			target: this.statusBarContainer,
+			target: this.statusBarEl,
 			props: {
 				now: this.now,
 				next: this.next,
 				progressType: this.settings.progressType,
+				jump2ActivityRow: this.jump2ActivityRow.bind(this),
 			},
 		});
 
@@ -64,6 +70,27 @@ export class PlanTracker {
 
 	private updateStatusBar(props: StatusBarProps) {
 		this.statusBarComp.$set(props);
+	}
+	private async jump2ActivityRow(activity: Activity) {
+		if (!this.tableInfo || !this.plan) return;
+		const { workspace } = this.app;
+
+		const activityIndex = this.plan.activities.findIndex((a) =>
+			isEqual(a, activity)
+		);
+		const rowIndex = activityIndex + 2;
+
+		const leaf = workspace.getLeaf();
+		const file = this.file.todayFile;
+
+		if (file) {
+			await leaf.openFile(file, { active: true });
+			const editor = workspace.activeEditor!.editor!;
+
+			const { range } = this.tableInfo;
+
+			editor.setCursor(range.start.row + rowIndex, 3);
+		}
 	}
 
 	private getStatusBarProps(): StatusBarProps {
@@ -135,9 +162,9 @@ export class PlanTracker {
 		}
 	}
 
-	setData(activitiesData: ActivitiesData, table: Table) {
+	setData(activitiesData: ActivitiesData, tableInfo: PlanTableInfo) {
 		this.plan = new Plan(activitiesData);
-		this.table = table;
+		this.tableInfo = tableInfo;
 		this.updateStatusBar(this.getStatusBarProps());
 	}
 }

@@ -28,6 +28,12 @@ export class PlanFile {
 		return `${this.settings.planFolder ?? ""}/${this.todayPlanFileName}`;
 	}
 
+	get todayFile() {
+		return this.vault
+			.getFiles()
+			.find((f) => f.path === normalizePath(this.todayPlanFilePath));
+	}
+
 	async getTodayPlanFileContent() {
 		await this.prepareFile();
 		return this.vault.adapter.read(this.todayPlanFilePath);
