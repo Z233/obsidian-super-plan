@@ -7,7 +7,14 @@ export function tooltipAction(el: HTMLElement, leftMins: number) {
 
 	const tooltipButtonComp = new ButtonComponent(el);
 	const setTooltipText = (leftMins: number) => {
-		const content = leftMins > 0 ? `Left: ${leftMins} mins` : "Done";
+		let content = "";
+		if (leftMins > 0) {
+			content = `Left: ${leftMins} mins`;
+		} else if (leftMins === 0) {
+			content = "Done";
+		} else if (leftMins < 0) {
+			content = `Done ${-leftMins} mins ago`;
+		}
 		tooltipButtonComp.setTooltip(content, tooltipOptions);
 	};
 	setTooltipText(leftMins);
