@@ -417,6 +417,10 @@ export class PlanEditor {
 			type: getActivityDataKey(columnIndex),
 		};
 	};
+
+	readonly moveFocus = (rowOffset: number, columnOffset: number) => {
+		this.te.moveFocus(rowOffset, columnOffset, this.settings.asOptions());
+	};
 }
 
 const _computeNewOffset = (

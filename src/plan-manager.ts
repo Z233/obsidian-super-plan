@@ -78,11 +78,22 @@ export class PlanManager {
 			key: "Enter",
 			run: (): boolean =>
 				this.plugin.newPerformPlanActionCM6((pe) => {
-					const focusedCell = pe.getState();
-					if (!focusedCell) return;
+					const state = pe.getState();
+					if (!state) return;
 
-					if (shouldNextRow(focusedCell.type)) {
-						pe.insertActivity();
+					if (shouldNextRow(state.type)) {
+						const { table, focus } = state;
+						const shouldInsertActivity =
+							focus.row === table.getHeight() - 2;
+
+						if (shouldInsertActivity) {
+							pe.insertActivity();
+						} else {
+							const offsetColumn =
+								-focus.column +
+								getActivityDataIndex("activity");
+							pe.moveFocus(1, offsetColumn);
+						}
 					} else {
 						pe.nextCell();
 					}
