@@ -8,7 +8,7 @@ import { Point } from "@tgrosinger/md-advanced-tables";
 import type { PlanFile } from "./plan-file";
 import type { SuperPlanSettings } from "./settings";
 import moment from "moment";
-import { findLastIndex, isEqual } from "lodash-es";
+import { find, findLastIndex, isEqual } from "lodash-es";
 import type { App, Workspace } from "obsidian";
 import { PlanEditor } from "./plan-editor";
 import { CURSOR_CH_AFTER_FOCUS } from "./constants";
@@ -138,7 +138,11 @@ export class PlanTracker {
 		const totalSecs = totalMins * 60;
 		const progress = (durationSecs / totalSecs) * 100;
 
-		const next = this.plan.activities[nowIndex + 1];
+		const next = find(
+			this.plan.activities,
+			(a) => a.actLen > 0,
+			nowIndex + 1
+		);
 
 		return {
 			now,
