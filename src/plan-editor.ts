@@ -104,7 +104,9 @@ export class PlanEditor {
 
 		const { table, range, lines, focus } = this.tableInfo;
 
-		const selectionRange = window.getSelection()?.getRangeAt(0);
+		const selection = window.getSelection();
+		const selectionRange =
+			selection && selection.rangeCount > 0 && selection.getRangeAt(0);
 		const shouldSelectCell =
 			!!selectionRange &&
 			selectionRange.endOffset > selectionRange.startOffset;
