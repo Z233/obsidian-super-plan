@@ -11,6 +11,7 @@ import moment from "moment";
 import { findLastIndex, isEqual } from "lodash-es";
 import type { App, Workspace } from "obsidian";
 import { PlanEditor } from "./plan-editor";
+import { CURSOR_CH_AFTER_FOCUS } from "./constants";
 
 type StatusBarProps = StatusBar["$$prop_def"];
 
@@ -89,7 +90,20 @@ export class PlanTracker {
 
 			const { range } = this.tableInfo;
 
-			editor.setCursor(range.start.row + rowIndex, 3);
+			editor.setCursor(range.start.row + rowIndex, CURSOR_CH_AFTER_FOCUS);
+			editor.scrollIntoView(
+				{
+					from: {
+						line: range.start.row,
+						ch: CURSOR_CH_AFTER_FOCUS,
+					},
+					to: {
+						line: range.start.row,
+						ch: CURSOR_CH_AFTER_FOCUS,
+					},
+				},
+				true
+			);
 		}
 	}
 
@@ -98,7 +112,7 @@ export class PlanTracker {
 			return {
 				now: null,
 				next: null,
-				isAllDone: false
+				isAllDone: false,
 			};
 		const nowMins = getNowMins();
 		const nowIndex = findLastIndex(
