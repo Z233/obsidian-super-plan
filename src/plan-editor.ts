@@ -255,6 +255,23 @@ export class PlanEditor {
 		this.schedule(activitiesData);
 	};
 
+	readonly ignoreActivity = () => {
+		const cursor = this.getCursorActivityData();
+		if (!cursor) return;
+
+		const { data: cursorActivityData, index } = cursor;
+		const activitiesData = this.getActivitiesData();
+
+		const updatedActivityData: ActivityData = {
+			...cursorActivityData,
+			length: "0",
+			f: "",
+		};
+		activitiesData[index] = updatedActivityData;
+
+		this.schedule(activitiesData);
+	};
+
 	public readonly insertActivityAbove = (): void => {
 		this.te.insertRow(this.settings.asOptions());
 	};

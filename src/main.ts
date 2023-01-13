@@ -86,6 +86,14 @@ export default class SuperPlan extends Plugin {
 			}),
 		});
 
+		this.addCommand({
+			id: "ignore-activity",
+			name: "Ignore activity",
+			editorCheckCallback: this.newPerformTableAction((pe) => {
+				pe.ignoreActivity();
+			}),
+		});
+
 		this.addSettingTab(new SuperPlanSettingsTab(this.app, this));
 
 		this.registerInterval(timer.intervalId);
