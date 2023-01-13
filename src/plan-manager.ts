@@ -1,12 +1,12 @@
 import type { Extension } from '@codemirror/state'
 import type { KeyBinding } from '@codemirror/view'
-import type { Focus, TableRow } from '@tgrosinger/md-advanced-tables'
+import type { TableRow } from '@tgrosinger/md-advanced-tables'
 import type SuperPlan from './main'
 import type { PlanEditor } from './plan-editor'
 import type { PlanTableState, Maybe, PlanCellType } from './types'
 import { Prec } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
-import { isEqual, debounce } from 'lodash-es'
+import { debounce } from 'lodash-es'
 import { getActivityDataIndex } from './utils/helper'
 
 export class PlanManager {
@@ -37,8 +37,7 @@ export class PlanManager {
               const getStartCell = (row: TableRow) =>
                 row.getCellAt(getActivityDataIndex('start'))!
 
-              this.lastState = this.state
-              this.state = now
+              this.updateState(now)
 
               const before = now
               const beforeCell = before && getStartCell(before.row)
@@ -124,6 +123,35 @@ export class PlanManager {
       preventDefault: true,
     })
 
+    keymaps.push(
+      ...['Ctrl-x', 'Ctrl-v'].map((key) => ({
+        key,
+        run: () => {
+          this.plugin.newPerformPlanActionCM6((pe: PlanEditor) => {
+            const lastHeight = this.state?.table.getHeight()
+            window.setImmediate(() => {
+              this.updateState(pe.getState())
+
+              const currentHeight = this.state?.table.getHeight()
+              if (
+                lastHeight &&
+                currentHeight &&
+                lastHeight !== currentHeight
+              ) {
+                pe.executeSchedule(this.lastState, false, true)
+              }
+            })
+          })()
+          return false
+        },
+      }))
+    )
+
     return Prec.override(keymap.of(keymaps))
+  }
+
+  private updateState(newState: Maybe<PlanTableState>) {
+    this.lastState = this.state
+    this.state = newState
   }
 }

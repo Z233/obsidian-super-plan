@@ -398,12 +398,13 @@ export class PlanEditor {
 
   readonly executeSchedule = (
     lastState: Maybe<PlanTableState>,
-    setFixed = false
+    setFixed = false,
+    force = false
   ): Maybe<PlanTableState> => {
     if (
       !this.tableInfo ||
       !lastState ||
-      !this.shouldSchedule(lastState.type)
+      (!force && !this.shouldSchedule(lastState.type))
     )
       return
 
@@ -420,9 +421,6 @@ export class PlanEditor {
       .findIndex((c) => c === lastCell)
 
     const { table, range, lines, focus } = this.tableInfo
-    const cell = table.getCellAt(rowIndex, columnIndex)
-
-    if (!cell) return
 
     if (lastState.type === 'start' && setFixed) {
       const updatedActivityData = {
