@@ -32,8 +32,8 @@ export class PlanTracker {
 
   private statusBarComp: StatusBar
 
+  now: Maybe<Activity>
   private prev: Maybe<Activity>
-  private now: Maybe<Activity>
   private next: Maybe<Activity>
 
   private lastSendNotificationActivity: Maybe<Activity>

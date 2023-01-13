@@ -5,6 +5,7 @@ import type {
   ActivityData,
 } from './types'
 import {
+  generateActivityData,
   parseMins2Time,
   parseMins2TodayUnix,
   parseTime2Mins,
@@ -76,13 +77,6 @@ export class Plan {
   }
 
   private generateData(activities: Activity[]): ActivitiesData {
-    return activities.map((a) => ({
-      activity: a.activity,
-      length: a.length.toString(),
-      start: parseMins2Time(a.start),
-      f: a.isFixed ? 'x' : '',
-      r: a.isRound ? 'x' : '',
-      actLen: a.actLen.toString(),
-    }))
+    return activities.map((a) => generateActivityData(a))
   }
 }

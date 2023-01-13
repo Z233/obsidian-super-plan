@@ -19,8 +19,6 @@ import { SplitConfirmModal } from './modals'
 import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
 
-// Remember to rename these classes and interfaces!
-
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
 
@@ -86,7 +84,7 @@ export default class SuperPlan extends Plugin {
       id: 'split-activity',
       name: 'Split activity',
       editorCheckCallback: this.newPerformTableAction((pe) => {
-        new SplitConfirmModal(this.app, pe).open()
+        new SplitConfirmModal(this.app, pe, this.tracker).open()
       }),
     })
 

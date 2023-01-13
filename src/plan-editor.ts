@@ -301,6 +301,7 @@ export class PlanEditor {
       activity: `${data.activity} (#2)`,
       length: secondLength.toString(),
       f: '',
+      r: '',
     }
 
     const { table, range, lines, focus } = this.tableInfo!
@@ -333,6 +334,8 @@ export class PlanEditor {
         .setRow(firstIndex + 1)
         .setColumn(getActivityDataIndex('activity'))
     )
+
+    this.schedule(this.getActivitiesData())
   }
 
   public readonly nextRow = (): void => {
@@ -469,7 +472,6 @@ export class PlanEditor {
   }
 
   readonly moveFocus = (rowOffset: number, columnOffset: number) => {
-    console.log(this.te)
     this.te.moveFocus(
       rowOffset,
       columnOffset,

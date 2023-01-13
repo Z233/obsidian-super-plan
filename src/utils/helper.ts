@@ -8,7 +8,7 @@ import {
   type TAbstractFile,
 } from 'obsidian'
 import { ActivityDataColumn } from 'src/constants'
-import type { PlanCellType } from 'src/types'
+import type { Activity, ActivityData, PlanCellType } from 'src/types'
 import { TemplaterError } from './error'
 
 export const getMarkdownTableHeader =
@@ -65,6 +65,19 @@ export function parseMins2TodayUnix(mins: number) {
   const todayDate = moment().format('YYYY-MM-DD 00:00')
   const todayUnix = moment(todayDate).unix()
   return todayUnix + mins * 60
+}
+
+export function generateActivityData(
+  activity: Activity
+): ActivityData {
+  return {
+    activity: activity.activity,
+    length: activity.length.toString(),
+    start: parseMins2Time(activity.start),
+    f: activity.isFixed ? 'x' : '',
+    r: activity.isRound ? 'x' : '',
+    actLen: activity.actLen.toString(),
+  }
 }
 
 export function resolve_tfolder(
