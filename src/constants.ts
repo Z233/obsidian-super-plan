@@ -1,8 +1,8 @@
 export const PlanLinesLiteral = {
-  header: `| F   | Activity | Length | Start | R   | ActLen |`,
-  divider: `| --- | -------- | ------ | ----- | --- | ------ |`,
-  newActivityRow: `| x   |          | 0      | 00:00 |     | 0      |`,
-  endRow: `| x   | END      | 0      | 00:00 |     | 0      |`,
+  header: `| F   | Start | Activity | Length | R   | ActLen |`,
+  divider: `| --- | ----- | -------- | ------ | --- | ------ |`,
+  newActivityRow: `| x   | 00:00 |          | 0      |     | 0      |`,
+  endRow: `| x   | 00:00 | END      | 0      |     | 0      |`,
 }
 
 export const DEFAULT_PLAN_NOTE_CONTENT = `## Plan\n${Object.values(
@@ -17,9 +17,9 @@ export const CURSOR_CH_AFTER_FOCUS = 3
 
 export enum ActivityDataColumn {
   'f',
+  'start',
   'activity',
   'length',
-  'start',
   'r',
   'actLen',
 }

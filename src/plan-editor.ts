@@ -200,7 +200,7 @@ export class PlanEditor {
         isLastRow ? newFocusRow : newFocusRow + 1
       )
     }
-    newFocus = newFocus.setColumn(1)
+    newFocus = newFocus.setColumn(getActivityDataIndex('activity'))
     // insert an empty row
     const row = this.createActivityCells({
       length: '0',
@@ -369,17 +369,24 @@ export class PlanEditor {
       ],
       this.settings.asOptions()
     )
-    const completedTable = completeTable(
+    const { table: completedTable } = completeTable(
       table,
       this.settings.asOptions()
     )
-    const row = this.ote.getCursorPosition().row
-    this.ote.replaceLines(
-      row,
-      row + 1,
-      completedTable.table.toLines()
-    )
-    this.ote.setCursorPosition(new Point(row + 2, 8))
+    const cursor = this.ote.getCursorPosition()
+    const { row } = cursor
+    this.ote.replaceLines(row, row + 1, table.toLines())
+    this.ote.setCursorPosition(new Point(row, 0))
+
+    const focus = completedTable.focusOfPosition(cursor, row)
+    if (focus) {
+      this.te._moveToFocus(
+        row,
+        completedTable,
+        focus.setRow(2).setColumn(getActivityDataIndex('start'))
+      )
+      this.te.selectCell(this.settings.asOptions())
+    }
   }
 
   public readonly deleteRow = (): void => {
@@ -462,6 +469,7 @@ export class PlanEditor {
   }
 
   readonly moveFocus = (rowOffset: number, columnOffset: number) => {
+    console.log(this.te)
     this.te.moveFocus(
       rowOffset,
       columnOffset,
