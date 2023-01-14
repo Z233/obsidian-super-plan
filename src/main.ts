@@ -73,10 +73,10 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
-      id: 'start-activity',
-      name: 'Start activity',
+      id: 'begin-activity',
+      name: 'Begin activity',
       editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.startActivity()
+        pe.beginCursorActivity()
       }),
     })
 

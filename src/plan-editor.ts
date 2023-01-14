@@ -105,7 +105,11 @@ export class PlanEditor {
     plan.schedule()
     const scheduledActivitiesData = plan.getData()
 
-    if (isEqual(activitiesData, scheduledActivitiesData)) return
+    const shouldUpdate = !isEqual(
+      this.getActivitiesData(),
+      scheduledActivitiesData
+    )
+    if (!shouldUpdate) return
 
     const { table, range, lines, focus } = this.tableInfo
 
@@ -252,7 +256,7 @@ export class PlanEditor {
     }
   }
 
-  public readonly startActivity = (): void => {
+  public readonly beginCursorActivity = (): void => {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
     const { data: cursorActivityData, index } = cursor
