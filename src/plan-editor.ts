@@ -390,12 +390,15 @@ export class PlanEditor {
 
     const focus = completedTable.focusOfPosition(cursor, row)
     if (focus) {
-      this.te._moveToFocus(
+      this.te._selectFocus(
         row,
         completedTable,
-        focus.setRow(2).setColumn(getActivityDataIndex('start'))
+
+        focus
+          .setRow(2)
+          .setColumn(getActivityDataIndex('start'))
+          .setOffset(1)
       )
-      this.te.selectCell(this.settings.asOptions())
     }
   }
 
