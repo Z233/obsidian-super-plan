@@ -188,34 +188,41 @@ export class PlanEditor {
 
     const { table, range, lines, focus } = this.tableInfo
 
+    const activitiesData = this.getActivitiesData()
+    const currentIndex = focus.row - 2
+    const current = activitiesData[currentIndex]
+    const next = activitiesData[currentIndex + 1]
+
+    const activityRow = this.createActivityCells({
+      start: next ? next.start : current.start,
+      length: '0',
+      actLen: '0',
+    })
+
+    const isLastRow = focus.row === lines.length - 1
+
     let newFocus = focus
-    const newFocusRow = newFocus.row
-    const isLastRow = newFocusRow === lines.length - 1
 
     // move focus
-    if (newFocus.row <= 1) {
-      newFocus = newFocus.setRow(2)
+    if (focus.row <= 1) {
+      newFocus = focus.setRow(2)
     } else {
-      newFocus = newFocus.setRow(
-        isLastRow ? newFocusRow : newFocusRow + 1
-      )
+      newFocus = focus.setRow(isLastRow ? focus.row : focus.row + 1)
     }
-    newFocus = newFocus.setColumn(getActivityDataIndex('activity'))
+    newFocus = newFocus
+      .setColumn(getActivityDataIndex('activity'))
+      .setOffset(1)
+
     // insert an empty row
-    const row = this.createActivityCells({
-      length: '0',
-    })
     const altered = insertRow(
       table,
-      newFocusRow,
-      new TableRow(row, '', '')
+      focus.row,
+      new TableRow(activityRow, '', '')
     )
 
     // format
     const formatted = formatTable(altered, this.settings.asOptions())
-    newFocus = newFocus.setOffset(
-      _computeNewOffset(newFocus, altered, formatted, false)
-    )
+
     // apply
     this.ote.transact(() => {
       this.te._updateLines(
@@ -224,8 +231,8 @@ export class PlanEditor {
         formatted.table.toLines(),
         lines
       )
-      this.te._moveToFocus(range.start.row, formatted.table, newFocus)
     })
+    this.te._moveToFocus(range.start.row, formatted.table, newFocus)
     this.te.resetSmartCursor()
   }
 
@@ -476,32 +483,4 @@ export class PlanEditor {
       this.settings.asOptions()
     )
   }
-}
-
-const _computeNewOffset = (
-  focus: Focus,
-  table: Table,
-  formatted: FormattedTable,
-  moved: boolean
-): number => {
-  if (moved) {
-    const formattedFocusedCell = formatted.table.getFocusedCell(focus)
-    if (formattedFocusedCell !== undefined) {
-      return formattedFocusedCell.computeRawOffset(0)
-    }
-    return focus.column < 0 ? formatted.marginLeft.length : 0
-  }
-  const focusedCell = table.getFocusedCell(focus)
-  const formattedFocusedCell = formatted.table.getFocusedCell(focus)
-  if (
-    focusedCell !== undefined &&
-    formattedFocusedCell !== undefined
-  ) {
-    const contentOffset = Math.min(
-      focusedCell.computeContentOffset(focus.offset),
-      formattedFocusedCell.content.length
-    )
-    return formattedFocusedCell.computeRawOffset(contentOffset)
-  }
-  return focus.column < 0 ? formatted.marginLeft.length : 0
 }
