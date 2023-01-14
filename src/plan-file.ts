@@ -10,11 +10,7 @@ export class PlanFile {
   private readonly parser: Parser
   private readonly settings: SuperPlanSettings
 
-  constructor(
-    vault: Vault,
-    parser: Parser,
-    settings: SuperPlanSettings
-  ) {
+  constructor(vault: Vault, parser: Parser, settings: SuperPlanSettings) {
     this.vault = vault
     this.parser = parser
     this.settings = settings
@@ -22,22 +18,16 @@ export class PlanFile {
 
   get todayPlanFileName(): string {
     const fileDate = moment().format(this.settings.fileNameDateFormat)
-    const fileName = `${
-      this.settings.fileNamePrefix.trim() ?? ''
-    }${fileDate}.md`
+    const fileName = `${this.settings.fileNamePrefix.trim() ?? ''}${fileDate}.md`
     return fileName
   }
 
   get todayPlanFilePath(): string {
-    return `${this.settings.planFolder ?? ''}/${
-      this.todayPlanFileName
-    }`
+    return `${this.settings.planFolder ?? ''}/${this.todayPlanFileName}`
   }
 
   get todayFile() {
-    return this.vault
-      .getFiles()
-      .find((f) => f.path === normalizePath(this.todayPlanFilePath))
+    return this.vault.getFiles().find((f) => f.path === normalizePath(this.todayPlanFilePath))
   }
 
   async getTodayPlanFileContent() {
@@ -47,10 +37,7 @@ export class PlanFile {
 
   async updateTodayPlanFile(content: string) {
     try {
-      return await this.vault.adapter.write(
-        this.todayPlanFilePath,
-        content
-      )
+      return await this.vault.adapter.write(this.todayPlanFilePath, content)
     } catch (error) {
       console.error(error)
     }
@@ -68,10 +55,7 @@ export class PlanFile {
   async createFolderIfNotExists(path: string) {
     try {
       const normalizedPath = normalizePath(path)
-      const folderExists = await this.vault.adapter.exists(
-        normalizedPath,
-        false
-      )
+      const folderExists = await this.vault.adapter.exists(normalizedPath, false)
       if (!folderExists) {
         await this.vault.createFolder(normalizedPath)
       }
@@ -84,9 +68,7 @@ export class PlanFile {
     const content = await this.getTemplateContent()
     try {
       const normalizedFileName = normalizePath(fileName)
-      if (
-        !(await this.vault.adapter.exists(normalizedFileName, false))
-      ) {
+      if (!(await this.vault.adapter.exists(normalizedFileName, false))) {
         await this.vault.create(normalizedFileName, content)
       }
     } catch (error) {
@@ -103,19 +85,13 @@ export class PlanFile {
     }
 
     try {
-      const templateFile = metadataCache.getFirstLinkpathDest(
-        templatePath,
-        ''
-      )
+      const templateFile = metadataCache.getFirstLinkpathDest(templatePath, '')
       if (!templateFile) return DEFAULT_PLAN_NOTE_CONTENT
       const contents = await vault.cachedRead(templateFile)
 
       return contents
     } catch (err) {
-      console.error(
-        `Failed to read the day planner template '${templatePath}'`,
-        err
-      )
+      console.error(`Failed to read the day planner template '${templatePath}'`, err)
       new Notice('Failed to read the day planner template')
       return DEFAULT_PLAN_NOTE_CONTENT
     }

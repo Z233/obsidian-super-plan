@@ -19,13 +19,7 @@ import { ObsidianTextEditor } from './obsidian-text-editor'
 import type { Parser } from './parser'
 import { Plan } from './plan'
 import type { SuperPlanSettings } from './settings'
-import type {
-  ActivitiesData,
-  PlanTableState,
-  ActivityData,
-  Maybe,
-  PlanCellType,
-} from './types'
+import type { ActivitiesData, PlanTableState, ActivityData, Maybe, PlanCellType } from './types'
 import {
   getActivityDataIndex,
   getActivityDataKey,
@@ -43,13 +37,7 @@ export class PlanEditor {
 
   // private readonly plan: Plan | null = null;
 
-  constructor(
-    app: App,
-    file: TFile,
-    editor: Editor,
-    parser: Parser,
-    settings: SuperPlanSettings
-  ) {
+  constructor(app: App, file: TFile, editor: Editor, parser: Parser, settings: SuperPlanSettings) {
     this.app = app
     this.settings = settings
     this.parser = parser
@@ -75,26 +63,16 @@ export class PlanEditor {
   private createActivityCells(activityData: Partial<ActivityData>) {
     return Array.from(
       { length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
-      (v, i) =>
-        new TableCell(activityData[getActivityDataKey(i)] ?? '')
+      (v, i) => new TableCell(activityData[getActivityDataKey(i)] ?? '')
     )
   }
 
   private createActivityRow(activityData: Partial<ActivityData>) {
-    return new TableRow(
-      this.createActivityCells(activityData),
-      '',
-      ''
-    )
+    return new TableRow(this.createActivityCells(activityData), '', '')
   }
 
   private shouldSchedule(type: PlanCellType) {
-    const cellsTriggerSchedule: PlanCellType[] = [
-      'length',
-      'start',
-      'f',
-      'r',
-    ]
+    const cellsTriggerSchedule: PlanCellType[] = ['length', 'start', 'f', 'r']
     return cellsTriggerSchedule.contains(type)
   }
 
@@ -105,20 +83,15 @@ export class PlanEditor {
     plan.schedule()
     const scheduledActivitiesData = plan.getData()
 
-    const shouldUpdate = !isEqual(
-      this.getActivitiesData(),
-      scheduledActivitiesData
-    )
+    const shouldUpdate = !isEqual(this.getActivitiesData(), scheduledActivitiesData)
     if (!shouldUpdate) return
 
     const { table, range, lines, focus } = this.tableInfo
 
     const selection = window.getSelection()
-    const selectionRange =
-      selection && selection.rangeCount > 0 && selection.getRangeAt(0)
+    const selectionRange = selection && selection.rangeCount > 0 && selection.getRangeAt(0)
     const shouldSelectCell =
-      !!selectionRange &&
-      selectionRange.endOffset > selectionRange.startOffset
+      !!selectionRange && selectionRange.endOffset > selectionRange.startOffset
 
     const rows = scheduledActivitiesData.map(
       (data) => new TableRow(this.createActivityCells(data), '', '')
@@ -131,12 +104,7 @@ export class PlanEditor {
     // format
     const formatted = formatTable(newTable, this.settings.asOptions())
 
-    this.te._updateLines(
-      range.start.row,
-      range.end.row + 1,
-      formatted.table.toLines(),
-      lines
-    )
+    this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
     this.te._moveToFocus(range.start.row, formatted.table, focus)
     if (shouldSelectCell) {
       this.te.selectCell(this.settings.asOptions())
@@ -156,9 +124,7 @@ export class PlanEditor {
     if (focus) {
       const focusedRow = table.getRows()[focus.row]
       const focusedCell = table.getFocusedCell(focus)
-      const focusedCellIndex = focusedRow
-        .getCells()
-        .findIndex((c) => c === focusedCell)
+      const focusedCellIndex = focusedRow.getCells().findIndex((c) => c === focusedCell)
       return {
         type: getActivityDataKey(focusedCellIndex),
         cell: focusedCell!,
@@ -178,10 +144,7 @@ export class PlanEditor {
   public readonly cursorIsInPlan = (): boolean => {
     if (!this.tableInfo) return false
     const headerLine = this.tableInfo.lines[0]
-    return (
-      removeSpacing(headerLine) ===
-      removeSpacing(PlanLinesLiteral.header)
-    )
+    return removeSpacing(headerLine) === removeSpacing(PlanLinesLiteral.header)
   }
 
   public readonly cursorIsInTable = (): boolean =>
@@ -213,16 +176,10 @@ export class PlanEditor {
     } else {
       newFocus = focus.setRow(isLastRow ? focus.row : focus.row + 1)
     }
-    newFocus = newFocus
-      .setColumn(getActivityDataIndex('activity'))
-      .setOffset(1)
+    newFocus = newFocus.setColumn(getActivityDataIndex('activity')).setOffset(1)
 
     // insert an empty row
-    const altered = insertRow(
-      table,
-      focus.row,
-      new TableRow(activityRow, '', '')
-    )
+    const altered = insertRow(table, focus.row, new TableRow(activityRow, '', ''))
 
     // format
     const formatted = formatTable(altered, this.settings.asOptions())
@@ -293,10 +250,7 @@ export class PlanEditor {
     this.te.insertRow(this.settings.asOptions())
   }
 
-  public readonly splitActivity = (
-    firstLength: number,
-    secondLength: number
-  ) => {
+  public readonly splitActivity = (firstLength: number, secondLength: number) => {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
     const { data, index: rowIndex } = cursor
@@ -319,31 +273,16 @@ export class PlanEditor {
     const firstIndex = rowIndex + 2
     let altered = table
     altered = deleteRow(altered, firstIndex)
-    altered = insertRow(
-      altered,
-      firstIndex,
-      this.createActivityRow(firstActivityData)
-    )
-    altered = insertRow(
-      altered,
-      firstIndex + 1,
-      this.createActivityRow(secondActivityData)
-    )
+    altered = insertRow(altered, firstIndex, this.createActivityRow(firstActivityData))
+    altered = insertRow(altered, firstIndex + 1, this.createActivityRow(secondActivityData))
 
     const formatted = formatTable(altered, this.settings.asOptions())
 
-    this.te._updateLines(
-      range.start.row,
-      range.end.row + 1,
-      formatted.table.toLines(),
-      lines
-    )
+    this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
     this.te._moveToFocus(
       range.start.row,
       formatted.table,
-      focus
-        .setRow(firstIndex + 1)
-        .setColumn(getActivityDataIndex('activity'))
+      focus.setRow(firstIndex + 1).setColumn(getActivityDataIndex('activity'))
     )
 
     this.schedule(this.getActivitiesData())
@@ -356,11 +295,8 @@ export class PlanEditor {
   public readonly nextCell = (): void => {
     if (!this.tableInfo) return
 
-    const columnCount = this.tableInfo.table
-      .getRows()[0]
-      .getCells().length
-    const isLastColumn =
-      this.tableInfo.focus.column === columnCount - 1
+    const columnCount = this.tableInfo.table.getRows()[0].getCells().length
+    const isLastColumn = this.tableInfo.focus.column === columnCount - 1
 
     this.te.moveFocus(
       isLastColumn ? 1 : 0,
@@ -383,10 +319,7 @@ export class PlanEditor {
       ],
       this.settings.asOptions()
     )
-    const { table: completedTable } = completeTable(
-      table,
-      this.settings.asOptions()
-    )
+    const { table: completedTable } = completeTable(table, this.settings.asOptions())
     const cursor = this.ote.getCursorPosition()
     const { row } = cursor
     this.ote.replaceLines(row, row + 1, table.toLines())
@@ -398,10 +331,7 @@ export class PlanEditor {
         row,
         completedTable,
 
-        focus
-          .setRow(2)
-          .setColumn(getActivityDataIndex('start'))
-          .setOffset(1)
+        focus.setRow(2).setColumn(getActivityDataIndex('start')).setOffset(1)
       )
     }
   }
@@ -415,24 +345,13 @@ export class PlanEditor {
     setFixed = false,
     force = false
   ): Maybe<PlanTableState> => {
-    if (
-      !this.tableInfo ||
-      !lastState ||
-      (!force && !this.shouldSchedule(lastState.type))
-    )
-      return
+    if (!this.tableInfo || !lastState || (!force && !this.shouldSchedule(lastState.type))) return
 
     const activitiesData = this.getActivitiesData()
-    const {
-      cell: lastCell,
-      row: lastRow,
-      table: lastTable,
-    } = lastState
+    const { cell: lastCell, row: lastRow, table: lastTable } = lastState
     const rows = lastTable.getRows()
     const rowIndex = rows.findIndex((r) => r === lastRow)
-    const columnIndex = rows[rowIndex]
-      .getCells()
-      .findIndex((c) => c === lastCell)
+    const columnIndex = rows[rowIndex].getCells().findIndex((c) => c === lastCell)
 
     const { table, range, lines, focus } = this.tableInfo
 
@@ -451,17 +370,9 @@ export class PlanEditor {
       altered = insertRow(altered, rowIndex, newRow)
 
       // format
-      const formatted = formatTable(
-        altered,
-        this.settings.asOptions()
-      )
+      const formatted = formatTable(altered, this.settings.asOptions())
 
-      this.te._updateLines(
-        range.start.row,
-        range.end.row + 1,
-        formatted.table.toLines(),
-        lines
-      )
+      this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
       this.te._moveToFocus(range.start.row, formatted.table, focus)
     }
 
@@ -469,10 +380,7 @@ export class PlanEditor {
     if (!scheduledTable) return
 
     const scheduledRow = scheduledTable.getRows()[rowIndex]
-    const scheduledCell = scheduledTable.getCellAt(
-      rowIndex,
-      columnIndex
-    )!
+    const scheduledCell = scheduledTable.getCellAt(rowIndex, columnIndex)!
 
     return {
       cell: scheduledCell,
@@ -484,10 +392,6 @@ export class PlanEditor {
   }
 
   readonly moveFocus = (rowOffset: number, columnOffset: number) => {
-    this.te.moveFocus(
-      rowOffset,
-      columnOffset,
-      this.settings.asOptions()
-    )
+    this.te.moveFocus(rowOffset, columnOffset, this.settings.asOptions())
   }
 }

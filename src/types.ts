@@ -1,10 +1,4 @@
-import type {
-  Focus,
-  Table,
-  TableCell,
-  TableRow,
-  Range,
-} from '@tgrosinger/md-advanced-tables'
+import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
 
 export type PlanTableInfo = {
   /**
@@ -61,10 +55,8 @@ export type Tuple<T, N extends number> = N extends N
     ? T[]
     : _TupleOf<T, N, []>
   : never
-type _TupleOf<
-  T,
-  N extends number,
-  R extends unknown[]
-> = R['length'] extends N ? R : _TupleOf<T, N, [T, ...R]>
+type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N
+  ? R
+  : _TupleOf<T, N, [T, ...R]>
 
 export type Maybe<T> = T | null | undefined

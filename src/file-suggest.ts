@@ -16,24 +16,12 @@ class Suggest<T> {
   private selectedItem: number
   private containerEl: HTMLElement
 
-  constructor(
-    owner: ISuggestOwner<T>,
-    containerEl: HTMLElement,
-    scope: Scope
-  ) {
+  constructor(owner: ISuggestOwner<T>, containerEl: HTMLElement, scope: Scope) {
     this.owner = owner
     this.containerEl = containerEl
 
-    containerEl.on(
-      'click',
-      '.suggestion-item',
-      this.onSuggestionClick.bind(this)
-    )
-    containerEl.on(
-      'mousemove',
-      '.suggestion-item',
-      this.onSuggestionMouseover.bind(this)
-    )
+    containerEl.on('click', '.suggestion-item', this.onSuggestionClick.bind(this))
+    containerEl.on('mousemove', '.suggestion-item', this.onSuggestionMouseover.bind(this))
 
     scope.register([], 'ArrowUp', (event) => {
       if (!event.isComposing) {
@@ -65,10 +53,7 @@ class Suggest<T> {
     this.useSelectedItem(event)
   }
 
-  onSuggestionMouseover(
-    _event: MouseEvent,
-    el: HTMLDivElement
-  ): void {
+  onSuggestionMouseover(_event: MouseEvent, el: HTMLDivElement): void {
     const item = this.suggestions.indexOf(el)
     this.setSelectedItem(item, false)
   }
@@ -78,8 +63,7 @@ class Suggest<T> {
     const suggestionEls: HTMLDivElement[] = []
 
     values.forEach((value) => {
-      const suggestionEl =
-        this.containerEl.createDiv('suggestion-item')
+      const suggestionEl = this.containerEl.createDiv('suggestion-item')
       this.owner.renderSuggestion(value, suggestionEl)
       suggestionEls.push(suggestionEl)
     })
@@ -97,10 +81,7 @@ class Suggest<T> {
   }
 
   setSelectedItem(selectedIndex: number, scrollIntoView: boolean) {
-    const normalizedIndex = wrapAround(
-      selectedIndex,
-      this.suggestions.length
-    )
+    const normalizedIndex = wrapAround(selectedIndex, this.suggestions.length)
     const prevSelectedSuggestion = this.suggestions[this.selectedItem]
     const selectedSuggestion = this.suggestions[normalizedIndex]
 
@@ -115,9 +96,7 @@ class Suggest<T> {
   }
 }
 
-export abstract class TextInputSuggest<T>
-  implements ISuggestOwner<T>
-{
+export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
   protected app: App
   protected inputEl: HTMLInputElement | HTMLTextAreaElement
 
@@ -126,10 +105,7 @@ export abstract class TextInputSuggest<T>
   private suggestEl: HTMLElement
   private suggest: Suggest<T>
 
-  constructor(
-    app: App,
-    inputEl: HTMLInputElement | HTMLTextAreaElement
-  ) {
+  constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
     this.app = app
     this.inputEl = inputEl
     this.scope = new Scope()
@@ -140,22 +116,12 @@ export abstract class TextInputSuggest<T>
 
     this.scope.register([], 'Escape', this.close.bind(this))
 
-    this.inputEl.addEventListener(
-      'input',
-      this.onInputChanged.bind(this)
-    )
-    this.inputEl.addEventListener(
-      'focus',
-      this.onInputChanged.bind(this)
-    )
+    this.inputEl.addEventListener('input', this.onInputChanged.bind(this))
+    this.inputEl.addEventListener('focus', this.onInputChanged.bind(this))
     this.inputEl.addEventListener('blur', this.close.bind(this))
-    this.suggestEl.on(
-      'mousedown',
-      '.suggestion-container',
-      (event: MouseEvent) => {
-        event.preventDefault()
-      }
-    )
+    this.suggestEl.on('mousedown', '.suggestion-container', (event: MouseEvent) => {
+      event.preventDefault()
+    })
   }
 
   onInputChanged(): void {

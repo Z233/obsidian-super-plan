@@ -1,10 +1,5 @@
 import type { SuperPlanSettings } from './settings'
-import type {
-  ActivitiesData,
-  ActivityData,
-  Maybe,
-  PlanTableInfo,
-} from './types'
+import type { ActivitiesData, ActivityData, Maybe, PlanTableInfo } from './types'
 import {
   readTable,
   Table,
@@ -30,9 +25,7 @@ export class Parser {
   }
 
   findPlanTable(content: string): Maybe<PlanTableInfo> {
-    const re = _createIsTableRowRegex(
-      this.settings.asOptions().leftMarginChars
-    )
+    const re = _createIsTableRowRegex(this.settings.asOptions().leftMarginChars)
     const rows = content.split('\n')
     let startRow = 0
     let endRow
@@ -104,10 +97,7 @@ export class Parser {
         )
     )
 
-    const table = activitiesRows.reduce(
-      (t, row, i) => insertRow(t, 2 + i, row),
-      emptyTable
-    )
+    const table = activitiesRows.reduce((t, row, i) => insertRow(t, 2 + i, row), emptyTable)
 
     const formatted = formatTable(table, this.settings.asOptions())
 

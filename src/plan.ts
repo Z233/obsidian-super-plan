@@ -1,9 +1,4 @@
-import type {
-  Activities,
-  ActivitiesData,
-  Activity,
-  ActivityData,
-} from './types'
+import type { Activities, ActivitiesData, Activity, ActivityData } from './types'
 import {
   generateActivityData,
   parseMins2Time,
@@ -21,9 +16,7 @@ export class Plan {
 
   constructor(activitiesData: ActivityData[]) {
     this.startMins = parseTime2Mins(activitiesData[0].start)
-    this.endMins = parseTime2Mins(
-      activitiesData[activitiesData.length - 1].start
-    )
+    this.endMins = parseTime2Mins(activitiesData[activitiesData.length - 1].start)
 
     if (this.endMins < this.startMins) {
       this.endMins = this.endMins + 24 * 60
@@ -53,10 +46,7 @@ export class Plan {
 
   private convertData(activitiesData: ActivityData[]): Activities {
     return activitiesData.map((data, i) => {
-      const startMins =
-        i === activitiesData.length - 1
-          ? this.endMins
-          : parseTime2Mins(data.start)
+      const startMins = i === activitiesData.length - 1 ? this.endMins : parseTime2Mins(data.start)
 
       const actLen = +data.actLen
 

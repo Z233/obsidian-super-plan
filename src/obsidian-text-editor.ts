@@ -20,12 +20,7 @@ export class ObsidianTextEditor extends ITextEditor {
   private readonly editor: Editor
   private readonly settings: SuperPlanSettings
 
-  constructor(
-    app: App,
-    file: TFile,
-    editor: Editor,
-    settings: SuperPlanSettings
-  ) {
+  constructor(app: App, file: TFile, editor: Editor, settings: SuperPlanSettings) {
     super()
     this.app = app
     this.file = file
@@ -35,16 +30,12 @@ export class ObsidianTextEditor extends ITextEditor {
 
   public getCursorPosition = (): Point => {
     const position = this.editor.getCursor()
-    console.debug(
-      `getCursorPosition was called: line ${position.line}, ch ${position.ch}`
-    )
+    console.debug(`getCursorPosition was called: line ${position.line}, ch ${position.ch}`)
     return new Point(position.line, position.ch)
   }
 
   public setCursorPosition = (pos: Point): void => {
-    console.debug(
-      `setCursorPosition was called: line ${pos.row}, ch ${pos.column}`
-    )
+    console.debug(`setCursorPosition was called: line ${pos.row}, ch ${pos.column}`)
     this.editor.setCursor({ line: pos.row, ch: pos.column })
   }
 
@@ -77,9 +68,7 @@ export class ObsidianTextEditor extends ITextEditor {
         section.type !== 'math'
     )
     if (table === undefined) {
-      console.debug(
-        'acceptsTableEdit returning false, table not found'
-      )
+      console.debug('acceptsTableEdit returning false, table not found')
       return false
     }
 
@@ -135,19 +124,13 @@ export class ObsidianTextEditor extends ITextEditor {
     }
   }
 
-  private getActivityLine(
-    line: string,
-    activityData: Partial<ActivityData>
-  ) {
+  private getActivityLine(line: string, activityData: Partial<ActivityData>) {
     const table = readTable([line], this.settings.asOptions())
     const row = table.getRows()[0]
 
     let modifiedRow = row
     Object.keys(activityData).forEach((k: keyof ActivityData) => {
-      modifiedRow = modifiedRow.setCellAt(
-        getActivityDataIndex(k),
-        activityData[k]!
-      )
+      modifiedRow = modifiedRow.setCellAt(getActivityDataIndex(k), activityData[k]!)
     })
 
     return modifiedRow.toText()
@@ -160,25 +143,13 @@ export class ObsidianTextEditor extends ITextEditor {
     // Instead, replace all the contents of this line.
     if (row === this.getLastRow()) {
       const rowContents = this.getLine(row)
-      this.editor.replaceRange(
-        '',
-        { line: row, ch: 0 },
-        { line: row, ch: rowContents.length }
-      )
+      this.editor.replaceRange('', { line: row, ch: 0 }, { line: row, ch: rowContents.length })
     } else {
-      this.editor.replaceRange(
-        '',
-        { line: row, ch: 0 },
-        { line: row + 1, ch: 0 }
-      )
+      this.editor.replaceRange('', { line: row, ch: 0 }, { line: row + 1, ch: 0 })
     }
   }
 
-  public replaceLines = (
-    startRow: number,
-    endRow: number,
-    lines: string[]
-  ): void => {
+  public replaceLines = (startRow: number, endRow: number, lines: string[]): void => {
     // Take one off the endRow and instead go to the end of that line
     const realEndRow = endRow - 1
     const endRowContents = this.editor.getLine(realEndRow)

@@ -17,56 +17,48 @@ export class PlanManager {
   constructor(plugin: SuperPlan) {
     this.plugin = plugin
 
-    this.plugin.registerEditorExtension(
-      this.makeEditorRemappingExtension()
-    )
-    this.plugin.registerEditorExtension(
-      this.makeEditorUpdateListenerExtension()
-    )
+    this.plugin.registerEditorExtension(this.makeEditorRemappingExtension())
+    this.plugin.registerEditorExtension(this.makeEditorUpdateListenerExtension())
   }
 
-  private readonly makeEditorUpdateListenerExtension =
-    (): Extension => {
-      return EditorView.updateListener.of((v) => {
-        if ((!v.selectionSet && !v.focusChanged) || v.docChanged)
-          return
-        const fn = debounce(
-          this.plugin.newPerformPlanActionCM6((pe) => {
-            const now = pe.getState()
-            if (!(now && this.state?.focus.posEquals(now.focus))) {
-              const getStartCell = (row: TableRow) =>
-                row.getCellAt(getActivityDataIndex('start'))!
+  private readonly makeEditorUpdateListenerExtension = (): Extension => {
+    return EditorView.updateListener.of((v) => {
+      if ((!v.selectionSet && !v.focusChanged) || v.docChanged) return
+      const fn = debounce(
+        this.plugin.newPerformPlanActionCM6((pe) => {
+          const now = pe.getState()
+          if (!(now && this.state?.focus.posEquals(now.focus))) {
+            const getStartCell = (row: TableRow) => row.getCellAt(getActivityDataIndex('start'))!
 
-              this.updateState(now)
+            this.updateState(now)
 
-              const before = now
-              const beforeCell = before && getStartCell(before.row)
-              const scheduled = pe.executeSchedule(this.lastState)
+            const before = now
+            const beforeCell = before && getStartCell(before.row)
+            const scheduled = pe.executeSchedule(this.lastState)
 
-              // set isFixed to true when user manually input start time
-              if (
-                this.lastState?.type === 'start' &&
-                scheduled &&
-                beforeCell &&
-                getStartCell(scheduled.row).content !==
-                  beforeCell.content
-              ) {
-                pe.executeSchedule(
-                  {
-                    ...before,
-                    type: 'start',
-                    cell: beforeCell,
-                  },
-                  true
-                )
-              }
+            // set isFixed to true when user manually input start time
+            if (
+              this.lastState?.type === 'start' &&
+              scheduled &&
+              beforeCell &&
+              getStartCell(scheduled.row).content !== beforeCell.content
+            ) {
+              pe.executeSchedule(
+                {
+                  ...before,
+                  type: 'start',
+                  cell: beforeCell,
+                },
+                true
+              )
             }
-          }),
-          10
-        )
-        fn()
-      })
-    }
+          }
+        }),
+        10
+      )
+      fn()
+    })
+  }
 
   private readonly makeEditorRemappingExtension = (): Extension => {
     const keymaps: KeyBinding[] = []
@@ -84,14 +76,12 @@ export class PlanManager {
 
           if (shouldNextRow(state.type)) {
             const { table, focus } = state
-            const shouldInsertActivity =
-              focus.row === table.getHeight() - 2
+            const shouldInsertActivity = focus.row === table.getHeight() - 2
 
             if (shouldInsertActivity) {
               pe.insertActivity()
             } else {
-              const offsetColumn =
-                -focus.column + getActivityDataIndex('activity')
+              const offsetColumn = -focus.column + getActivityDataIndex('activity')
               pe.moveFocus(1, offsetColumn)
             }
           } else {
@@ -108,18 +98,13 @@ export class PlanManager {
           pe.nextCell()
         })(),
       shift: (): boolean =>
-        this.plugin.newPerformPlanActionCM6((pe: PlanEditor) =>
-          pe.previousCell()
-        )(),
+        this.plugin.newPerformPlanActionCM6((pe: PlanEditor) => pe.previousCell())(),
       preventDefault: true,
     })
 
     keymaps.push({
       key: 'Ctrl-Delete',
-      run: () =>
-        this.plugin.newPerformPlanActionCM6((pe: PlanEditor) =>
-          pe.deleteRow()
-        )(),
+      run: () => this.plugin.newPerformPlanActionCM6((pe: PlanEditor) => pe.deleteRow())(),
       preventDefault: true,
     })
 
@@ -133,11 +118,7 @@ export class PlanManager {
               this.updateState(pe.getState())
 
               const currentHeight = this.state?.table.getHeight()
-              if (
-                lastHeight &&
-                currentHeight &&
-                lastHeight !== currentHeight
-              ) {
+              if (lastHeight && currentHeight && lastHeight !== currentHeight) {
                 pe.executeSchedule(this.lastState, false, true)
               }
             })

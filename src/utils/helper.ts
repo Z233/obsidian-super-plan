@@ -1,12 +1,5 @@
 import moment from 'moment'
-import {
-  type App,
-  TFolder,
-  normalizePath,
-  TFile,
-  Vault,
-  type TAbstractFile,
-} from 'obsidian'
+import { type App, TFolder, normalizePath, TFile, Vault, type TAbstractFile } from 'obsidian'
 import { ActivityDataColumn } from 'src/constants'
 import type { Activity, ActivityData, PlanCellType } from 'src/types'
 import { TemplaterError } from './error'
@@ -21,14 +14,11 @@ export const getMarkdownEndRow = () =>
 export const getMarkdownRow = () =>
   `| END          | 0          | 00:00     | x     |       | 0          |`
 
-export const removeSpacing = (value: string) =>
-  value.replace(/\s+/gm, '')
+export const removeSpacing = (value: string) => value.replace(/\s+/gm, '')
 
-export const getActivityDataKey = (index: number) =>
-  ActivityDataColumn[index] as PlanCellType
+export const getActivityDataKey = (index: number) => ActivityDataColumn[index] as PlanCellType
 
-export const getActivityDataIndex = (key: PlanCellType) =>
-  ActivityDataColumn[key] as number
+export const getActivityDataIndex = (key: PlanCellType) => ActivityDataColumn[key] as number
 
 function tryParse2Int(value?: string) {
   const ret = parseInt(value!)
@@ -67,9 +57,7 @@ export function parseMins2TodayUnix(mins: number) {
   return todayUnix + mins * 60
 }
 
-export function generateActivityData(
-  activity: Activity
-): ActivityData {
+export function generateActivityData(activity: Activity): ActivityData {
   return {
     activity: activity.activity,
     length: activity.length.toString(),
@@ -80,10 +68,7 @@ export function generateActivityData(
   }
 }
 
-export function resolve_tfolder(
-  app: App,
-  folder_str: string
-): TFolder {
+export function resolve_tfolder(app: App, folder_str: string): TFolder {
   folder_str = normalizePath(folder_str)
 
   const folder = app.vault.getAbstractFileByPath(folder_str)
@@ -97,10 +82,7 @@ export function resolve_tfolder(
   return folder
 }
 
-export function get_tfiles_from_folder(
-  app: App,
-  folder_str: string
-): Array<TFile> {
+export function get_tfiles_from_folder(app: App, folder_str: string): Array<TFile> {
   const folder = resolve_tfolder(app, folder_str)
 
   const files: Array<TFile> = []

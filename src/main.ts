@@ -1,12 +1,4 @@
-import {
-  App,
-  Editor,
-  MarkdownView,
-  Modal,
-  Notice,
-  Plugin,
-  Setting,
-} from 'obsidian'
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, Setting } from 'obsidian'
 import { PlanFile } from './plan-file'
 import { Parser } from './parser'
 import { PlanEditor } from './plan-editor'
@@ -31,11 +23,7 @@ export default class SuperPlan extends Plugin {
     await this.loadSettings()
 
     this.parser = new Parser(this.settings)
-    this.file = new PlanFile(
-      this.app.vault,
-      this.parser,
-      this.settings
-    )
+    this.file = new PlanFile(this.app.vault, this.parser, this.settings)
 
     this.tracker = new PlanTracker(
       this.app,
@@ -128,10 +116,7 @@ export default class SuperPlan extends Plugin {
   }
 
   // TODO: handle key for CM5
-  private readonly handleKeyDown = (
-    cm: CodeMirror.Editor,
-    event: KeyboardEvent
-  ): void => {
+  private readonly handleKeyDown = (cm: CodeMirror.Editor, event: KeyboardEvent): void => {
     if (['Tab', 'Enter'].contains(event.key)) {
     }
   }
@@ -139,16 +124,9 @@ export default class SuperPlan extends Plugin {
   readonly newPerformPlanActionCM6 =
     (fn: (pe: PlanEditor) => void): (() => boolean) =>
     (): boolean => {
-      const view =
-        this.app.workspace.getActiveViewOfType(MarkdownView)
+      const view = this.app.workspace.getActiveViewOfType(MarkdownView)
       if (view) {
-        const pe = new PlanEditor(
-          this.app,
-          view.file,
-          view.editor,
-          this.parser,
-          this.settings
-        )
+        const pe = new PlanEditor(this.app, view.file, view.editor, this.parser, this.settings)
 
         if (pe.cursorIsInPlan()) {
           fn(pe)
@@ -160,18 +138,8 @@ export default class SuperPlan extends Plugin {
 
   private readonly newPerformTableAction =
     (fn: (pe: PlanEditor) => void, alertOnNoTable = true) =>
-    (
-      checking: boolean,
-      editor: Editor,
-      view: MarkdownView
-    ): boolean | void => {
-      const pe = new PlanEditor(
-        this.app,
-        view.file,
-        editor,
-        this.parser,
-        this.settings
-      )
+    (checking: boolean, editor: Editor, view: MarkdownView): boolean | void => {
+      const pe = new PlanEditor(this.app, view.file, editor, this.parser, this.settings)
 
       if (checking) {
         return pe.cursorIsInPlan()
@@ -181,10 +149,7 @@ export default class SuperPlan extends Plugin {
     }
 
   async loadSettings() {
-    const settingsOptions = Object.assign(
-      defaultSettings,
-      await this.loadData()
-    )
+    const settingsOptions = Object.assign(defaultSettings, await this.loadData())
     this.settings = new SuperPlanSettings(this, settingsOptions)
     this.saveData(this.settings.serialize())
   }

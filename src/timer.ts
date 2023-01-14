@@ -6,10 +6,7 @@ class Timer extends EventEmitter {
 
   constructor() {
     super()
-    this.intervalId = window.setInterval(
-      () => this.emit(this.onTick),
-      1000
-    )
+    this.intervalId = window.setInterval(() => this.emit(this.onTick), 1000)
   }
 }
 

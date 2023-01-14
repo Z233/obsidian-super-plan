@@ -1,7 +1,4 @@
-import {
-  FormatType,
-  optionsWithDefaults,
-} from '@tgrosinger/md-advanced-tables'
+import { FormatType, optionsWithDefaults } from '@tgrosinger/md-advanced-tables'
 import type { Options } from '@tgrosinger/md-advanced-tables'
 import { ProgressType } from './constants'
 import type SuperPlan from './main'

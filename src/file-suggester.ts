@@ -23,8 +23,7 @@ export class FileSuggest extends TextInputSuggest<TFile> {
 
   getSuggestions(input_str: string): TFile[] {
     const all_files = errorWrapperSync(
-      () =>
-        get_tfiles_from_folder(this.app, app.vault.getRoot().path),
+      () => get_tfiles_from_folder(this.app, app.vault.getRoot().path),
       'No files found'
     )
     if (!all_files) {
@@ -65,10 +64,7 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
     const lowerCaseInputStr = inputStr.toLowerCase()
 
     abstractFiles.forEach((folder: TAbstractFile) => {
-      if (
-        folder instanceof TFolder &&
-        folder.path.toLowerCase().contains(lowerCaseInputStr)
-      ) {
+      if (folder instanceof TFolder && folder.path.toLowerCase().contains(lowerCaseInputStr)) {
         folders.push(folder)
       }
     })

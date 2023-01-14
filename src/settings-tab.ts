@@ -1,15 +1,6 @@
-import {
-  App,
-  normalizePath,
-  PluginSettingTab,
-  Setting,
-} from 'obsidian'
+import { App, normalizePath, PluginSettingTab, Setting } from 'obsidian'
 import { ProgressType } from './constants'
-import {
-  FileSuggest,
-  FileSuggestMode,
-  FolderSuggest,
-} from './file-suggester'
+import { FileSuggest, FileSuggestMode, FolderSuggest } from './file-suggester'
 import type SuperPlan from './main'
 
 export class SuperPlanSettingsTab extends PluginSettingTab {
@@ -61,12 +52,7 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName('Plan Note Template')
       .addSearch((cb) => {
-        new FileSuggest(
-          this.app,
-          cb.inputEl,
-          this.plugin,
-          FileSuggestMode.TemplateFiles
-        )
+        new FileSuggest(this.app, cb.inputEl, this.plugin, FileSuggestMode.TemplateFiles)
 
         cb.setPlaceholder('Template')
           .setValue(this.plugin.settings.noteTemplate)
@@ -83,12 +69,10 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       .setName('Custom File Prefix')
       .setDesc('The prefix for your plan note file names')
       .addText((component) =>
-        component
-          .setValue(this.plugin.settings.fileNamePrefix ?? '')
-          .onChange((value: string) => {
-            this.plugin.settings.fileNamePrefix = value
-            this.plugin.saveData(this.plugin.settings)
-          })
+        component.setValue(this.plugin.settings.fileNamePrefix ?? '').onChange((value: string) => {
+          this.plugin.settings.fileNamePrefix = value
+          this.plugin.saveData(this.plugin.settings)
+        })
       )
 
     new Setting(containerEl)

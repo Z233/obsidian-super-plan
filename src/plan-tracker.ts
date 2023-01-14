@@ -1,11 +1,6 @@
 import { Plan } from './plan'
 import { timer } from './timer'
-import type {
-  ActivitiesData,
-  Activity,
-  Maybe,
-  PlanTableInfo,
-} from './types'
+import type { ActivitiesData, Activity, Maybe, PlanTableInfo } from './types'
 import { getNowMins } from './utils/helper'
 import StatusBar from './components/StatusBar.svelte'
 import type { Parser } from './parser'
@@ -81,9 +76,7 @@ export class PlanTracker {
     if (!this.tableInfo || !this.plan) return
     const { workspace } = this.app
 
-    const activityIndex = this.plan.activities.findIndex((a) =>
-      isEqual(a, activity)
-    )
+    const activityIndex = this.plan.activities.findIndex((a) => isEqual(a, activity))
     const rowIndex = activityIndex + 2
 
     const leaf = workspace.getLeaf()
@@ -95,10 +88,7 @@ export class PlanTracker {
 
       const { range } = this.tableInfo
 
-      editor.setCursor(
-        range.start.row + rowIndex,
-        CURSOR_CH_AFTER_FOCUS
-      )
+      editor.setCursor(range.start.row + rowIndex, CURSOR_CH_AFTER_FOCUS)
       editor.scrollIntoView(
         {
           from: {
@@ -123,16 +113,10 @@ export class PlanTracker {
         isAllDone: false,
       }
     const nowMins = getNowMins()
-    const nowIndex = findLastIndex(
-      this.plan.activities,
-      (a) => nowMins >= a.start && a.isFixed
-    )
+    const nowIndex = findLastIndex(this.plan.activities, (a) => nowMins >= a.start && a.isFixed)
     const now = this.plan.activities[nowIndex]
 
-    if (
-      nowIndex === this.plan.activities.length - 1 &&
-      nowMins >= now.stop
-    ) {
+    if (nowIndex === this.plan.activities.length - 1 && nowMins >= now.stop) {
       return {
         now,
         next: null,
@@ -146,11 +130,7 @@ export class PlanTracker {
     const totalSecs = totalMins * 60
     const progress = (durationSecs / totalSecs) * 100
 
-    const next = find(
-      this.plan.activities,
-      (a) => a.actLen > 0,
-      nowIndex + 1
-    )
+    const next = find(this.plan.activities, (a) => a.actLen > 0, nowIndex + 1)
 
     return {
       now,
@@ -190,10 +170,7 @@ export class PlanTracker {
     }
   }
 
-  setData(
-    activitiesData: Maybe<ActivitiesData>,
-    tableInfo: Maybe<PlanTableInfo>
-  ) {
+  setData(activitiesData: Maybe<ActivitiesData>, tableInfo: Maybe<PlanTableInfo>) {
     this.plan = activitiesData ? new Plan(activitiesData) : null
     this.tableInfo = tableInfo
     this.updateStatusBar(this.getStatusBarProps())

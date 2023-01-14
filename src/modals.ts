@@ -23,8 +23,7 @@ export class SplitConfirmModal extends Modal {
     }
 
     const { data } = cursor
-    const nowData =
-      this.tracker.now && generateActivityData(this.tracker.now)
+    const nowData = this.tracker.now && generateActivityData(this.tracker.now)
     const isNowData = isEqual(nowData, data)
     const maxLength = Math.max(+data.length, +data.actLen) - 1
 
@@ -35,20 +34,14 @@ export class SplitConfirmModal extends Modal {
       el.setAttribute('for', 'length')
     })
 
-    const inputEl = this.contentEl.createEl(
-      'input',
-      undefined,
-      (el) => {
-        el.value = isNowData
-          ? `${getNowMins() - this.tracker.now!.start}`
-          : maxLength.toString()
-        el.setAttribute('style', 'margin: 0 var(--size-4-2)')
-        el.setAttribute('id', 'length')
-        el.setAttribute('type', 'number')
-        el.setAttribute('min', '1')
-        el.setAttribute('max', maxLength.toString())
-      }
-    )
+    const inputEl = this.contentEl.createEl('input', undefined, (el) => {
+      el.value = isNowData ? `${getNowMins() - this.tracker.now!.start}` : maxLength.toString()
+      el.setAttribute('style', 'margin: 0 var(--size-4-2)')
+      el.setAttribute('id', 'length')
+      el.setAttribute('type', 'number')
+      el.setAttribute('min', '1')
+      el.setAttribute('max', maxLength.toString())
+    })
 
     this.contentEl.createEl('label', undefined, (el) => {
       el.textContent = `(range: 1..${maxLength})`
@@ -66,10 +59,7 @@ export class SplitConfirmModal extends Modal {
           new Notice(`Input length can't max than ${maxLength}.`)
           return
         }
-        this.pe.splitActivity(
-          inputLength,
-          maxLength - inputLength + 1
-        )
+        this.pe.splitActivity(inputLength, maxLength - inputLength + 1)
         this.close()
       }
     })

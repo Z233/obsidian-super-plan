@@ -3,9 +3,7 @@ import type { Activity } from 'src/types'
 export function schedule(duration: number, activities: Activity[]) {
   const parts = divideParts(duration, activities)
 
-  const scheduledActivities = parts.flatMap((part) =>
-    schedulePart(part.duration, part.activities)
-  )
+  const scheduledActivities = parts.flatMap((part) => schedulePart(part.duration, part.activities))
 
   return scheduledActivities
 }
@@ -44,10 +42,7 @@ function divideParts(duration: number, activities: Activity[]) {
   return parts
 }
 
-function schedulePart(
-  duration: number,
-  activities: Activity[]
-): Activity[] {
+function schedulePart(duration: number, activities: Activity[]): Activity[] {
   if (activities.length === 1) {
     const activity = activities[0]
     return [
@@ -62,8 +57,7 @@ function schedulePart(
   const total = activities.reduce((sum, act) => sum + act.length, 0)
 
   // 如果都是固定的，也按比例分配
-  const isAllRound =
-    activities.length > 1 && activities.every((a) => a.isRound)
+  const isAllRound = activities.length > 1 && activities.every((a) => a.isRound)
 
   const totalRound = activities
     .filter((act) => act.isRound)
@@ -87,10 +81,7 @@ function schedulePart(
       if (act.isRound && !isAllRound) {
         actLen = act.length
       } else {
-        actLen = Math.round(
-          (duration - offsetValue) *
-            (act.length / (total - offsetValue))
-        )
+        actLen = Math.round((duration - offsetValue) * (act.length / (total - offsetValue)))
       }
     }
 
