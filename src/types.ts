@@ -43,7 +43,7 @@ export type Activity = {
   start: number
   stop: number
   isFixed: boolean
-  isRound: boolean
+  isRigid: boolean
   actLen: number
 }
 

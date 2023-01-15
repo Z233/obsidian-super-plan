@@ -63,7 +63,7 @@ export function generateActivityData(activity: Activity): ActivityData {
     length: activity.length.toString(),
     start: parseMins2Time(activity.start),
     f: activity.isFixed ? 'x' : '',
-    r: activity.isRound ? 'x' : '',
+    r: activity.isRigid ? 'x' : '',
     actLen: activity.actLen.toString(),
   }
 }

@@ -56,7 +56,7 @@ export class Plan {
         start: startMins,
         stop: startMins + actLen,
         isFixed: this.check(data.f),
-        isRound: this.check(data.r),
+        isRigid: this.check(data.r),
         actLen: actLen,
       }
     })

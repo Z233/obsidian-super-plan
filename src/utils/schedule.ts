@@ -57,10 +57,10 @@ function schedulePart(duration: number, activities: Activity[]): Activity[] {
   const total = activities.reduce((sum, act) => sum + act.length, 0)
 
   // 如果都是固定的，也按比例分配
-  const isAllRound = activities.length > 1 && activities.every((a) => a.isRound)
+  const isAllRound = activities.length > 1 && activities.every((a) => a.isRigid)
 
   const totalRound = activities
-    .filter((act) => act.isRound)
+    .filter((act) => act.isRigid)
     .reduce((sum, act) => sum + act.length, 0)
 
   // 计算偏移量
@@ -78,7 +78,7 @@ function schedulePart(duration: number, activities: Activity[]): Activity[] {
     let actLen = 0
 
     if (act.length > 0) {
-      if (act.isRound && !isAllRound) {
+      if (act.isRigid && !isAllRound) {
         actLen = act.length
       } else {
         actLen = Math.round((duration - offsetValue) * (act.length / (total - offsetValue)))
