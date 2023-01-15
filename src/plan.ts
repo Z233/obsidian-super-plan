@@ -1,5 +1,6 @@
 import type { Activities, ActivitiesData, Activity, ActivityData } from './types'
 import {
+  check,
   generateActivityData,
   parseMins2Time,
   parseMins2TodayUnix,
@@ -55,15 +56,11 @@ export class Plan {
         length: +data.length,
         start: startMins,
         stop: startMins + actLen,
-        isFixed: this.check(data.f),
-        isRigid: this.check(data.r),
+        isFixed: check(data.f),
+        isRigid: check(data.r),
         actLen: actLen,
       }
     })
-  }
-
-  private check(value: string) {
-    return value === 'x' ? true : false
   }
 
   private generateData(activities: Activity[]): ActivitiesData {

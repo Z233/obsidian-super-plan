@@ -28,6 +28,7 @@ import type {
   PlanTableInfo,
 } from './types'
 import {
+  check,
   getActivityDataIndex,
   getActivityDataKey,
   getNowMins,
@@ -79,9 +80,26 @@ export class PlanEditor {
   }
 
   private schedule(activitiesData: ActivitiesData) {
-    if (!this.tableInfo) return
+    if (!this.tableInfo || activitiesData.length < 2) return
 
-    const plan = new Plan(activitiesData)
+    // if the first or the last activity is not fixed, change its status to fixed
+    const target = activitiesData.concat()
+    if (!check(target[0].f)) {
+      target[0] = {
+        ...target[0],
+        f: 'x',
+      }
+    }
+
+    const last = target[target.length - 1]
+    if (!check(last.f)) {
+      target[target.length - 1] = {
+        ...last,
+        f: 'x',
+      }
+    }
+
+    const plan = new Plan(target)
     plan.schedule()
     const scheduledActivitiesData = plan.getData()
 
@@ -150,7 +168,7 @@ export class PlanEditor {
   public readonly cursorIsInTable = (): boolean =>
     this.te.cursorIsInTable(this.settings.asOptions())
 
-  public readonly insertActivity = (): void => {
+  public readonly insertActivityBelow = (): void => {
     if (!this.tableInfo) return
 
     const { table, range, lines, focus } = this.tableInfo
@@ -160,44 +178,84 @@ export class PlanEditor {
     const current = activitiesData[currentIndex]
     const next = activitiesData[currentIndex + 1]
 
-    const activityRow = this.createActivityCells(
-      {
-        start: next ? next.start : current.start,
-        length: '0',
-        actLen: '0',
-      },
-      table
-    )
+    const isLast = focus.row === lines.length - 1
 
-    const isLastRow = focus.row === lines.length - 1
+    // if the focus item is the first activity, change its status to unfixed
+    if (isLast) {
+      activitiesData[currentIndex] = {
+        ...current,
+        f: '',
+      }
+    }
 
-    let newFocus = focus
+    const newActivityData: ActivityData = {
+      f: isLast ? 'x' : '',
+      activity: '',
+      start: next ? next.start : current.start,
+      length: '0',
+      r: '',
+      actLen: '0',
+    }
+    activitiesData.splice(currentIndex + 1, 0, newActivityData)
+
+    const updatedTable = this.schedule(activitiesData)
 
     // move focus
-    if (focus.row <= 1) {
-      newFocus = focus.setRow(2)
+    if (updatedTable) {
+      let newFocus = focus
+      if (focus.row <= 1) {
+        newFocus = focus.setRow(2)
+      } else {
+        newFocus = focus.setRow(focus.row + 1)
+      }
+      newFocus = newFocus.setColumn(getActivityDataIndex('activity')).setOffset(1)
+
+      this.te._moveToFocus(range.start.row, updatedTable, newFocus)
+      this.te.resetSmartCursor()
     } else {
-      newFocus = focus.setRow(isLastRow ? focus.row : focus.row + 1)
+      console.error('Insertion failed')
     }
-    newFocus = newFocus.setColumn(getActivityDataIndex('activity')).setOffset(1)
+  }
 
-    // insert an empty row
-    const altered = insertRow(table, focus.row, new TableRow(activityRow, '', ''))
+  public readonly insertActivityAbove = (): void => {
+    if (!this.tableInfo) return
 
-    // format
-    const formatted = formatTable(altered, this.settings.asOptions())
+    const { range, focus } = this.tableInfo
 
-    // apply
-    this.ote.transact(() => {
-      this.te._updateLines(
-        isLastRow ? range.start.row : range.start.row + 1,
-        range.end.row + 1,
-        formatted.table.toLines(),
-        lines
-      )
-    })
-    this.te._moveToFocus(range.start.row, formatted.table, newFocus)
-    this.te.resetSmartCursor()
+    const activitiesData = this.getActivitiesData()
+    const currentIndex = focus.row - 2
+    const current = activitiesData[currentIndex]
+
+    const isFirst = currentIndex === 0
+
+    // if the focus item is the first activity, change its status to unfixed
+    if (isFirst) {
+      activitiesData[currentIndex] = {
+        ...current,
+        f: '',
+      }
+    }
+
+    const newActivityData: ActivityData = {
+      f: isFirst ? 'x' : '',
+      activity: '',
+      start: current.start,
+      length: '0',
+      r: '',
+      actLen: '0',
+    }
+    const updatedActivitiesData: ActivitiesData = [newActivityData, ...activitiesData]
+
+    const updatedTable = this.schedule(updatedActivitiesData)
+
+    if (updatedTable) {
+      // shift focus to activity column
+      const newFocus = focus.setColumn(getActivityDataIndex('activity')).setOffset(1)
+      this.te._moveToFocus(range.start.row, updatedTable, newFocus)
+      this.te.resetSmartCursor()
+    } else {
+      console.error('Insertion failed')
+    }
   }
 
   getCursorActivityData(): Maybe<{
@@ -247,10 +305,6 @@ export class PlanEditor {
     activitiesData[index] = updatedActivityData
 
     this.schedule(activitiesData)
-  }
-
-  public readonly insertActivityAbove = (): void => {
-    this.te.insertRow(this.settings.asOptions())
   }
 
   public readonly splitActivity = (firstLength: number, secondLength: number) => {

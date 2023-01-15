@@ -4,16 +4,6 @@ import { ActivityDataColumn } from 'src/constants'
 import type { Activity, ActivityData, PlanCellType } from 'src/types'
 import { TemplaterError } from './error'
 
-export const getMarkdownTableHeader =
-  () => `| **Activity** | **Length** | **Start** | **F** | **R** | **ActLen** |
-| ------------ | ---------- | --------- | ----- | ----- | ---------- |`
-
-export const getMarkdownEndRow = () =>
-  `| END          | 0          | 00:00     | x     |       | 0          |`
-
-export const getMarkdownRow = () =>
-  `| END          | 0          | 00:00     | x     |       | 0          |`
-
 export const removeSpacing = (value: string) => value.replace(/\s+/gm, '')
 
 export const getActivityDataKey = (index: number) => ActivityDataColumn[index] as PlanCellType
@@ -66,6 +56,10 @@ export function generateActivityData(activity: Activity): ActivityData {
     r: activity.isRigid ? 'x' : '',
     actLen: activity.actLen.toString(),
   }
+}
+
+export function check(value: string) {
+  return value === 'x' ? true : false
 }
 
 export function resolve_tfolder(app: App, folder_str: string): TFolder {

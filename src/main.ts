@@ -53,10 +53,18 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
-      id: 'insert-activity',
-      name: 'Insert activity',
+      id: 'insert-activity-below-current',
+      name: 'Insert activity below current',
       editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.insertActivity()
+        pe.insertActivityBelow()
+      }),
+    })
+
+    this.addCommand({
+      id: 'insert-activity-above-current',
+      name: 'Insert activity above current',
+      editorCheckCallback: this.newPerformTableAction((pe) => {
+        pe.insertActivityAbove()
       }),
     })
 

@@ -98,7 +98,7 @@ export class PlanManager {
             const shouldInsertActivity = focus.row === table.getHeight() - 2
 
             if (shouldInsertActivity) {
-              pe.insertActivity()
+              pe.insertActivityBelow()
             } else {
               const offsetColumn = -focus.column + getActivityDataIndex('activity')
               pe.moveFocus(1, offsetColumn)
