@@ -34,7 +34,7 @@ export default class SuperPlan extends Plugin {
     )
     this.tracker.init()
 
-    new PlanManager(this)
+    new PlanManager(this, this.parser)
 
     this.cmEditors = []
     this.registerCodeMirror((cm) => {
@@ -122,13 +122,13 @@ export default class SuperPlan extends Plugin {
   }
 
   readonly newPerformPlanActionCM6 =
-    (fn: (pe: PlanEditor) => void): (() => boolean) =>
+    (fn: (pe: PlanEditor) => void, force = false): (() => boolean) =>
     (): boolean => {
       const view = this.app.workspace.getActiveViewOfType(MarkdownView)
       if (view) {
         const pe = new PlanEditor(this.app, view.file, view.editor, this.parser, this.settings)
 
-        if (pe.cursorIsInPlan()) {
+        if (force || pe.cursorIsInPlan()) {
           fn(pe)
           return true
         }

@@ -8,14 +8,19 @@ import { Prec } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
 import { debounce } from 'lodash-es'
 import { getActivityDataIndex } from './utils/helper'
+import { TriggerScheduleColumn, ViewUpdateFlags } from './constants'
+import { MarkdownView } from 'obsidian'
+import type { Parser } from './parser'
 
 export class PlanManager {
   private readonly plugin: SuperPlan
+  private readonly parser: Parser
   private lastState: Maybe<PlanTableState>
   private state: Maybe<PlanTableState>
 
-  constructor(plugin: SuperPlan) {
+  constructor(plugin: SuperPlan, parser: Parser) {
     this.plugin = plugin
+    this.parser = parser
 
     this.plugin.registerEditorExtension(this.makeEditorRemappingExtension())
     this.plugin.registerEditorExtension(this.makeEditorUpdateListenerExtension())
@@ -24,15 +29,29 @@ export class PlanManager {
   private readonly makeEditorUpdateListenerExtension = (): Extension => {
     return EditorView.updateListener.of((v) => {
       if ((!v.selectionSet && !v.focusChanged) || v.docChanged) return
+      const flags: ViewUpdateFlags = (v as any).flags
       const fn = debounce(
         this.plugin.newPerformPlanActionCM6((pe) => {
-          const now = pe.getState()
-          if (!(now && this.state?.focus.posEquals(now.focus))) {
+          const state = pe.getState()
+
+          // reschedule when table blur
+          if (
+            flags === ViewUpdateFlags.TABLE_BLUR &&
+            this.lastState &&
+            TriggerScheduleColumn.includes(this.lastState.type)
+          ) {
+            const lines = v.state.doc.toJSON()
+            const planTableInfo = this.parser.findPlanTable(lines)
+            planTableInfo && pe.executeBackgroundSchedule(planTableInfo, this.lastState)
+            return
+          }
+
+          if (!(state && this.state?.focus.posEquals(state.focus))) {
             const getStartCell = (row: TableRow) => row.getCellAt(getActivityDataIndex('start'))!
 
-            this.updateState(now)
+            this.updateState(state)
 
-            const before = now
+            const before = state
             const beforeCell = before && getStartCell(before.row)
             const scheduled = pe.executeSchedule(this.lastState)
 
@@ -53,7 +72,7 @@ export class PlanManager {
               )
             }
           }
-        }),
+        }, true),
         10
       )
       fn()

@@ -16,6 +16,7 @@ import {
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
 import { ActivityDataColumn, PlanLinesLiteral } from './constants'
 import { getActivityDataKey } from './utils/helper'
+import { isArray } from 'lodash-es'
 
 export class Parser {
   private readonly settings: SuperPlanSettings
@@ -24,9 +25,9 @@ export class Parser {
     this.settings = settings
   }
 
-  findPlanTable(content: string): Maybe<PlanTableInfo> {
+  findPlanTable(contentOrLines: string | string[]): Maybe<PlanTableInfo> {
+    const rows = isArray(contentOrLines) ? contentOrLines : contentOrLines.split('\n')
     const re = _createIsTableRowRegex(this.settings.asOptions().leftMarginChars)
-    const rows = content.split('\n')
     let startRow = 0
     let endRow
 

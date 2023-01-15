@@ -14,12 +14,19 @@ import { deleteRow } from '@tgrosinger/md-advanced-tables/lib/formatter'
 import type { FormattedTable } from '@tgrosinger/md-advanced-tables/lib/formatter'
 import { isEqual } from 'lodash-es'
 import type { App, Editor, TFile } from 'obsidian'
-import { PlanLinesLiteral } from './constants'
+import { PlanLinesLiteral, TriggerScheduleColumn } from './constants'
 import { ObsidianTextEditor } from './obsidian-text-editor'
 import type { Parser } from './parser'
 import { Plan } from './plan'
 import type { SuperPlanSettings } from './settings'
-import type { ActivitiesData, PlanTableState, ActivityData, Maybe, PlanCellType } from './types'
+import type {
+  ActivitiesData,
+  PlanTableState,
+  ActivityData,
+  Maybe,
+  PlanCellType,
+  PlanTableInfo,
+} from './types'
 import {
   getActivityDataIndex,
   getActivityDataKey,
@@ -27,6 +34,7 @@ import {
   parseMins2Time,
   removeSpacing,
 } from './utils/helper'
+import type { EditorView } from '@codemirror/view'
 
 export class PlanEditor {
   private readonly app: App
@@ -44,11 +52,6 @@ export class PlanEditor {
 
     this.ote = new ObsidianTextEditor(app, file, editor, settings)
     this.te = new TableEditor(this.ote)
-
-    // const activitiesData = this.getActivitiesData();
-    // if (activitiesData.length > 0) {
-    // 	this.plan = new Plan(activitiesData);
-    // }
   }
 
   private getActivitiesData(): ActivitiesData {
@@ -60,20 +63,19 @@ export class PlanEditor {
     return this.te._findTable(this.settings.asOptions())
   }
 
-  private createActivityCells(activityData: Partial<ActivityData>) {
+  private createActivityCells(activityData: Partial<ActivityData>, table: Table) {
     return Array.from(
-      { length: this.tableInfo?.table.getHeaderWidth() ?? 0 },
+      { length: table.getHeaderWidth() },
       (v, i) => new TableCell(activityData[getActivityDataKey(i)] ?? '')
     )
   }
 
-  private createActivityRow(activityData: Partial<ActivityData>) {
-    return new TableRow(this.createActivityCells(activityData), '', '')
+  private createActivityRow(activityData: Partial<ActivityData>, table: Table) {
+    return new TableRow(this.createActivityCells(activityData, table), '', '')
   }
 
   private shouldSchedule(type: PlanCellType) {
-    const cellsTriggerSchedule: PlanCellType[] = ['length', 'start', 'f', 'r']
-    return cellsTriggerSchedule.contains(type)
+    return TriggerScheduleColumn.contains(type)
   }
 
   private schedule(activitiesData: ActivitiesData) {
@@ -93,9 +95,7 @@ export class PlanEditor {
     const shouldSelectCell =
       !!selectionRange && selectionRange.endOffset > selectionRange.startOffset
 
-    const rows = scheduledActivitiesData.map(
-      (data) => new TableRow(this.createActivityCells(data), '', '')
-    )
+    const rows = scheduledActivitiesData.map((data) => this.createActivityRow(data, table))
 
     const [header, delimiter] = table.getRows()
 
@@ -160,11 +160,14 @@ export class PlanEditor {
     const current = activitiesData[currentIndex]
     const next = activitiesData[currentIndex + 1]
 
-    const activityRow = this.createActivityCells({
-      start: next ? next.start : current.start,
-      length: '0',
-      actLen: '0',
-    })
+    const activityRow = this.createActivityCells(
+      {
+        start: next ? next.start : current.start,
+        length: '0',
+        actLen: '0',
+      },
+      table
+    )
 
     const isLastRow = focus.row === lines.length - 1
 
@@ -273,8 +276,8 @@ export class PlanEditor {
     const firstIndex = rowIndex + 2
     let altered = table
     altered = deleteRow(altered, firstIndex)
-    altered = insertRow(altered, firstIndex, this.createActivityRow(firstActivityData))
-    altered = insertRow(altered, firstIndex + 1, this.createActivityRow(secondActivityData))
+    altered = insertRow(altered, firstIndex, this.createActivityRow(firstActivityData, table))
+    altered = insertRow(altered, firstIndex + 1, this.createActivityRow(secondActivityData, table))
 
     const formatted = formatTable(altered, this.settings.asOptions())
 
@@ -340,6 +343,36 @@ export class PlanEditor {
     this.te.deleteRow(this.settings.asOptions())
   }
 
+  readonly executeBackgroundSchedule = (tableInfo: PlanTableInfo, lastState: PlanTableState) => {
+    const { table, range, lines } = tableInfo
+
+    const activitiesData = this.parser.transformTable(table)
+
+    if (lastState.type === 'start') {
+      const { cell, focus } = lastState
+      const currentData = activitiesData[focus.row - 2]
+      if (currentData.start !== cell.content) {
+        activitiesData[focus.row - 2] = {
+          ...currentData,
+          f: 'x',
+        }
+      }
+    }
+
+    const plan = new Plan(activitiesData)
+    plan.schedule()
+    const scheduledActivitiesData = plan.getData()
+
+    const rows = scheduledActivitiesData.map((data) => this.createActivityRow(data, table))
+
+    const [header, delimiter] = table.getRows()
+    const newTable = new Table([header, delimiter, ...rows])
+
+    const formatted = formatTable(newTable, this.settings.asOptions())
+
+    this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
+  }
+
   readonly executeSchedule = (
     lastState: Maybe<PlanTableState>,
     setFixed = false,
@@ -362,8 +395,7 @@ export class PlanEditor {
         start: lastCell.content,
       }
       activitiesData[rowIndex - 2] = updatedActivityData
-      const cells = this.createActivityCells(updatedActivityData)
-      const newRow = new TableRow(cells, '', '')
+      const newRow = this.createActivityRow(updatedActivityData, table)
 
       let altered = table
       altered = deleteRow(altered, rowIndex)
