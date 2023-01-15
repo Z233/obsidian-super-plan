@@ -42,7 +42,9 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
           .onChange((value: string) => {
             this.error = this.validateFolder(value)
             this.plugin.settings.planFolder = value
-            this.plugin.saveData(this.plugin.settings)
+            this.plugin.settings.update({
+              planFolder: value,
+            })
           })
 
         containerEl.addClass('day-planner-search')
@@ -58,7 +60,9 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
           .setValue(this.plugin.settings.noteTemplate)
           .onChange((value: string) => {
             this.plugin.settings.noteTemplate = value
-            this.plugin.saveData(this.plugin.settings)
+            this.plugin.settings.update({
+              noteTemplate: value,
+            })
           })
 
         containerEl.addClass('day-planner-search')
@@ -71,7 +75,9 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       .addText((component) =>
         component.setValue(this.plugin.settings.fileNamePrefix ?? '').onChange((value: string) => {
           this.plugin.settings.fileNamePrefix = value
-          this.plugin.saveData(this.plugin.settings)
+          this.plugin.settings.update({
+            fileNamePrefix: value,
+          })
         })
       )
 
