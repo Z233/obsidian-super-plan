@@ -9,7 +9,7 @@ import type { PlanFile } from './plan-file'
 import type { SuperPlanSettings } from './settings'
 import moment from 'moment'
 import { find, findLastIndex, isEqual } from 'lodash-es'
-import type { App, Workspace } from 'obsidian'
+import { MarkdownView, type App, type Workspace } from 'obsidian'
 import { PlanEditor } from './plan-editor'
 import { CURSOR_CH_AFTER_FOCUS } from './constants'
 
@@ -76,33 +76,40 @@ export class PlanTracker {
     if (!this.tableInfo || !this.plan) return
     const { workspace } = this.app
 
+    const file = this.file.todayFile
+
+    if (!file) return
+
+    const activeView = workspace.getActiveViewOfType(MarkdownView)
+    const shouldOpenFile = !(activeView && file && activeView.file === file)
+
+    if (shouldOpenFile) {
+      const leaf = workspace.getLeaf()
+      await leaf.openFile(file, { active: true })
+    }
+
+    const editor = workspace.activeEditor!.editor!
+
+    const { range } = this.tableInfo
+
     const activityIndex = this.plan.activities.findIndex((a) => isEqual(a, activity))
     const rowIndex = activityIndex + 2
 
-    const leaf = workspace.getLeaf()
-    const file = this.file.todayFile
-
-    if (file) {
-      await leaf.openFile(file, { active: true })
-      const editor = workspace.activeEditor!.editor!
-
-      const { range } = this.tableInfo
-
-      editor.setCursor(range.start.row + rowIndex, CURSOR_CH_AFTER_FOCUS)
-      editor.scrollIntoView(
-        {
-          from: {
-            line: range.start.row,
-            ch: CURSOR_CH_AFTER_FOCUS,
-          },
-          to: {
-            line: range.start.row,
-            ch: CURSOR_CH_AFTER_FOCUS,
-          },
+    editor.focus()
+    editor.setCursor(range.start.row + rowIndex, CURSOR_CH_AFTER_FOCUS)
+    editor.scrollIntoView(
+      {
+        from: {
+          line: range.start.row,
+          ch: CURSOR_CH_AFTER_FOCUS,
         },
-        true
-      )
-    }
+        to: {
+          line: range.start.row,
+          ch: CURSOR_CH_AFTER_FOCUS,
+        },
+      },
+      true
+    )
   }
 
   private getStatusBarProps(): StatusBarProps {
