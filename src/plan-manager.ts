@@ -46,6 +46,7 @@ export class PlanManager {
             return
           }
 
+          // if focus position in table is not same
           if (!(state && this.state?.focus.posEquals(state.focus))) {
             const getStartCell = (row: TableRow) => row.getCellAt(getActivityDataIndex('start'))!
 

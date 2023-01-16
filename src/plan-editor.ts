@@ -82,24 +82,7 @@ export class PlanEditor {
   private schedule(activitiesData: ActivitiesData) {
     if (!this.tableInfo || activitiesData.length < 2) return
 
-    // if the first or the last activity is not fixed, change its status to fixed
-    const target = activitiesData.concat()
-    if (!check(target[0].f)) {
-      target[0] = {
-        ...target[0],
-        f: 'x',
-      }
-    }
-
-    const last = target[target.length - 1]
-    if (!check(last.f)) {
-      target[target.length - 1] = {
-        ...last,
-        f: 'x',
-      }
-    }
-
-    const plan = new Plan(target)
+    const plan = new Plan(activitiesData)
     plan.schedule()
     const scheduledActivitiesData = plan.getData()
 
