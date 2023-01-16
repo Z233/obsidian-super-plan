@@ -154,7 +154,7 @@ export class PlanTracker {
     const props = this.getStatusBarProps()
     this.updateStatusBar(props)
 
-    const { now } = props
+    const { now, next } = props
 
     if (!isEqual(now, this.now)) {
       this.prev = this.now
@@ -162,14 +162,23 @@ export class PlanTracker {
     }
 
     const nowMins = getNowMins()
+    const nowMinsSecs = new Date().getSeconds()
 
+    // a fixed activity will begin
+    const isNextWillStart = Boolean(
+      next && next.isFixed && nowMinsSecs === 59 && nowMins + 1 >= next.start
+    )
+    const isNowWillStop = Boolean(this.now && nowMins >= this.now.stop)
+
+    // check this.prev: prevent sending a notification at the start
     if (
-      this.prev &&
-      this.now &&
-      nowMins >= this.now.stop &&
+      ((this.prev && isNowWillStop) || isNextWillStart) &&
       this.lastSendNotificationActivity !== this.now
     ) {
-      new Notification('Time to start next activity!')
+      const content = isNextWillStart
+        ? `A fixed activity already started, time to move on.`
+        : `It's time to begin the next activity!`
+      new Notification(content)
       this.lastSendNotificationActivity = this.now
 
       // TODO: Jump to next activity row
