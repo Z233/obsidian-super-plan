@@ -244,9 +244,9 @@ export class PlanEditor {
       r: '',
       actLen: '0',
     }
-    const updatedActivitiesData: ActivitiesData = [newActivityData, ...activitiesData]
+    activitiesData.splice(currentIndex, 0, newActivityData)
 
-    const updatedTable = this.schedule(updatedActivitiesData)
+    const updatedTable = this.schedule(activitiesData)
 
     if (updatedTable) {
       // shift focus to activity column
