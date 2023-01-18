@@ -31,8 +31,9 @@ export class PlanFile {
   }
 
   async getTodayPlanFileContent() {
-    await this.prepareFile()
-    return this.vault.adapter.read(this.todayPlanFilePath)
+    const path = normalizePath(this.todayPlanFilePath)
+    if (!(await this.vault.adapter.exists(path))) return null
+    return this.vault.adapter.read(path)
   }
 
   async updateTodayPlanFile(content: string) {
@@ -40,15 +41,6 @@ export class PlanFile {
       return await this.vault.adapter.write(this.todayPlanFilePath, content)
     } catch (error) {
       console.error(error)
-    }
-  }
-
-  async prepareFile() {
-    try {
-      await this.createFolderIfNotExists(this.settings.planFolder)
-      await this.createFileIfNotExists(this.todayPlanFilePath)
-    } catch (error) {
-      console.log(error)
     }
   }
 

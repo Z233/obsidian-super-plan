@@ -103,16 +103,18 @@ export default class SuperPlan extends Plugin {
   private lastActivitiesData: Maybe<ActivitiesData> = null
   async tick() {
     const content = await this.file.getTodayPlanFileContent()
-    const tableInfo = this.parser.findPlanTable(content)
-    if (tableInfo) {
-      const { table } = tableInfo
-      const activitiesData = this.parser.transformTable(table)
-      if (!isEqual(activitiesData, this.lastActivitiesData)) {
-        this.lastActivitiesData = activitiesData
-        this.tracker.setData(activitiesData, tableInfo)
+    if (content) {
+      const tableInfo = this.parser.findPlanTable(content)
+      if (tableInfo) {
+        const { table } = tableInfo
+        const activitiesData = this.parser.transformTable(table)
+        if (!isEqual(activitiesData, this.lastActivitiesData)) {
+          this.lastActivitiesData = activitiesData
+          this.tracker.setData(activitiesData, tableInfo)
+        }
+      } else {
+        this.tracker.setData(null, null)
       }
-    } else {
-      this.tracker.setData(null, null)
     }
   }
 
