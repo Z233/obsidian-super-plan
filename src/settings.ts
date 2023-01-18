@@ -1,6 +1,6 @@
 import { FormatType, optionsWithDefaults } from '@tgrosinger/md-advanced-tables'
 import type { Options } from '@tgrosinger/md-advanced-tables'
-import { ProgressType } from './constants'
+import { DEFAULT_NOTE_FORMAT, ProgressType } from './constants'
 import type SuperPlan from './main'
 
 interface PlanEditorSettings {
@@ -8,21 +8,21 @@ interface PlanEditorSettings {
 }
 
 interface PlanTrackerSettings {
-  planFolder: string
-  noteTemplate: string
-  fileNamePrefix: string
-  fileNameDateFormat: string
+  dailyPlanNoteFolder: string
+  dailyPlanNoteFormat: string
+
   progressType: ProgressType
 }
 
 type ISettings = PlanEditorSettings & PlanTrackerSettings
 
 export const defaultSettings: Partial<ISettings> = {
+  // PlanEditorSettings
   formatType: FormatType.NORMAL,
-  planFolder: '/',
-  noteTemplate: '',
-  fileNamePrefix: '',
-  fileNameDateFormat: 'DD-MM-YYYY',
+
+  // PlanTrackerSettings
+  dailyPlanNoteFolder: '/',
+  dailyPlanNoteFormat: DEFAULT_NOTE_FORMAT,
   progressType: ProgressType.BAR,
 }
 
@@ -33,10 +33,9 @@ export class SuperPlanSettings implements ISettings {
   private updateCbs: SettingsUpdateCallback[] = []
 
   formatType: FormatType
-  planFolder: string
-  noteTemplate: string
-  fileNamePrefix: string
-  fileNameDateFormat: string
+
+  dailyPlanNoteFolder: string
+  dailyPlanNoteFormat: string
   progressType: ProgressType
 
   constructor(plugin: SuperPlan, loadedData: ISettings) {

@@ -7,9 +7,7 @@ export const PlanLinesLiteral = {
   endRow: `| x   | 00:00 | END      | 0      |     | 0      |`,
 }
 
-export const DEFAULT_PLAN_NOTE_CONTENT = `## Plan\n${Object.values(PlanLinesLiteral).join('\n')}
-`
-
+export const DEFAULT_NOTE_FORMAT = 'YYYY-MM-DD'
 export const DEFAULT_CIRCLE_PROGRESS_SIZE = 16
 export const NO_ACTIVITY_NAME_PLACEHOLDER = '[No Name]'
 
