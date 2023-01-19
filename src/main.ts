@@ -10,6 +10,7 @@ import { timer } from './timer'
 import { SplitConfirmModal } from './modals'
 import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
+import 'electron'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -90,6 +91,23 @@ export default class SuperPlan extends Plugin {
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.ignoreActivity()
       }),
+    })
+
+    this.addCommand({
+      id: 'open-tracker-window',
+      name: 'Open tracker window',
+      callback: () => {
+        const { BrowserWindow } = (require('electron') as any)
+          .remote as Electron.RemoteMainInterface
+
+        const win = new BrowserWindow()
+
+        if (__DEV__) {
+          win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'windows/tracker/index.html')
+        } else {
+          win.loadFile('./windows/tracker.html')
+        }
+      },
     })
 
     this.addSettingTab(new SuperPlanSettingsTab(this.app, this))
