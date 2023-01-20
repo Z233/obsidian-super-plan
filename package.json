@@ -10,6 +10,7 @@
     "build": "cross-env NODE_ENV=production run-s clear build:js build:web",
     "build:js": "vite build --config vite.config.ts",
     "build:web": "vite build --config vite.config.windows.ts",
+    "release": "run-s build pack",
     "pack": "rimraf plugin.zip && cd dist/ && bestzip ../plugin.zip * ../main.js ../styles.css ../manifest.json",
     "clear": "rimraf dist main.js styles.css",
     "version": "node version-bump.mjs && git add manifest.json versions.json"
