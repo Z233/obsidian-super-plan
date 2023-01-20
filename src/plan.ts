@@ -8,14 +8,25 @@ import {
 } from './utils/helper'
 import { schedule } from './utils/schedule'
 
+const TEMPLATE_RE = /{{.*}}/
+
 export class Plan {
   activities: Activities
+  private readonly origActivitiesData: ActivitiesData
   private readonly startMins: number
   private readonly endMins: number
   readonly startUnix: number
   readonly endUnix: number
 
+  isTemplate = false
+
   constructor(activitiesData: ActivityData[]) {
+    this.isTemplate = activitiesData.some((a) => TEMPLATE_RE.test(a.start))
+    if (this.isTemplate) {
+      this.origActivitiesData = activitiesData
+      return
+    }
+
     this.startMins = parseTime2Mins(activitiesData[0].start)
     this.endMins = parseTime2Mins(activitiesData[activitiesData.length - 1].start)
 
@@ -26,10 +37,11 @@ export class Plan {
     this.startUnix = parseMins2TodayUnix(this.startMins)
     this.endUnix = parseMins2TodayUnix(this.endMins)
 
-    this.activities = this.convertData(activitiesData)
+    this.loadData(activitiesData)
   }
 
   schedule() {
+    if (this.isTemplate) return
     const duration = this.endMins - this.startMins
     const scheduledActivities = schedule(duration, this.activities)
     this.activities = scheduledActivities
@@ -42,11 +54,11 @@ export class Plan {
   }
 
   getData() {
-    return this.generateData(this.activities)
+    return this.isTemplate ? this.origActivitiesData : this.generateData(this.activities)
   }
 
-  private convertData(activitiesData: ActivityData[]): Activities {
-    return activitiesData.map((data, i) => {
+  private loadData(activitiesData: ActivityData[]) {
+    this.activities = activitiesData.map((data, i) => {
       const startMins = i === activitiesData.length - 1 ? this.endMins : parseTime2Mins(data.start)
 
       const actLen = +data.actLen

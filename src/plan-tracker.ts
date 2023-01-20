@@ -149,7 +149,7 @@ export class PlanTracker {
   }
 
   private async onTick() {
-    if (!this.plan) return
+    if (!this.plan || this.plan.isTemplate) return
 
     const props = this.getStatusBarProps()
     this.updateStatusBar(props)
