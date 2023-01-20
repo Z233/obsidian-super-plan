@@ -4,13 +4,10 @@ import type { ActivitiesData, Activity, Maybe, PlanTableInfo } from './types'
 import { getNowMins } from './utils/helper'
 import StatusBar from './components/StatusBar.svelte'
 import type { Parser } from './parser'
-import { Point } from '@tgrosinger/md-advanced-tables'
 import type { PlanFile } from './plan-file'
 import type { SuperPlanSettings } from './settings'
-import moment from 'moment'
 import { find, findLastIndex, isEqual } from 'lodash-es'
 import { MarkdownView, type App, type Workspace } from 'obsidian'
-import { PlanEditor } from './plan-editor'
 import { CURSOR_CH_AFTER_FOCUS } from './constants'
 
 type StatusBarProps = StatusBar['$$prop_def']
@@ -166,9 +163,14 @@ export class PlanTracker {
 
     // a fixed activity will begin
     const isNextWillStart = Boolean(
-      next && next.isFixed && nowMinsSecs === 59 && nowMins + 1 >= next.start
+      next &&
+        next.isFixed &&
+        nowMinsSecs === 59 &&
+        nowMins + 1 >= next.start - this.settings.minsLeftToSendNotice
     )
-    const isNowWillStop = Boolean(this.now && nowMins >= this.now.stop)
+    const isNowWillStop = Boolean(
+      this.now && nowMins >= this.now.stop - this.settings.minsLeftToSendNotice
+    )
 
     // check this.prev: prevent sending a notification at the start
     if (
@@ -176,7 +178,7 @@ export class PlanTracker {
       this.lastSendNotificationActivity !== this.now
     ) {
       const content = isNextWillStart
-        ? `A fixed activity already started, time to move on.`
+        ? `A fixed activity will start soon, time to move on.`
         : `It's time to begin the next activity!`
       new Notification(content)
       this.lastSendNotificationActivity = this.now

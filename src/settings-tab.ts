@@ -1,6 +1,6 @@
 import { App, normalizePath, PluginSettingTab, Setting } from 'obsidian'
 import { ProgressType } from './constants'
-import { FileSuggest, FileSuggestMode, FolderSuggest } from './file-suggester'
+import { FolderSuggest } from './file-suggester'
 import type SuperPlan from './main'
 
 export class SuperPlanSettingsTab extends PluginSettingTab {
@@ -31,6 +31,8 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
     containerEl.empty()
 
     const createSetting = () => new Setting(containerEl)
+
+    containerEl.createEl('h2', { text: 'General' })
 
     new Setting(containerEl)
       .setName('Daily Plan Note Folder')
@@ -74,10 +76,11 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       })
     })
 
-    containerEl.createEl('h2', { text: 'Status Bar' })
+    containerEl.createEl('h2', { text: 'Tracker' })
 
     createSetting()
       .setName('Progress Type')
+      .setDesc('The type of progress displayed in the status bar.')
       .addDropdown((dropdown) => {
         dropdown.addOption(ProgressType.BAR, 'Bar')
         dropdown.addOption(ProgressType.CIRCLE, 'Circle')
@@ -89,5 +92,16 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
             })
           })
       })
+
+    createSetting()
+      .setName('Minutes Left To Send Notice')
+      .setDesc('The minutes before the current activity ends to send a notification.')
+      .addText((comp) =>
+        comp.setValue(this.plugin.settings.minsLeftToSendNotice.toString()).onChange((value) =>
+          this.plugin.settings.update({
+            minsLeftToSendNotice: +value,
+          })
+        )
+      )
   }
 }

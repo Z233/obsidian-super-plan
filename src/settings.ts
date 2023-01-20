@@ -11,6 +11,8 @@ interface PlanTrackerSettings {
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
 
+  minsLeftToSendNotice: number
+
   progressType: ProgressType
 }
 
@@ -24,6 +26,7 @@ export const defaultSettings: Partial<ISettings> = {
   dailyPlanNoteFolder: '/',
   dailyPlanNoteFormat: DEFAULT_NOTE_FORMAT,
   progressType: ProgressType.BAR,
+  minsLeftToSendNotice: 0,
 }
 
 type SettingsUpdateCallback = (options: Partial<ISettings>) => void
@@ -37,6 +40,7 @@ export class SuperPlanSettings implements ISettings {
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
   progressType: ProgressType
+  minsLeftToSendNotice: number
 
   constructor(plugin: SuperPlan, loadedData: ISettings) {
     this.plugin = plugin
