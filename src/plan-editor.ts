@@ -343,6 +343,21 @@ export class PlanEditor {
     this.schedule(this.getActivitiesData())
   }
 
+  public readonly unfixAllActivities = () => {
+    const activitiesData = this.getActivitiesData()
+    const updatedActivityData = activitiesData.map((a, i) =>
+      // Do not alter the first and last activity
+      i === 0 || i === activitiesData.length - 1
+        ? a
+        : {
+            ...a,
+            f: '',
+          }
+    )
+
+    this.schedule(updatedActivityData)
+  }
+
   public readonly nextRow = (): void => {
     this.te.nextRow(this.settings.asOptions())
   }

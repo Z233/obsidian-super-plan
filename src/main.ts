@@ -102,6 +102,14 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
+      id: 'unfix-all-activities',
+      name: 'Unfix all activities',
+      editorCheckCallback: this.newPerformTableAction((pe) => {
+        pe.unfixAllActivities()
+      }),
+    })
+
+    this.addCommand({
       id: 'open-tracker-window',
       name: 'Open tracker window',
       callback: () => {
