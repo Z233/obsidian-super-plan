@@ -94,6 +94,14 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
+      id: 'fix-activity',
+      name: 'Fix activity',
+      editorCheckCallback: this.newPerformTableAction((pe) => {
+        pe.fixCursorActivity()
+      }),
+    })
+
+    this.addCommand({
       id: 'open-tracker-window',
       name: 'Open tracker window',
       callback: () => {
@@ -161,6 +169,7 @@ export default class SuperPlan extends Plugin {
           return true
         }
       }
+
       return false
     }
 

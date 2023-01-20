@@ -273,6 +273,21 @@ export class PlanEditor {
     this.schedule(activitiesData)
   }
 
+  public readonly fixCursorActivity = () => {
+    const cursor = this.getCursorActivityData()
+    if (!cursor) return
+    const { data: cursorActivityData, index } = cursor
+    const activitiesData = this.getActivitiesData()
+
+    const updatedActivityData: ActivityData = {
+      ...cursorActivityData,
+      f: 'x',
+    }
+    activitiesData[index] = updatedActivityData
+
+    this.schedule(activitiesData)
+  }
+
   readonly ignoreActivity = () => {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
