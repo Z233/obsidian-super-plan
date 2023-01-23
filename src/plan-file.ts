@@ -27,6 +27,10 @@ export class PlanFile {
     return this.vault.getFiles().find((f) => f.path === normalizePath(this.todayPlanFilePath))
   }
 
+  get todayTitle() {
+    return this.todayFile?.basename
+  }
+
   async getTodayPlanFileContent() {
     const path = normalizePath(this.todayPlanFilePath)
     if (!(await this.vault.adapter.exists(path))) return null

@@ -1,4 +1,5 @@
-import type { Activities, ActivitiesData, Activity, ActivityData } from './types'
+import { sortBy } from 'lodash-es'
+import type { Activities, ActivitiesData, Activity, ActivityData, StatisticsData } from './types'
 import {
   check,
   generateActivityData,
@@ -64,7 +65,7 @@ export class Plan {
       const actLen = +data.actLen
 
       return {
-        activity: data.activity,
+        name: data.name,
         length: +data.length,
         start: startMins,
         stop: startMins + actLen,
@@ -77,5 +78,24 @@ export class Plan {
 
   private generateData(activities: Activity[]): ActivitiesData {
     return activities.map((a) => generateActivityData(a))
+  }
+
+  generateStatistics() {
+    const statsData: Record<string, StatisticsData> = {}
+    for (const activity of this.activities) {
+      const name = activity.name.split(':')[0]
+      statsData[name] = statsData[name] || { name, total: 0, children: [] }
+      statsData[name].total += activity.stop - activity.start
+      statsData[name].children?.push({
+        name: activity.name,
+        total: activity.stop - activity.start,
+      })
+    }
+
+    return sortBy(statsData, (x) => -x.total)
+  }
+
+  getTotalHours() {
+    return ((this.endMins - this.startMins) / 60).toFixed(2)
   }
 }

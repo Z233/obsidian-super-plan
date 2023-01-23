@@ -18,7 +18,7 @@ export const TriggerScheduleColumn: PlanCellType[] = ['length', 'start', 'f', 'r
 export enum ActivityDataColumn {
   'f',
   'start',
-  'activity',
+  'name',
   'length',
   'r',
   'actLen',

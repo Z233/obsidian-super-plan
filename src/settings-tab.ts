@@ -35,8 +35,35 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
     containerEl.createEl('h2', { text: 'General' })
 
     new Setting(containerEl)
+      .setName('Root Folder')
+      .setDesc('The root folder contains all plan notes. ')
+      .addSearch((cb) => {
+        new FolderSuggest(this.app, cb.inputEl)
+
+        cb.setPlaceholder('Folder')
+          .setValue(this.plugin.settings.rootFolder)
+          .onChange((value: string) => {
+            this.error = this.validateFolder(value)
+            this.plugin.settings.rootFolder = value
+            this.plugin.settings.update({
+              rootFolder: value,
+            })
+          })
+      })
+
+    new Setting(containerEl)
       .setName('Daily Plan Note Folder')
-      .setDesc('The folder where the daily plan attempts to detect.')
+      .setDesc(
+        createFragment((fragment) => {
+          const lines = [
+            'The folder where the daily plan note is placed.',
+            'The folder must be the same as or in the root folder.',
+            'Tracker will scan the folder to get the daily plan.',
+          ]
+          lines.forEach((content) => fragment.appendChild(fragment.createDiv({ text: content })))
+          return fragment
+        })
+      )
       .addSearch((cb) => {
         new FolderSuggest(this.app, cb.inputEl)
 

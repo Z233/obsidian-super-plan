@@ -18,7 +18,7 @@ export type PlanTableInfo = {
 }
 
 export type ActivityData = {
-  activity: string
+  name: string
   length: string
   start: string
   f: string
@@ -38,13 +38,19 @@ export type PlanTableState = {
 }
 
 export type Activity = {
-  activity: string
+  name: string
   length: number
   start: number
   stop: number
   isFixed: boolean
   isRigid: boolean
   actLen: number
+}
+
+export type StatisticsData = {
+  name: string
+  total: number
+  children?: StatisticsData[]
 }
 
 export type Activities = Activity[]

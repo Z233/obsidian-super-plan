@@ -101,7 +101,7 @@ export class PlanManager {
             if (shouldInsertActivity) {
               pe.insertActivityBelow()
             } else {
-              const offsetColumn = -focus.column + getActivityDataIndex('activity')
+              const offsetColumn = -focus.column + getActivityDataIndex('name')
               pe.moveFocus(1, offsetColumn)
             }
           } else {

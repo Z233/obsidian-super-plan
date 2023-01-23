@@ -49,7 +49,7 @@ export function parseMins2TodayUnix(mins: number) {
 
 export function generateActivityData(activity: Activity): ActivityData {
   return {
-    activity: activity.activity,
+    name: activity.name,
     length: activity.length.toString(),
     start: parseMins2Time(activity.start),
     f: activity.isFixed ? 'x' : '',
