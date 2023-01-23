@@ -9,7 +9,6 @@ import { EditorView, keymap } from '@codemirror/view'
 import { debounce } from 'lodash-es'
 import { getActivityDataIndex } from './utils/helper'
 import { TriggerScheduleColumn, ViewUpdateFlags } from './constants'
-import { MarkdownView } from 'obsidian'
 import type { Parser } from './parser'
 
 export class PlanManager {
@@ -52,25 +51,37 @@ export class PlanManager {
 
             this.updateState(state)
 
-            const before = state
-            const beforeCell = before && getStartCell(before.row)
+            const current = state
+            const currentCell = current && getStartCell(current.row)
             const scheduled = pe.executeSchedule(this.lastState)
 
             // set isFixed to true when user manually input start time
             if (
               this.lastState?.type === 'start' &&
               scheduled &&
-              beforeCell &&
-              getStartCell(scheduled.row).content !== beforeCell.content
+              currentCell &&
+              getStartCell(scheduled.row).content !== currentCell.content
             ) {
-              pe.executeSchedule(
-                {
-                  ...before,
-                  type: 'start',
-                  cell: beforeCell,
-                },
-                true
-              )
+              // when moving between start cells, use last state to schedule
+              if (current.type === 'start') {
+                pe.executeSchedule(
+                  {
+                    ...this.lastState,
+                    type: 'start',
+                    cell: getStartCell(current.table.getRows()[this.lastState.focus.row]),
+                  },
+                  true
+                )
+              } else {
+                pe.executeSchedule(
+                  {
+                    ...current,
+                    type: 'start',
+                    cell: currentCell,
+                  },
+                  true
+                )
+              }
             }
           }
         }, true),
