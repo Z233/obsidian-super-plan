@@ -8,10 +8,8 @@ import {
   readTable,
   completeTable,
   insertRow,
-  Focus,
 } from '@tgrosinger/md-advanced-tables'
 import { deleteRow } from '@tgrosinger/md-advanced-tables/lib/formatter'
-import type { FormattedTable } from '@tgrosinger/md-advanced-tables/lib/formatter'
 import { isEqual } from 'lodash-es'
 import type { App, Editor, TFile } from 'obsidian'
 import { PlanLinesLiteral, TriggerScheduleColumn } from './constants'
@@ -28,14 +26,12 @@ import type {
   PlanTableInfo,
 } from './types'
 import {
-  check,
   getActivityDataIndex,
   getActivityDataKey,
   getNowMins,
   parseMins2Time,
   removeSpacing,
 } from './utils/helper'
-import type { EditorView } from '@codemirror/view'
 
 export class PlanEditor {
   private readonly app: App
@@ -114,7 +110,7 @@ export class PlanEditor {
     return formatted.table
   }
 
-  public readonly getState = (): PlanTableState | null => {
+  getState(): PlanTableState | null {
     if (!this.tableInfo) return null
     const table = this.tableInfo.table
     const cursor = this.ote.getCursorPosition()
@@ -142,16 +138,17 @@ export class PlanEditor {
     return this.tableInfo?.focus
   }
 
-  public readonly cursorIsInPlan = (): boolean => {
+  cursorIsInPlan(): boolean {
     if (!this.tableInfo) return false
     const headerLine = this.tableInfo.lines[0]
     return removeSpacing(headerLine) === removeSpacing(PlanLinesLiteral.header)
   }
 
-  public readonly cursorIsInTable = (): boolean =>
-    this.te.cursorIsInTable(this.settings.asOptions())
+  cursorIsInTable(): boolean {
+    return this.te.cursorIsInTable(this.settings.asOptions())
+  }
 
-  public readonly insertActivityBelow = (): void => {
+  insertActivityBelow() {
     if (!this.tableInfo) return
 
     const { table, range, lines, focus } = this.tableInfo
@@ -200,7 +197,7 @@ export class PlanEditor {
     }
   }
 
-  public readonly insertActivityAbove = (): void => {
+  insertActivityAbove() {
     if (!this.tableInfo) return
 
     const { range, focus } = this.tableInfo
@@ -257,7 +254,7 @@ export class PlanEditor {
     }
   }
 
-  public readonly beginCursorActivity = (): void => {
+  beginCursorActivity() {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
     const { data: cursorActivityData, index } = cursor
@@ -273,7 +270,7 @@ export class PlanEditor {
     this.schedule(activitiesData)
   }
 
-  public readonly fixCursorActivity = () => {
+  fixCursorActivity() {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
     const { data: cursorActivityData, index } = cursor
@@ -288,7 +285,7 @@ export class PlanEditor {
     this.schedule(activitiesData)
   }
 
-  readonly ignoreActivity = () => {
+  ignoreActivity() {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
 
@@ -305,7 +302,7 @@ export class PlanEditor {
     this.schedule(activitiesData)
   }
 
-  public readonly splitActivity = (firstLength: number, secondLength: number) => {
+  splitActivity(firstLength: number, secondLength: number) {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
     const { data, index: rowIndex } = cursor
@@ -343,7 +340,7 @@ export class PlanEditor {
     this.schedule(this.getActivitiesData())
   }
 
-  public readonly unfixAllActivities = () => {
+  unfixAllActivities() {
     const activitiesData = this.getActivitiesData()
     const updatedActivityData = activitiesData.map((a, i) =>
       // Do not alter the first and last activity
@@ -358,11 +355,11 @@ export class PlanEditor {
     this.schedule(updatedActivityData)
   }
 
-  public readonly nextRow = (): void => {
+  nextRow() {
     this.te.nextRow(this.settings.asOptions())
   }
 
-  public readonly nextCell = (): void => {
+  nextCell() {
     if (!this.tableInfo) return
 
     const columnCount = this.tableInfo.table.getRows()[0].getCells().length
@@ -375,11 +372,11 @@ export class PlanEditor {
     )
   }
 
-  public readonly previousCell = (): void => {
+  previousCell() {
     this.te.previousCell(this.settings.asOptions())
   }
 
-  public readonly insertPlanTable = () => {
+  insertPlanTable() {
     const table = readTable(
       [
         PlanLinesLiteral.header,
@@ -406,7 +403,7 @@ export class PlanEditor {
     }
   }
 
-  public readonly deleteRow = (): void => {
+  deleteRow() {
     this.te.deleteRow(this.settings.asOptions())
   }
 
@@ -440,11 +437,11 @@ export class PlanEditor {
     this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
   }
 
-  readonly executeSchedule = (
+  executeSchedule(
     lastState: Maybe<PlanTableState>,
     setFixed = false,
     force = false
-  ): Maybe<PlanTableState> => {
+  ): Maybe<PlanTableState> {
     if (!this.tableInfo || !lastState || (!force && !this.shouldSchedule(lastState.type))) return
 
     const activitiesData = this.getActivitiesData()
@@ -490,7 +487,7 @@ export class PlanEditor {
     }
   }
 
-  readonly moveFocus = (rowOffset: number, columnOffset: number) => {
+  moveFocus(rowOffset: number, columnOffset: number) {
     this.te.moveFocus(rowOffset, columnOffset, this.settings.asOptions())
   }
 }
