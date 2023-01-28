@@ -29,7 +29,7 @@
 		>
 			<strong>Now</strong>
 			<span>{parseMins2Time(now.start)}</span>
-			<span>{formatActivityName(now.name)}</span>
+			<span>{formatActivityName(now.activity)}</span>
 		</div>
 
 		{#if !isAllDone}
@@ -49,7 +49,7 @@
 			>
 				<strong>Next</strong>
 				<span>{parseMins2Time(next.start)}</span>
-				<span>{formatActivityName(next.name)}</span>
+				<span>{formatActivityName(next.activity)}</span>
 			</div>
 		{/if}
 	{:else if !isAllDone}

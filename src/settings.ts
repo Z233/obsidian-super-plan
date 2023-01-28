@@ -8,7 +8,6 @@ interface PlanEditorSettings {
 }
 
 interface PlanTrackerSettings {
-  rootFolder: string
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
 
@@ -24,7 +23,6 @@ export const defaultSettings: Partial<ISettings> = {
   formatType: FormatType.NORMAL,
 
   // PlanTrackerSettings
-  rootFolder: '/',
   dailyPlanNoteFolder: '/',
   dailyPlanNoteFormat: DEFAULT_NOTE_FORMAT,
   progressType: ProgressType.BAR,
@@ -39,7 +37,6 @@ export class SuperPlanSettings implements ISettings {
 
   formatType: FormatType
 
-  rootFolder: string
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
   progressType: ProgressType

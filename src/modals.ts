@@ -1,8 +1,7 @@
 import { isEqual } from 'lodash-es'
-import { MarkdownRenderer, Modal, Notice, type App } from 'obsidian'
+import { Modal, Notice, type App } from 'obsidian'
 import type { PlanEditor } from './plan-editor'
 import type { PlanTracker } from './plan-tracker'
-import { generateDailyStatisticsLines } from './statistics'
 import { generateActivityData, getNowMins } from './utils/helper'
 
 export class SplitConfirmModal extends Modal {
@@ -73,44 +72,5 @@ export class SplitConfirmModal extends Modal {
   onClose() {
     const { contentEl } = this
     contentEl.empty()
-  }
-}
-
-export class DailyStatisticsModal extends Modal {
-  private readonly pe: PlanEditor
-
-  constructor(app: App, pe: PlanEditor) {
-    super(app)
-    this.pe = pe
-  }
-
-  onOpen() {
-    const activeFileName = this.app.workspace.activeEditor?.file?.basename
-
-    const lines = generateDailyStatisticsLines(this.pe.getActivitiesData(), activeFileName ?? '')
-    const content = lines.join('\n')
-
-    this.titleEl.textContent = `Statistics: ${activeFileName}`
-
-    this.contentEl.setAttribute('style', 'user-select: text')
-    MarkdownRenderer.renderMarkdown(content, this.contentEl, '', undefined!)
-
-    const buttonContainerEl = this.contentEl.createDiv()
-    buttonContainerEl.addClass('modal-button-container')
-
-    buttonContainerEl
-      .createEl('button', {
-        text: 'Copy',
-        cls: 'mod-cta',
-      })
-      .onClickEvent(() => {
-        navigator.clipboard.writeText(content).then(() => this.close())
-      })
-
-    buttonContainerEl
-      .createEl('button', {
-        text: 'Cancel',
-      })
-      .onClickEvent(this.close)
   }
 }

@@ -55,7 +55,7 @@ export class PlanEditor {
     this.te = new TableEditor(this.ote)
   }
 
-  getActivitiesData(): ActivitiesData {
+  private getActivitiesData(): ActivitiesData {
     if (!this.tableInfo) return []
     return this.parser.transformTable(this.tableInfo.table)
   }
@@ -173,7 +173,7 @@ export class PlanEditor {
 
     const newActivityData: ActivityData = {
       f: isLast ? 'x' : '',
-      name: '',
+      activity: '',
       start: next ? next.start : current.start,
       length: '0',
       r: '',
@@ -191,7 +191,7 @@ export class PlanEditor {
       } else {
         newFocus = focus.setRow(focus.row + 1)
       }
-      newFocus = newFocus.setColumn(getActivityDataIndex('name')).setOffset(1)
+      newFocus = newFocus.setColumn(getActivityDataIndex('activity')).setOffset(1)
 
       this.te._moveToFocus(range.start.row, updatedTable, newFocus)
       this.te.resetSmartCursor()
@@ -221,7 +221,7 @@ export class PlanEditor {
 
     const newActivityData: ActivityData = {
       f: isFirst ? 'x' : '',
-      name: '',
+      activity: '',
       start: current.start,
       length: '0',
       r: '',
@@ -233,7 +233,7 @@ export class PlanEditor {
 
     if (updatedTable) {
       // shift focus to activity column
-      const newFocus = focus.setColumn(getActivityDataIndex('name')).setOffset(1)
+      const newFocus = focus.setColumn(getActivityDataIndex('activity')).setOffset(1)
       this.te._moveToFocus(range.start.row, updatedTable, newFocus)
       this.te.resetSmartCursor()
     } else {
@@ -312,13 +312,13 @@ export class PlanEditor {
 
     const firstActivityData: ActivityData = {
       ...data,
-      name: `${data.name} (#1)`,
+      activity: `${data.activity} (#1)`,
       length: firstLength.toString(),
     }
 
     const secondActivityData: ActivityData = {
       ...data,
-      name: `${data.name} (#2)`,
+      activity: `${data.activity} (#2)`,
       length: secondLength.toString(),
       f: '',
       r: '',
@@ -337,7 +337,7 @@ export class PlanEditor {
     this.te._moveToFocus(
       range.start.row,
       formatted.table,
-      focus.setRow(firstIndex + 1).setColumn(getActivityDataIndex('name'))
+      focus.setRow(firstIndex + 1).setColumn(getActivityDataIndex('activity'))
     )
 
     this.schedule(this.getActivitiesData())

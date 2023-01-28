@@ -7,12 +7,10 @@ import { PlanManager } from './plan-manager'
 import { SuperPlanSettingsTab } from './settings-tab'
 import { PlanTracker } from './plan-tracker'
 import { timer } from './timer'
-import { DailyStatisticsModal, SplitConfirmModal } from './modals'
+import { SplitConfirmModal } from './modals'
 import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
 import 'electron'
-import { Plan } from './plan'
-import { generateDailyStatisticsLines } from './statistics'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -112,22 +110,6 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
-      id: 'insert-today-plan-statistics',
-      name: 'Insert today plan statistics',
-      editorCheckCallback: this.newPerformTodayPlanAction((editor) => {
-        this.insertDailyStatistics(editor)
-      }),
-    })
-
-    this.addCommand({
-      id: 'show-plan-statistics',
-      name: 'Show current plan statistics',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        new DailyStatisticsModal(this.app, pe).open()
-      }),
-    })
-
-    this.addCommand({
       id: 'open-tracker-window',
       name: 'Open tracker window',
       callback: () => {
@@ -183,22 +165,6 @@ export default class SuperPlan extends Plugin {
     }
   }
 
-  private async insertDailyStatistics(editor: Editor) {
-    const content = (await this.file.getTodayPlanFileContent())!
-    const tableInfo = this.parser.findPlanTable(content)
-    if (!tableInfo) {
-      new Notice(`No plan found in today's note.`)
-      return
-    }
-    const activitiesData = this.parser.transformTable(tableInfo.table)
-
-    const lines = generateDailyStatisticsLines(activitiesData, this.file.todayTitle ?? '')
-
-    const cursor = editor.getCursor('from')
-    editor.replaceRange(lines.join('\n'), cursor)
-    editor.setCursor({ ch: 0, line: cursor.line + lines.length })
-  }
-
   readonly newPerformPlanActionCM6 =
     (fn: (pe: PlanEditor) => void, force = false): (() => boolean) =>
     (): boolean => {
@@ -214,14 +180,6 @@ export default class SuperPlan extends Plugin {
 
       return false
     }
-
-  private newPerformTodayPlanAction(fn: (editor: Editor) => void) {
-    return (checking: boolean, editor: Editor, view: MarkdownView): boolean | void => {
-      const todayFile = this.file.todayFile
-      if (checking) return Boolean(todayFile && editor)
-      fn(editor)
-    }
-  }
 
   private readonly newPerformTableAction =
     (fn: (pe: PlanEditor) => void, alertOnNoTable = true) =>
