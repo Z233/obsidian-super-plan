@@ -1,7 +1,9 @@
+import type { Table } from '@tgrosinger/md-advanced-tables'
 import moment from 'moment'
 import { type App, TFolder, normalizePath, TFile, Vault, type TAbstractFile } from 'obsidian'
+import { getAPI } from 'obsidian-dataview'
 import { ActivityDataColumn } from 'src/constants'
-import type { Activity, ActivityData, PlanCellType } from 'src/types'
+import type { ActivitiesData, Activity, ActivityData, PlanCellType } from 'src/types'
 import { TemplaterError } from './error'
 
 export const removeSpacing = (value: string) => value.replace(/\s+/gm, '')
@@ -92,3 +94,24 @@ export function get_tfiles_from_folder(app: App, folder_str: string): Array<TFil
 
   return files
 }
+
+export function transformTable(table: Table): ActivitiesData {
+  const activitiesRows = table
+    .getRows()
+    .slice(2)
+    .map((row) => row.getCells().map((cell) => cell.content))
+
+  const activitiesData: ActivitiesData = activitiesRows.map((row) =>
+    row.reduce(
+      (data, v, i) => ({
+        ...data,
+        [ActivityDataColumn[i]]: v,
+      }),
+      {} as ActivityData
+    )
+  )
+
+  return activitiesData
+}
+
+export const checkIsDataviewEnabled = () => !!getAPI()

@@ -2,6 +2,7 @@ import { App, normalizePath, PluginSettingTab, Setting } from 'obsidian'
 import { ProgressType } from './constants'
 import { FolderSuggest } from './file-suggester'
 import type SuperPlan from './main'
+import { checkIsDataviewEnabled } from './utils/helper'
 
 export class SuperPlanSettingsTab extends PluginSettingTab {
   private readonly plugin: SuperPlan
@@ -75,6 +76,39 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
         })
       })
     })
+
+    new Setting(containerEl)
+      .setName('Enable Activity Name Auto-Completion')
+      .setDesc(
+        (() => {
+          const fragment = new DocumentFragment()
+          const el = fragment.createDiv({
+            text: 'Requires the ',
+          })
+          el.createEl('a', {
+            text: 'obsidian-dataview',
+            href: 'https://github.com/blacksmithgu/obsidian-dataview',
+          })
+          el.appendText(' to be enabled.')
+
+          if (!checkIsDataviewEnabled()) {
+            fragment.createDiv({
+              text: 'Dataview is not enabled.',
+              cls: 'mod-warning',
+            })
+          }
+
+          return fragment
+        })()
+      )
+      .addToggle((comp) => {
+        comp.disabled = !checkIsDataviewEnabled()
+        comp.setValue(this.plugin.settings.enableActivityAutoCompletion).onChange((value) =>
+          this.plugin.settings.update({
+            enableActivityAutoCompletion: value,
+          })
+        )
+      })
 
     containerEl.createEl('h2', { text: 'Tracker' })
 

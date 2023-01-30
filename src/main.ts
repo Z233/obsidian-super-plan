@@ -11,6 +11,7 @@ import { SplitConfirmModal } from './modals'
 import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
 import 'electron'
+import { ActivitySuggester } from './suggesters'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -36,6 +37,10 @@ export default class SuperPlan extends Plugin {
     this.tracker.init()
 
     new PlanManager(this, this.parser)
+
+    if (this.settings.enableActivityAutoCompletion) {
+      this.registerEditorSuggest(new ActivitySuggester(this.app, this.settings))
+    }
 
     this.cmEditors = []
     this.registerCodeMirror((cm) => {
@@ -170,7 +175,7 @@ export default class SuperPlan extends Plugin {
     (): boolean => {
       const view = this.app.workspace.getActiveViewOfType(MarkdownView)
       if (view) {
-        const pe = new PlanEditor(this.app, view.file, view.editor, this.parser, this.settings)
+        const pe = new PlanEditor(view.file, view.editor, this.settings)
 
         if (force || pe.cursorIsInPlan()) {
           fn(pe)
@@ -184,7 +189,7 @@ export default class SuperPlan extends Plugin {
   private readonly newPerformTableAction =
     (fn: (pe: PlanEditor) => void, alertOnNoTable = true) =>
     (checking: boolean, editor: Editor, view: MarkdownView): boolean | void => {
-      const pe = new PlanEditor(this.app, view.file, editor, this.parser, this.settings)
+      const pe = new PlanEditor(view.file, editor, this.settings)
 
       if (checking) {
         return pe.cursorIsInPlan()

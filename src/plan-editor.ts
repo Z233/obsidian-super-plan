@@ -31,21 +31,18 @@ import {
   getNowMins,
   parseMins2Time,
   removeSpacing,
+  transformTable,
 } from './utils/helper'
 
 export class PlanEditor {
-  private readonly app: App
   private readonly settings: SuperPlanSettings
   private readonly te: TableEditor
   private readonly ote: ObsidianTextEditor
-  private readonly parser: Parser
 
   // private readonly plan: Plan | null = null;
 
-  constructor(app: App, file: TFile, editor: Editor, parser: Parser, settings: SuperPlanSettings) {
-    this.app = app
+  constructor(file: TFile, editor: Editor, settings: SuperPlanSettings) {
     this.settings = settings
-    this.parser = parser
 
     this.ote = new ObsidianTextEditor(app, file, editor, settings)
     this.te = new TableEditor(this.ote)
@@ -53,7 +50,7 @@ export class PlanEditor {
 
   private getActivitiesData(): ActivitiesData {
     if (!this.tableInfo) return []
-    return this.parser.transformTable(this.tableInfo.table)
+    return transformTable(this.tableInfo.table)
   }
 
   private get tableInfo() {
@@ -410,7 +407,7 @@ export class PlanEditor {
   readonly executeBackgroundSchedule = (tableInfo: PlanTableInfo, lastState: PlanTableState) => {
     const { table, range, lines } = tableInfo
 
-    const activitiesData = this.parser.transformTable(table)
+    const activitiesData = transformTable(table)
 
     if (lastState.type === 'start') {
       const { cell, focus } = lastState

@@ -2,9 +2,12 @@ import { FormatType, optionsWithDefaults } from '@tgrosinger/md-advanced-tables'
 import type { Options } from '@tgrosinger/md-advanced-tables'
 import { DEFAULT_NOTE_FORMAT, ProgressType } from './constants'
 import type SuperPlan from './main'
+import { checkIsDataviewEnabled } from './utils/helper'
 
 interface PlanEditorSettings {
+  planTableId: string
   formatType: FormatType
+  enableActivityAutoCompletion: boolean
 }
 
 interface PlanTrackerSettings {
@@ -20,7 +23,9 @@ type ISettings = PlanEditorSettings & PlanTrackerSettings
 
 export const defaultSettings: Partial<ISettings> = {
   // PlanEditorSettings
+  planTableId: 'plan',
   formatType: FormatType.NORMAL,
+  enableActivityAutoCompletion: checkIsDataviewEnabled(),
 
   // PlanTrackerSettings
   dailyPlanNoteFolder: '/',
@@ -35,7 +40,9 @@ export class SuperPlanSettings implements ISettings {
   private readonly plugin: SuperPlan
   private updateCbs: SettingsUpdateCallback[] = []
 
+  planTableId: string
   formatType: FormatType
+  enableActivityAutoCompletion: boolean
 
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
@@ -66,8 +73,8 @@ export class SuperPlanSettings implements ISettings {
   serialize() {
     const obj: Record<string, string> = {}
     for (const key in this) {
-      if (typeof this[key] === 'string') {
-        obj[key] = this[key] as any as string
+      if (['string', 'number', 'boolean'].includes(typeof this[key])) {
+        obj[key] = this[key] as any
       }
     }
     return obj
