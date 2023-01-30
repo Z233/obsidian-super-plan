@@ -10,19 +10,24 @@ import { debounce } from 'lodash-es'
 import { getActivityDataIndex } from './utils/helper'
 import { TriggerScheduleColumn, ViewUpdateFlags } from './constants'
 import type { Parser } from './parser'
+import type { ActivityProvider } from './suggest/providers'
 
 export class PlanManager {
-  private readonly plugin: SuperPlan
-  private readonly parser: Parser
+  private activityProvider: Maybe<ActivityProvider> = null
+
   private lastState: Maybe<PlanTableState>
   private state: Maybe<PlanTableState>
 
-  constructor(plugin: SuperPlan, parser: Parser) {
+  constructor(private plugin: SuperPlan, private parser: Parser) {
     this.plugin = plugin
     this.parser = parser
 
     this.plugin.registerEditorExtension(this.makeEditorRemappingExtension())
     this.plugin.registerEditorExtension(this.makeEditorUpdateListenerExtension())
+  }
+
+  setProvider(provider: ActivityProvider) {
+    this.activityProvider = provider
   }
 
   private readonly makeEditorUpdateListenerExtension = (): Extension => {
@@ -43,6 +48,15 @@ export class PlanManager {
             const planTableInfo = this.parser.findPlanTable(lines)
             planTableInfo && pe.executeBackgroundSchedule(planTableInfo, this.lastState)
             return
+          }
+
+          if (
+            state &&
+            state.type === 'activity' &&
+            this.plugin.settings.enableActivityAutoCompletion &&
+            this.activityProvider
+          ) {
+            this.activityProvider.refresh()
           }
 
           // if focus position in table is not same

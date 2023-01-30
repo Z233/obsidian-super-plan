@@ -1,18 +1,16 @@
 import {
   Editor,
   EditorSuggest,
-  normalizePath,
   TFile,
   type App,
   type EditorPosition,
   type EditorSuggestContext,
   type EditorSuggestTriggerInfo,
 } from 'obsidian'
-import { getAPI, Result, Success } from 'obsidian-dataview'
-import { PlanEditor } from './plan-editor'
-import type { SuperPlanSettings } from './settings'
-import { checkIsDataviewEnabled } from './utils/helper'
-import { uniq } from 'lodash-es'
+import { PlanEditor } from '../plan-editor'
+import type { SuperPlanSettings } from '../settings'
+import { checkIsDataviewEnabled } from '../utils/helper'
+import type { ActivityProvider } from './providers'
 
 type ActivitySuggestValue = {
   value: string
@@ -23,13 +21,12 @@ type ActivitySuggestValue = {
 type Match = { value: string; html: string }
 
 export class ActivitySuggester extends EditorSuggest<ActivitySuggestValue> {
-  app: App
-  settings: SuperPlanSettings
-
-  constructor(app: App, settings: SuperPlanSettings) {
+  constructor(
+    private app: App,
+    private provider: ActivityProvider,
+    private settings: SuperPlanSettings
+  ) {
     super(app)
-    this.app = app
-    this.settings = settings
   }
 
   private shouldPreventTrigger(cursor: EditorPosition, file: TFile) {
@@ -93,42 +90,20 @@ export class ActivitySuggester extends EditorSuggest<ActivitySuggestValue> {
     return null
   }
 
-  private checkIsQuerySuccessful(
-    query: Result<unknown, unknown>
-  ): query is Success<unknown, unknown> {
-    return query.successful
-  }
-
-  private async queryActivities() {
-    const dv = getAPI()!
-    const query = await dv.query(
-      `LIST P.Activity FROM "${normalizePath(
-        this.settings.dailyPlanNoteFolder
-      )}" FLATTEN file.tables.plan AS P`
-    )
-    return query
-  }
-
   async getSuggestions(context: EditorSuggestContext): Promise<ActivitySuggestValue[]> {
-    const query = await this.queryActivities()
+    const activities = this.provider.activityNames
 
-    if (this.checkIsQuerySuccessful(query)) {
-      const activities = uniq(query.value.values.map((x) => x.value)).filter((x) => !!x)
+    let matches: Match[] = []
+    activities.forEach((record, idx) => {
+      const match = this.search(context.query, record)
+      if (match) matches.push(match)
+    })
 
-      let matches: Match[] = []
-      activities.forEach((record, idx) => {
-        const match = this.search(context.query, record)
-        if (match) matches.push(match)
-      })
-
-      return matches.map((x) => ({
-        value: x.value,
-        valueHtml: x.html,
-        context,
-      }))
-    }
-
-    return []
+    return matches.map((x) => ({
+      value: x.value,
+      valueHtml: x.html,
+      context,
+    }))
   }
 
   renderSuggestion(value: ActivitySuggestValue, el: HTMLElement): void {

@@ -11,7 +11,8 @@ import { SplitConfirmModal } from './modals'
 import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
 import 'electron'
-import { ActivitySuggester } from './suggesters'
+import { ActivitySuggester } from './suggest/suggesters'
+import { ActivityProvider } from './suggest/providers'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -36,10 +37,12 @@ export default class SuperPlan extends Plugin {
     )
     this.tracker.init()
 
-    new PlanManager(this, this.parser)
+    const manager = new PlanManager(this, this.parser)
 
     if (this.settings.enableActivityAutoCompletion) {
-      this.registerEditorSuggest(new ActivitySuggester(this.app, this.settings))
+      const provider = new ActivityProvider(this.settings)
+      manager.setProvider(provider)
+      this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
     }
 
     this.cmEditors = []
