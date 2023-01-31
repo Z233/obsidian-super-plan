@@ -20,6 +20,7 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production'),
   },
   build: {
+    sourcemap: isDev && 'inline',
     lib: {
       entry: 'src/main.ts',
       formats: ['cjs'],
