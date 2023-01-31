@@ -2,10 +2,12 @@ import {
   Editor,
   EditorSuggest,
   TFile,
+  Scope,
   type App,
   type EditorPosition,
   type EditorSuggestContext,
   type EditorSuggestTriggerInfo,
+  type KeymapEventHandler,
 } from 'obsidian'
 import { PlanEditor } from '../plan-editor'
 import type { SuperPlanSettings } from '../settings'
@@ -20,28 +22,55 @@ type ActivitySuggestValue = {
 
 type Match = { value: string; html: string }
 
-export class ActivitySuggester extends EditorSuggest<ActivitySuggestValue> {
+// This is an unsafe code..!!
+interface UnsafeEditorSuggestInterface {
+  scope: Scope & { keys: (KeymapEventHandler & { func: CallableFunction })[] }
+  suggestions: {
+    useSelectedItem(ev: Partial<KeyboardEvent>): void
+  }
+}
+
+export class ActivitySuggester
+  extends EditorSuggest<ActivitySuggestValue>
+  implements UnsafeEditorSuggestInterface
+{
+  scope: UnsafeEditorSuggestInterface['scope']
+  suggestions: UnsafeEditorSuggestInterface['suggestions']
+  // Used to avoid re-registration
+  keymapEventHandlers: KeymapEventHandler[] = []
+
   constructor(
     private app: App,
     private provider: ActivityProvider,
     private settings: SuperPlanSettings
   ) {
     super(app)
+    this.registerKeymaps()
+  }
+
+  private registerKeymaps() {
+    // Clear
+    this.keymapEventHandlers.forEach((x) => this.scope.unregister(x))
+    this.keymapEventHandlers = []
+
+    this.keymapEventHandlers.push(
+      this.scope.register([], 'Tab', () => {
+        this.suggestions.useSelectedItem({})
+        return true
+      })
+    )
   }
 
   private shouldPreventTrigger(cursor: EditorPosition, file: TFile) {
     const cache = this.app.metadataCache.getFileCache(file)
-    if (!cache) return false
+    if (!cache || !cache.sections) return false
 
-    return !(
-      !cache.sections ||
-      !cache.sections.some(
-        (sec) =>
-          sec.position.start.line <= cursor.line &&
-          sec.position.end.line >= cursor.line &&
-          sec.type === 'table' &&
-          sec.id === this.settings.planTableId
-      )
+    return !cache.sections.some(
+      (sec) =>
+        sec.position.start.line <= cursor.line &&
+        sec.position.end.line >= cursor.line &&
+        sec.type === 'table' &&
+        sec.id === this.settings.planTableId
     )
   }
 
