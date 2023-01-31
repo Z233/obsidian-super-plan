@@ -13,6 +13,7 @@ import { isEqual } from 'lodash-es'
 import 'electron'
 import { ActivitySuggester } from './suggest/suggesters'
 import { ActivityProvider } from './suggest/providers'
+import './style.css'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings

@@ -77,6 +77,7 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       })
     })
 
+    let lastEnableActivityAutoCompletion = this.plugin.settings.enableActivityAutoCompletion
     new Setting(containerEl)
       .setName('Enable Activity Name Auto-Completion')
       .setDesc(
@@ -103,11 +104,24 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       )
       .addToggle((comp) => {
         comp.disabled = !checkIsDataviewEnabled()
-        comp.setValue(this.plugin.settings.enableActivityAutoCompletion).onChange((value) =>
+        comp.setValue(this.plugin.settings.enableActivityAutoCompletion).onChange((value) => {
           this.plugin.settings.update({
             enableActivityAutoCompletion: value,
           })
-        )
+
+          if (
+            !comp.toggleEl.querySelector('.option-restart-hint') &&
+            lastEnableActivityAutoCompletion !== value
+          ) {
+            comp.toggleEl.createDiv({
+              text: 'Requires a restart of Obsidian.',
+              cls: 'option-restart-hint mod-warning',
+            })
+          } else {
+            const el = comp.toggleEl.querySelector('.option-restart-hint')
+            el && el.remove()
+          }
+        })
       })
 
     containerEl.createEl('h2', { text: 'Tracker' })

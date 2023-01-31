@@ -1,0 +1,8 @@
+.setting-item-control .option-restart-hint {
+  position: absolute;
+  right: calc(100% + var(--size-4-2));
+  white-space: nowrap;
+  font-size: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
