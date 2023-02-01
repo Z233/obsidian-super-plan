@@ -103,10 +103,10 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
-      id: 'fix-activity',
-      name: 'Fix activity',
+      id: 'toggle-fix-activity',
+      name: 'Toggle fix to activity',
       editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.fixCursorActivity()
+        pe.toggleFixCursorActivity()
       }),
     })
 

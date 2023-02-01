@@ -26,6 +26,7 @@ import type {
   PlanTableInfo,
 } from './types'
 import {
+  check,
   getActivityDataIndex,
   getActivityDataKey,
   getNowMins,
@@ -267,7 +268,7 @@ export class PlanEditor {
     this.schedule(activitiesData)
   }
 
-  fixCursorActivity() {
+  toggleFixCursorActivity() {
     const cursor = this.getCursorActivityData()
     if (!cursor) return
     const { data: cursorActivityData, index } = cursor
@@ -275,7 +276,7 @@ export class PlanEditor {
 
     const updatedActivityData: ActivityData = {
       ...cursorActivityData,
-      f: 'x',
+      f: check(cursorActivityData.f) ? '' : 'x',
     }
     activitiesData[index] = updatedActivityData
 
