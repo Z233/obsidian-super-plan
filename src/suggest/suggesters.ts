@@ -75,7 +75,7 @@ export class ActivitySuggester
   }
 
   onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
-    if (this.shouldPreventTrigger(cursor, file) || !checkIsDataviewEnabled()) return null
+    if (!checkIsDataviewEnabled()) return null
 
     const pe = new PlanEditor(file, editor, this.settings)
     const state = pe.getState()
