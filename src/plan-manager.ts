@@ -6,7 +6,7 @@ import type { PlanEditor } from './plan-editor'
 import type { PlanTableState, Maybe, PlanCellType } from './types'
 import { Prec } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
-import { debounce } from 'lodash-es'
+import { debounce, isNumber } from 'lodash-es'
 import { getActivityDataIndex } from './utils/helper'
 import { TriggerScheduleColumn, ViewUpdateFlags } from './constants'
 import type { Parser } from './parser'
@@ -156,15 +156,42 @@ export class PlanManager {
     keymaps.push(
       ...['Ctrl-x', 'Ctrl-v'].map((key) => ({
         key,
-        run: () => {
+        run: (v: EditorView) => {
+          const editor = this.plugin.app.workspace.activeEditor!.editor!
+          const cursor = editor.getCursor()
+
           this.plugin.newPerformPlanActionCM6((pe: PlanEditor) => {
             const lastHeight = this.state?.table.getHeight()
             this.updateState(pe.getState())
 
-            const currentHeight = this.state?.table.getHeight()
-            if (lastHeight && currentHeight && lastHeight !== currentHeight) {
-              pe.executeSchedule(this.lastState, false, true)
-            }
+            // Use window.setImmediate to execute schedule after plan table updated.
+            window.setImmediate(() => {
+              const lines = v.state.doc.toJSON()
+              const planTableInfo = this.parser.findPlanTable(lines)
+              const currentHeight = planTableInfo?.table.getHeight()
+
+              if (
+                planTableInfo &&
+                this.lastState &&
+                isNumber(lastHeight) &&
+                isNumber(currentHeight) &&
+                lastHeight !== currentHeight
+              ) {
+                pe.executeBackgroundSchedule(planTableInfo, this.lastState)
+
+                if (lastHeight > currentHeight) {
+                  editor.setCursor({
+                    ...cursor,
+                    line: cursor.line - 1,
+                  })
+                } else {
+                  editor.setCursor({
+                    ...cursor,
+                    line: cursor.line + 1,
+                  })
+                }
+              }
+            })
           })()
           return false
         },
