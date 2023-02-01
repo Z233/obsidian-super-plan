@@ -16,7 +16,7 @@ import {
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
 import { ActivityDataColumn, PlanLinesLiteral } from './constants'
 import { getActivityDataKey } from './utils/helper'
-import { isArray } from 'lodash-es'
+import { isArray, isNumber } from 'lodash-es'
 
 export class Parser {
   private readonly settings: SuperPlanSettings
@@ -35,7 +35,9 @@ export class Parser {
       endRow = 0
 
     for (let i = 0; i < rows.length; i++) {
-      if (!re.test(rows[i])) break
+      const isTableRow = re.test(rows[i])
+      if (!isTableRow) continue
+      if (isNumber(startRow) && !isTableRow) break
 
       if (startRow === undefined) startRow = i
       else endRow++
