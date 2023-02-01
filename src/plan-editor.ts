@@ -436,7 +436,7 @@ export class PlanEditor {
 
   executeSchedule(
     lastState: Maybe<PlanTableState>,
-    setFixed = false,
+    shouldSetFixed = false,
     force = false
   ): Maybe<PlanTableState> {
     if (!this.tableInfo || !lastState || (!force && !this.shouldSchedule(lastState.type))) return
@@ -449,7 +449,7 @@ export class PlanEditor {
 
     const { table, range, lines, focus } = this.tableInfo
 
-    if (lastState.type === 'start' && setFixed) {
+    if (lastState.type === 'start' && shouldSetFixed) {
       const updatedActivityData = {
         ...activitiesData[rowIndex - 2],
         f: 'x',

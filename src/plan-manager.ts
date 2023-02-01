@@ -159,14 +159,12 @@ export class PlanManager {
         run: () => {
           this.plugin.newPerformPlanActionCM6((pe: PlanEditor) => {
             const lastHeight = this.state?.table.getHeight()
-            window.setImmediate(() => {
-              this.updateState(pe.getState())
+            this.updateState(pe.getState())
 
-              const currentHeight = this.state?.table.getHeight()
-              if (lastHeight && currentHeight && lastHeight !== currentHeight) {
-                pe.executeSchedule(this.lastState, false, true)
-              }
-            })
+            const currentHeight = this.state?.table.getHeight()
+            if (lastHeight && currentHeight && lastHeight !== currentHeight) {
+              pe.executeSchedule(this.lastState, false, true)
+            }
           })()
           return false
         },

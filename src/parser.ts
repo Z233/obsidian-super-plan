@@ -28,25 +28,22 @@ export class Parser {
   findPlanTable(contentOrLines: string | string[]): Maybe<PlanTableInfo> {
     const rows = isArray(contentOrLines) ? contentOrLines : contentOrLines.split('\n')
     const re = _createIsTableRowRegex(this.settings.asOptions().leftMarginChars)
-    let startRow = 0
-    let endRow
 
     const lines: string[] = []
 
-    let index = 0
-    while (index < rows.length) {
-      const row = rows[index]
-      if (re.test(row)) {
-        if (lines.length === 0) {
-          startRow = index
-        }
-        lines.push(row)
-      }
-      index++
-    }
-    endRow = index
+    let startRow,
+      endRow = 0
 
-    if (!lines.length) return
+    for (let i = 0; i < rows.length; i++) {
+      if (!re.test(rows[i])) break
+
+      if (startRow === undefined) startRow = i
+      else endRow++
+
+      lines.push(rows[i])
+    }
+
+    if (startRow === undefined || !lines.length) return
 
     const table = readTable(lines, this.settings.asOptions())
     const range = new Range(
