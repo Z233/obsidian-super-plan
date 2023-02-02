@@ -3,7 +3,7 @@ import { normalizePath } from 'obsidian'
 import { getAPI, Result, Success } from 'obsidian-dataview'
 import type { SuperPlanSettings } from 'src/settings'
 
-const SUB_ACTIVITY_RE = /\s+\(#\d+\)$/g
+const SUB_ACTIVITY_RE = /(\s+\(#\d+\))+$/g
 
 export class ActivityProvider {
   activityNames: string[] = []
