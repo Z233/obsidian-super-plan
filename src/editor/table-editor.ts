@@ -402,7 +402,7 @@ export class TableEditor {
     this.mte.deleteRow(this.settings.asOptions())
   }
 
-  readonly executeBackgroundSchedule = (tableInfo: PlanTableInfo, lastState: PlanTableState) => {
+  executeScheduleOutside(tableInfo: PlanTableInfo, lastState: PlanTableState) {
     const { table, range, lines } = tableInfo
 
     const activitiesData = transformTable(table)

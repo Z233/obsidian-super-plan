@@ -29,7 +29,7 @@ export class EditorExtension {
 
     const lines = v.state.doc.toJSON()
     const planTableInfo = this.parser.findPlanTable(lines)
-    planTableInfo && te.executeBackgroundSchedule(planTableInfo, this.lastState)
+    planTableInfo && te.executeScheduleOutside(planTableInfo, this.lastState)
     return
   }
 
@@ -186,7 +186,7 @@ export class EditorExtension {
                 isNumber(currentHeight) &&
                 lastHeight !== currentHeight
               ) {
-                pe.executeBackgroundSchedule(planTableInfo, this.lastState)
+                pe.executeScheduleOutside(planTableInfo, this.lastState)
 
                 if (lastHeight > currentHeight) {
                   editor.setCursor({
