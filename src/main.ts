@@ -1,26 +1,26 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, Setting } from 'obsidian'
-import { PlanFile } from './plan-file'
+import { PlanFile } from './file'
 import { Parser } from './parser'
-import { PlanEditor } from './plan-editor'
-import { defaultSettings, SuperPlanSettings } from './settings'
-import { PlanManager } from './plan-manager'
-import { SuperPlanSettingsTab } from './settings-tab'
-import { PlanTracker } from './plan-tracker'
-import { timer } from './timer'
-import { SplitConfirmModal } from './modals'
+import { TableEditor } from './editor/table-editor'
+import { defaultSettings, SuperPlanSettings } from './setting/settings'
+import { EditorExtension } from './editor/editor-extension'
+import { SuperPlanSettingsTab } from './setting/settings-tab'
+import { PlanTracker } from './tracker/plan-tracker'
+import { timer } from './tracker/timer'
+import { SplitConfirmModal } from './ui/modals'
 import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
 import 'electron'
-import { ActivitySuggester } from './suggest/suggesters'
-import { ActivityProvider } from './suggest/providers'
+import { ActivitySuggester } from './ui/suggest/activity-suggester'
+import { ActivityProvider } from './ui/suggest/activity-provider'
 import './style.css'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
+  activityProvider: Maybe<ActivityProvider> = null
 
   private file: PlanFile
   private parser: Parser
-  private cmEditors: CodeMirror.Editor[]
   private tracker: PlanTracker
 
   async onload() {
@@ -38,19 +38,15 @@ export default class SuperPlan extends Plugin {
     )
     this.tracker.init()
 
-    const manager = new PlanManager(this, this.parser)
+    const editorExtension = new EditorExtension(this, this.parser)
+    this.registerEditorExtension(editorExtension.makeEditorRemappingExtension())
+    this.registerEditorExtension(editorExtension.makeEditorUpdateListenerExtension())
 
     if (this.settings.enableActivityAutoCompletion) {
-      const provider = new ActivityProvider(this.settings)
-      manager.setProvider(provider)
+      const provider = (this.activityProvider = new ActivityProvider(this.settings))
+      editorExtension.setProvider(provider)
       this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
     }
-
-    this.cmEditors = []
-    this.registerCodeMirror((cm) => {
-      this.cmEditors.push(cm)
-      cm.on('keydown', this.handleKeyDown)
-    })
 
     this.addCommand({
       id: 'insert-plan-table',
@@ -162,27 +158,18 @@ export default class SuperPlan extends Plugin {
   }
 
   onunload() {
-    this.cmEditors.forEach((cm) => {
-      cm.off('keydown', this.handleKeyDown)
-    })
     timer.removeListener()
   }
 
-  // TODO: handle key for CM5
-  private readonly handleKeyDown = (cm: CodeMirror.Editor, event: KeyboardEvent): void => {
-    if (['Tab', 'Enter'].contains(event.key)) {
-    }
-  }
-
   readonly newPerformPlanActionCM6 =
-    (fn: (pe: PlanEditor) => void, force = false): (() => boolean) =>
+    (fn: (te: TableEditor) => void, force = false): (() => boolean) =>
     (): boolean => {
       const view = this.app.workspace.getActiveViewOfType(MarkdownView)
       if (view) {
-        const pe = new PlanEditor(view.file, view.editor, this.settings)
+        const te = new TableEditor(view.file, view.editor, this.settings)
 
-        if (force || pe.cursorIsInPlan()) {
-          fn(pe)
+        if (force || te.cursorIsInPlan()) {
+          fn(te)
           return true
         }
       }
@@ -191,9 +178,9 @@ export default class SuperPlan extends Plugin {
     }
 
   private readonly newPerformTableAction =
-    (fn: (pe: PlanEditor) => void, alertOnNoTable = true) =>
+    (fn: (te: TableEditor) => void, alertOnNoTable = true) =>
     (checking: boolean, editor: Editor, view: MarkdownView): boolean | void => {
-      const pe = new PlanEditor(view.file, editor, this.settings)
+      const pe = new TableEditor(view.file, editor, this.settings)
 
       if (checking) {
         return pe.cursorIsInPlan()

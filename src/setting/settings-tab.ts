@@ -1,8 +1,8 @@
 import { App, normalizePath, PluginSettingTab, Setting } from 'obsidian'
-import { ProgressType } from './constants'
-import { FolderSuggest } from './file-suggester'
-import type SuperPlan from './main'
-import { checkIsDataviewEnabled } from './utils/helper'
+import { ProgressType } from '../constants'
+import { FolderSuggest } from '../ui/suggest/file-suggester'
+import type SuperPlan from '../main'
+import { checkIsDataviewEnabled } from '../util/helper'
 
 export class SuperPlanSettingsTab extends PluginSettingTab {
   private readonly plugin: SuperPlan

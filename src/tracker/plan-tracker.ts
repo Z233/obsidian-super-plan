@@ -1,14 +1,14 @@
-import { Plan } from './plan'
 import { timer } from './timer'
-import type { ActivitiesData, Activity, Maybe, PlanTableInfo } from './types'
-import { getNowMins } from './utils/helper'
-import StatusBar from './components/StatusBar.svelte'
-import type { Parser } from './parser'
-import type { PlanFile } from './plan-file'
-import type { SuperPlanSettings } from './settings'
+import type { ActivitiesData, Activity, Maybe, PlanTableInfo } from '../types'
+import { getNowMins } from '../util/helper'
+import type { Parser } from '../parser'
+import type { PlanFile } from '../file'
+import type { SuperPlanSettings } from '../setting/settings'
 import { find, findLastIndex, isEqual } from 'lodash-es'
 import { MarkdownView, type App, type Workspace } from 'obsidian'
-import { CURSOR_CH_AFTER_FOCUS } from './constants'
+import { CURSOR_CH_AFTER_FOCUS } from '../constants'
+import StatusBar from './status-bar/StatusBar.svelte'
+import { Scheduler } from 'src/scheduler'
 
 type StatusBarProps = StatusBar['$$prop_def']
 
@@ -19,7 +19,7 @@ export class PlanTracker {
   private readonly settings: SuperPlanSettings
   private readonly app: App
 
-  private plan: Maybe<Plan>
+  private scheduler: Maybe<Scheduler>
   private tableInfo: Maybe<PlanTableInfo>
 
   private statusBarComp: StatusBar
@@ -70,7 +70,7 @@ export class PlanTracker {
     this.statusBarComp.$set(props)
   }
   private async jump2ActivityRow(activity: Activity) {
-    if (!this.tableInfo || !this.plan) return
+    if (!this.tableInfo || !this.scheduler) return
     const { workspace } = this.app
 
     const file = this.file.todayFile
@@ -89,7 +89,7 @@ export class PlanTracker {
 
     const { range } = this.tableInfo
 
-    const activityIndex = this.plan.activities.findIndex((a) => isEqual(a, activity))
+    const activityIndex = this.scheduler.activities.findIndex((a) => isEqual(a, activity))
     const rowIndex = activityIndex + 2
 
     editor.focus()
@@ -110,17 +110,20 @@ export class PlanTracker {
   }
 
   private getStatusBarProps(): StatusBarProps {
-    if (!this.plan)
+    if (!this.scheduler)
       return {
         now: null,
         next: null,
         isAllDone: false,
       }
     const nowMins = getNowMins()
-    const nowIndex = findLastIndex(this.plan.activities, (a) => nowMins >= a.start && a.isFixed)
-    const now = this.plan.activities[nowIndex]
+    const nowIndex = findLastIndex(
+      this.scheduler.activities,
+      (a) => nowMins >= a.start && a.isFixed
+    )
+    const now = this.scheduler.activities[nowIndex]
 
-    if (nowIndex === this.plan.activities.length - 1 && nowMins >= now.stop) {
+    if (nowIndex === this.scheduler.activities.length - 1 && nowMins >= now.stop) {
       return {
         now,
         next: null,
@@ -134,7 +137,7 @@ export class PlanTracker {
     const totalSecs = totalMins * 60
     const progress = (durationSecs / totalSecs) * 100
 
-    const next = find(this.plan.activities, (a) => a.actLen > 0, nowIndex + 1)
+    const next = find(this.scheduler.activities, (a) => a.actLen > 0, nowIndex + 1)
 
     return {
       now,
@@ -146,7 +149,7 @@ export class PlanTracker {
   }
 
   private async onTick() {
-    if (!this.plan || this.plan.isTemplate) return
+    if (!this.scheduler) return
 
     const props = this.getStatusBarProps()
     this.updateStatusBar(props)
@@ -173,23 +176,23 @@ export class PlanTracker {
     )
 
     // check this.prev: prevent sending a notification at the start
-    if (
-      ((this.prev && isNowWillStop) || isNextWillStart) &&
-      this.lastSendNotificationActivity !== this.now
-    ) {
-      const content = isNextWillStart
-        ? `A fixed activity will start soon, time to move on.`
-        : `It's time to begin the next activity!`
-      new Notification(content)
-      this.lastSendNotificationActivity = this.now
+    // if (
+    //   ((this.prev && isNowWillStop) || isNextWillStart) &&
+    //   this.lastSendNotificationActivity !== this.now
+    // ) {
+    //   const content = isNextWillStart
+    //     ? `A fixed activity will start soon, time to move on.`
+    //     : `It's time to begin the next activity!`
+    //   new Notification(content)
+    //   this.lastSendNotificationActivity = this.now
 
-      // TODO: Jump to next activity row
-      // notification.addEventListener("click", () => {});
-    }
+    //   // TODO: Jump to next activity row
+    //   // notification.addEventListener("click", () => {});
+    // }
   }
 
   setData(activitiesData: Maybe<ActivitiesData>, tableInfo: Maybe<PlanTableInfo>) {
-    this.plan = activitiesData ? new Plan(activitiesData) : null
+    this.scheduler = activitiesData ? new Scheduler(activitiesData) : null
     this.tableInfo = tableInfo
     this.updateStatusBar(this.getStatusBarProps())
   }

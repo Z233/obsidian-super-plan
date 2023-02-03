@@ -2,9 +2,9 @@
 
 import { App, TAbstractFile, TFile, TFolder } from 'obsidian'
 import { TextInputSuggest } from './file-suggest'
-import type DayPlanner from './main'
-import { errorWrapperSync } from './utils/error'
-import { get_tfiles_from_folder } from './utils/helper'
+import type DayPlanner from '../../main'
+import { errorWrapperSync } from '../../util/error'
+import { get_tfiles_from_folder } from '../../util/helper'
 
 export enum FileSuggestMode {
   TemplateFiles,

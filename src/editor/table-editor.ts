@@ -1,5 +1,5 @@
 import {
-  TableEditor,
+  TableEditor as MdTableEditor,
   Point,
   Table,
   TableCell,
@@ -12,11 +12,9 @@ import {
 import { deleteRow } from '@tgrosinger/md-advanced-tables/lib/formatter'
 import { isEqual } from 'lodash-es'
 import type { App, Editor, TFile } from 'obsidian'
-import { PlanLinesLiteral, TriggerScheduleColumn } from './constants'
+import { PlanLinesLiteral, TriggerScheduleColumn } from '../constants'
 import { ObsidianTextEditor } from './obsidian-text-editor'
-import type { Parser } from './parser'
-import { Plan } from './plan'
-import type { SuperPlanSettings } from './settings'
+import type { SuperPlanSettings } from '../setting/settings'
 import type {
   ActivitiesData,
   PlanTableState,
@@ -24,7 +22,7 @@ import type {
   Maybe,
   PlanCellType,
   PlanTableInfo,
-} from './types'
+} from '../types'
 import {
   check,
   getActivityDataIndex,
@@ -33,20 +31,19 @@ import {
   parseMins2Time,
   removeSpacing,
   transformTable,
-} from './utils/helper'
+} from '../util/helper'
+import { Scheduler } from 'src/scheduler'
 
-export class PlanEditor {
+export class TableEditor {
   private readonly settings: SuperPlanSettings
-  private readonly te: TableEditor
+  private readonly mte: MdTableEditor
   private readonly ote: ObsidianTextEditor
-
-  // private readonly plan: Plan | null = null;
 
   constructor(file: TFile, editor: Editor, settings: SuperPlanSettings) {
     this.settings = settings
 
     this.ote = new ObsidianTextEditor(app, file, editor, settings)
-    this.te = new TableEditor(this.ote)
+    this.mte = new MdTableEditor(this.ote)
   }
 
   private getActivitiesData(): ActivitiesData {
@@ -55,7 +52,7 @@ export class PlanEditor {
   }
 
   private get tableInfo() {
-    return this.te._findTable(this.settings.asOptions())
+    return this.mte._findTable(this.settings.asOptions())
   }
 
   private createActivityCells(activityData: Partial<ActivityData>, table: Table) {
@@ -76,9 +73,9 @@ export class PlanEditor {
   private schedule(activitiesData: ActivitiesData) {
     if (!this.tableInfo || activitiesData.length < 2) return
 
-    const plan = new Plan(activitiesData)
-    plan.schedule()
-    const scheduledActivitiesData = plan.getData()
+    const scheduler = new Scheduler(activitiesData)
+    scheduler.schedule()
+    const scheduledActivitiesData = scheduler.getData()
 
     const shouldUpdate = !isEqual(this.getActivitiesData(), scheduledActivitiesData)
     if (!shouldUpdate) return
@@ -99,10 +96,10 @@ export class PlanEditor {
     // format
     const formatted = formatTable(newTable, this.settings.asOptions())
 
-    this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
-    this.te._moveToFocus(range.start.row, formatted.table, focus)
+    this.mte._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
+    this.mte._moveToFocus(range.start.row, formatted.table, focus)
     if (shouldSelectCell) {
-      this.te.selectCell(this.settings.asOptions())
+      this.mte.selectCell(this.settings.asOptions())
     }
 
     return formatted.table
@@ -143,7 +140,7 @@ export class PlanEditor {
   }
 
   cursorIsInTable(): boolean {
-    return this.te.cursorIsInTable(this.settings.asOptions())
+    return this.mte.cursorIsInTable(this.settings.asOptions())
   }
 
   insertActivityBelow() {
@@ -188,8 +185,8 @@ export class PlanEditor {
       }
       newFocus = newFocus.setColumn(getActivityDataIndex('activity')).setOffset(1)
 
-      this.te._moveToFocus(range.start.row, updatedTable, newFocus)
-      this.te.resetSmartCursor()
+      this.mte._moveToFocus(range.start.row, updatedTable, newFocus)
+      this.mte.resetSmartCursor()
     } else {
       console.error('Insertion failed')
     }
@@ -229,8 +226,8 @@ export class PlanEditor {
     if (updatedTable) {
       // shift focus to activity column
       const newFocus = focus.setColumn(getActivityDataIndex('activity')).setOffset(1)
-      this.te._moveToFocus(range.start.row, updatedTable, newFocus)
-      this.te.resetSmartCursor()
+      this.mte._moveToFocus(range.start.row, updatedTable, newFocus)
+      this.mte.resetSmartCursor()
     } else {
       console.error('Insertion failed')
     }
@@ -328,8 +325,8 @@ export class PlanEditor {
 
     const formatted = formatTable(altered, this.settings.asOptions())
 
-    this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
-    this.te._moveToFocus(
+    this.mte._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
+    this.mte._moveToFocus(
       range.start.row,
       formatted.table,
       focus.setRow(firstIndex + 1).setColumn(getActivityDataIndex('activity'))
@@ -354,7 +351,7 @@ export class PlanEditor {
   }
 
   nextRow() {
-    this.te.nextRow(this.settings.asOptions())
+    this.mte.nextRow(this.settings.asOptions())
   }
 
   nextCell() {
@@ -363,7 +360,7 @@ export class PlanEditor {
     const columnCount = this.tableInfo.table.getRows()[0].getCells().length
     const isLastColumn = this.tableInfo.focus.column === columnCount - 1
 
-    this.te.moveFocus(
+    this.mte.moveFocus(
       isLastColumn ? 1 : 0,
       isLastColumn ? -columnCount + 1 : 1,
       this.settings.asOptions()
@@ -371,7 +368,7 @@ export class PlanEditor {
   }
 
   previousCell() {
-    this.te.previousCell(this.settings.asOptions())
+    this.mte.previousCell(this.settings.asOptions())
   }
 
   insertPlanTable() {
@@ -392,7 +389,7 @@ export class PlanEditor {
 
     const focus = completedTable.focusOfPosition(cursor, row)
     if (focus) {
-      this.te._selectFocus(
+      this.mte._selectFocus(
         row,
         completedTable,
 
@@ -402,7 +399,7 @@ export class PlanEditor {
   }
 
   deleteRow() {
-    this.te.deleteRow(this.settings.asOptions())
+    this.mte.deleteRow(this.settings.asOptions())
   }
 
   readonly executeBackgroundSchedule = (tableInfo: PlanTableInfo, lastState: PlanTableState) => {
@@ -421,9 +418,9 @@ export class PlanEditor {
       }
     }
 
-    const plan = new Plan(activitiesData)
-    plan.schedule()
-    const scheduledActivitiesData = plan.getData()
+    const scheduler = new Scheduler(activitiesData)
+    scheduler.schedule()
+    const scheduledActivitiesData = scheduler.getData()
 
     const rows = scheduledActivitiesData.map((data) => this.createActivityRow(data, table))
 
@@ -432,7 +429,7 @@ export class PlanEditor {
 
     const formatted = formatTable(newTable, this.settings.asOptions())
 
-    this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
+    this.mte._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
   }
 
   executeSchedule(
@@ -466,8 +463,8 @@ export class PlanEditor {
       // format
       const formatted = formatTable(altered, this.settings.asOptions())
 
-      this.te._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
-      this.te._moveToFocus(range.start.row, formatted.table, focus)
+      this.mte._updateLines(range.start.row, range.end.row + 1, formatted.table.toLines(), lines)
+      this.mte._moveToFocus(range.start.row, formatted.table, focus)
     }
 
     const scheduledTable = this.schedule(activitiesData)
@@ -486,6 +483,6 @@ export class PlanEditor {
   }
 
   moveFocus(rowOffset: number, columnOffset: number) {
-    this.te.moveFocus(rowOffset, columnOffset, this.settings.asOptions())
+    this.mte.moveFocus(rowOffset, columnOffset, this.settings.asOptions())
   }
 }

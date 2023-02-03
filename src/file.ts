@@ -1,6 +1,6 @@
 import { normalizePath, Notice, type Vault } from 'obsidian'
 import type { Parser } from './parser'
-import type { SuperPlanSettings } from './settings'
+import type { SuperPlanSettings } from './setting/settings'
 import { _createIsTableRowRegex } from '@tgrosinger/md-advanced-tables/lib/table-editor'
 import moment from 'moment'
 

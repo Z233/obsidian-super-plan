@@ -1,7 +1,7 @@
 import { uniq } from 'lodash-es'
 import { normalizePath } from 'obsidian'
 import { getAPI, Result, Success } from 'obsidian-dataview'
-import type { SuperPlanSettings } from 'src/settings'
+import type { SuperPlanSettings } from 'src/setting/settings'
 
 const SUB_ACTIVITY_RE = /(\s+\(#\d+\))+$/g
 

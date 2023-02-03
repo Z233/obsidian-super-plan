@@ -30,7 +30,7 @@ export enum ProgressType {
 }
 
 // get the values by log ViewUpdate
-export enum ViewUpdateFlags {
+export enum UnsafeViewUpdateFlags {
   TABLE_BLUR = 6,
   TABLE_FOCUS = 7,
 }

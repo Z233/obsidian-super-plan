@@ -1,14 +1,14 @@
 import { isEqual } from 'lodash-es'
 import { Modal, Notice, type App } from 'obsidian'
-import type { PlanEditor } from './plan-editor'
-import type { PlanTracker } from './plan-tracker'
-import { generateActivityData, getNowMins } from './utils/helper'
+import type { TableEditor } from '../editor/table-editor'
+import type { PlanTracker } from '../tracker/plan-tracker'
+import { generateActivityData, getNowMins } from '../util/helper'
 
 export class SplitConfirmModal extends Modal {
-  private readonly pe: PlanEditor
+  private readonly pe: TableEditor
   private readonly tracker: PlanTracker
 
-  constructor(app: App, pe: PlanEditor, tracker: PlanTracker) {
+  constructor(app: App, pe: TableEditor, tracker: PlanTracker) {
     super(app)
     this.pe = pe
     this.tracker = tracker

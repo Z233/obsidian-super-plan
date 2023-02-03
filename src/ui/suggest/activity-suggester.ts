@@ -9,10 +9,10 @@ import {
   type EditorSuggestTriggerInfo,
   type KeymapEventHandler,
 } from 'obsidian'
-import { PlanEditor } from '../plan-editor'
-import type { SuperPlanSettings } from '../settings'
-import { checkIsDataviewEnabled } from '../utils/helper'
-import type { ActivityProvider } from './providers'
+import { TableEditor } from '../../editor/table-editor'
+import type { SuperPlanSettings } from '../../setting/settings'
+import { checkIsDataviewEnabled } from '../../util/helper'
+import type { ActivityProvider } from './activity-provider'
 
 type ActivitySuggestValue = {
   value: string
@@ -77,7 +77,7 @@ export class ActivitySuggester
   onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
     if (!checkIsDataviewEnabled()) return null
 
-    const pe = new PlanEditor(file, editor, this.settings)
+    const pe = new TableEditor(file, editor, this.settings)
     const state = pe.getState()
     if (!state || state.type !== 'activity') return null
 

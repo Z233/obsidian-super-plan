@@ -1,8 +1,8 @@
 import { FormatType, optionsWithDefaults } from '@tgrosinger/md-advanced-tables'
 import type { Options } from '@tgrosinger/md-advanced-tables'
-import { DEFAULT_NOTE_FORMAT, ProgressType } from './constants'
-import type SuperPlan from './main'
-import { checkIsDataviewEnabled } from './utils/helper'
+import { DEFAULT_NOTE_FORMAT, ProgressType } from '../constants'
+import type SuperPlan from '../main'
+import { checkIsDataviewEnabled } from '../util/helper'
 
 interface PlanEditorSettings {
   planTableId: string

@@ -1,4 +1,4 @@
-import type { SuperPlanSettings } from './settings'
+import type { SuperPlanSettings } from './setting/settings'
 import type { ActivitiesData, ActivityData, Maybe, PlanTableInfo } from './types'
 import {
   readTable,
@@ -15,7 +15,7 @@ import {
   _createIsTableRowRegex,
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
 import { ActivityDataColumn, PlanLinesLiteral } from './constants'
-import { getActivityDataKey } from './utils/helper'
+import { getActivityDataKey } from './util/helper'
 import { isArray, isNumber } from 'lodash-es'
 
 export class Parser {
@@ -23,6 +23,10 @@ export class Parser {
 
   constructor(settings: SuperPlanSettings) {
     this.settings = settings
+  }
+
+  checkIsTemplate() {
+
   }
 
   findPlanTable(contentOrLines: string | string[]): Maybe<PlanTableInfo> {
