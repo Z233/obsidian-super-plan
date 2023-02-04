@@ -11,6 +11,8 @@ export const DEFAULT_NOTE_FORMAT = 'YYYY-MM-DD'
 export const DEFAULT_CIRCLE_PROGRESS_SIZE = 16
 export const NO_ACTIVITY_NAME_PLACEHOLDER = '[No Name]'
 
+export const INVAlID_NUMBER_LITERAL = '##NUM!'
+
 export const CURSOR_CH_AFTER_FOCUS = 3
 
 export const TriggerScheduleColumn: PlanCellType[] = ['length', 'start', 'f', 'r']

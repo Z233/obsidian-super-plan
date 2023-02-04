@@ -1,8 +1,9 @@
 import type { Table } from '@tgrosinger/md-advanced-tables'
+import { isNumber } from 'lodash-es'
 import moment from 'moment'
 import { type App, TFolder, normalizePath, TFile, Vault, type TAbstractFile } from 'obsidian'
 import { getAPI } from 'obsidian-dataview'
-import { ActivityDataColumn } from 'src/constants'
+import { ActivityDataColumn, INVAlID_NUMBER_LITERAL } from 'src/constants'
 import type { ActivitiesData, Activity, ActivityData, PlanCellType } from 'src/types'
 import { TemplaterError } from './error'
 
@@ -49,14 +50,22 @@ export function parseMins2TodayUnix(mins: number) {
   return todayUnix + mins * 60
 }
 
+export function formatNumberCell(content: number) {
+  return Number.isNumber(content)
+    ? !Number.isNaN(content)
+      ? content.toString()
+      : INVAlID_NUMBER_LITERAL
+    : content
+}
+
 export function generateActivityData(activity: Activity): ActivityData {
   return {
     activity: activity.activity,
-    length: activity.length.toString(),
-    start: parseMins2Time(activity.start),
+    length: formatNumberCell(activity.length),
+    start: Number.isNaN(activity.start) ? INVAlID_NUMBER_LITERAL : parseMins2Time(activity.start),
     f: activity.isFixed ? 'x' : '',
     r: activity.isRigid ? 'x' : '',
-    actLen: activity.actLen.toString(),
+    actLen: formatNumberCell(activity.actLen),
   }
 }
 
