@@ -179,19 +179,19 @@ export class PlanTracker {
     )
 
     // check this.prev: prevent sending a notification at the start
-    // if (
-    //   ((this.prev && isNowWillStop) || isNextWillStart) &&
-    //   this.lastSendNotificationActivity !== this.now
-    // ) {
-    //   const content = isNextWillStart
-    //     ? `A fixed activity will start soon, time to move on.`
-    //     : `It's time to begin the next activity!`
-    //   new Notification(content)
-    //   this.lastSendNotificationActivity = this.now
+    if (
+      ((this.prev && isNowWillStop) || isNextWillStart) &&
+      this.lastSendNotificationActivity !== this.now
+    ) {
+      const content = isNextWillStart
+        ? `A fixed activity will start soon, time to move on.`
+        : `It's time to begin the next activity!`
+      new Notification(content)
+      this.lastSendNotificationActivity = this.now
 
-    //   // TODO: Jump to next activity row
-    //   // notification.addEventListener("click", () => {});
-    // }
+      // TODO: Jump to next activity row
+      // notification.addEventListener("click", () => {});
+    }
   }
 
   setData(activitiesData: Maybe<ActivitiesData>, tableInfo: Maybe<PlanTableInfo>) {
