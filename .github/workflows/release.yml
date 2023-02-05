@@ -18,14 +18,21 @@ jobs:
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
+        with:
+          name: package
+          path: download
+
+      - name: Display structure of downloaded files
+        run: cd download && ls -R
 
       - name: Rename artifact
-        run: mv plugin.zip ${{ github.event.repository.name }}-${{ steps.version.outputs.tag }}.zip
+        run:
+          mv download/plugin.zip download/${{ github.event.repository.name }}-${{ github.ref_name }}.zip
 
       - name: Create release
         uses: 'marvinpinto/action-automatic-releases@latest'
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
           prerelease: false
-          files: /home/runner/work/obsidian-super-plan/obsidian-super-plan/artifact
+          files: download
           draft: true

@@ -33,10 +33,13 @@ jobs:
       - name: Package
         uses: borales/actions-yarn@v4
         with:
-          cmd: pack
+          cmd: run pack
+
+      - name: Display structure
+        run: ls -R
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: artifact
+          name: package
           path: plugin.zip
