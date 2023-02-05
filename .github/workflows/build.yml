@@ -30,10 +30,13 @@ jobs:
         with:
           cmd: build
 
+      - name: Package
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: pack
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: artifact
-          path: |
-            main.js
-            manifest.json
+          path: plugin.zip

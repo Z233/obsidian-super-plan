@@ -1,4 +1,4 @@
-name: publish
+name: release
 
 on:
   push:
@@ -10,19 +10,22 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
 
-  publish:
-    name: Publish
+  release:
+    name: Release
     runs-on: ubuntu-latest
     needs: [build]
 
     steps:
-      - name: download artifact
+      - name: Download artifact
         uses: actions/download-artifact@v3
 
-      - name: upload artifact to release
+      - name: Rename artifact
+        run: mv plugin.zip ${{ github.event.repository.name }}-${{ steps.version.outputs.tag }}.zip
+
+      - name: Create release
         uses: 'marvinpinto/action-automatic-releases@latest'
         with:
           repo_token: '${{ secrets.GITHUB_TOKEN }}'
           prerelease: false
           files: /home/runner/work/obsidian-super-plan/obsidian-super-plan/artifact
-          draft: false
+          draft: true
