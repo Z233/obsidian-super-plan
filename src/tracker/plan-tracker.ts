@@ -9,16 +9,11 @@ import { MarkdownView, type App, type Workspace } from 'obsidian'
 import { CURSOR_CH_AFTER_FOCUS } from '../constants'
 import StatusBar from './status-bar/StatusBar.svelte'
 import { Scheduler } from 'src/scheduler'
+import { TableEditor } from 'src/editor/table-editor'
 
 type StatusBarProps = StatusBar['$$prop_def']
 
 export class PlanTracker {
-  private readonly statusBarEl: HTMLElement
-  private readonly parser: Parser
-  private readonly file: PlanFile
-  private readonly settings: SuperPlanSettings
-  private readonly app: App
-
   private scheduler: Maybe<Scheduler>
   private tableInfo: Maybe<PlanTableInfo>
 
@@ -31,27 +26,22 @@ export class PlanTracker {
   private lastSendNotificationActivity: Maybe<Activity>
 
   constructor(
-    app: App,
-    parser: Parser,
-    file: PlanFile,
-    settings: SuperPlanSettings,
-    statusBar: HTMLElement
-  ) {
-    this.app = app
-    this.parser = parser
-    this.file = file
-    this.settings = settings
-    this.statusBarEl = statusBar
-  }
+    private app: App,
+    private parser: Parser,
+    private file: PlanFile,
+    private settings: SuperPlanSettings,
+    private statusBar: HTMLElement
+  ) {}
 
   init() {
     this.statusBarComp = new StatusBar({
-      target: this.statusBarEl,
+      target: this.statusBar,
       props: {
         now: this.now,
         next: this.next,
         progressType: this.settings.progressType,
         jump2ActivityRow: this.jump2ActivityRow.bind(this),
+        beginActivity: this.beginActivity.bind(this),
       },
     })
 
@@ -69,6 +59,19 @@ export class PlanTracker {
   private updateStatusBar(props: StatusBarProps) {
     this.statusBarComp.$set(props)
   }
+
+  private async beginActivity(activity: Activity) {
+    if (!this.tableInfo || !this.scheduler || !this.file.todayFile) return
+    await this.jump2ActivityRow(activity)
+
+    const { workspace } = this.app
+    const editor = workspace.activeEditor!.editor!
+
+    const te = new TableEditor(this.file.todayFile, editor, this.settings)
+
+    te.beginCursorActivity()
+  }
+
   private async jump2ActivityRow(activity: Activity) {
     if (!this.tableInfo || !this.scheduler) return
     const { workspace } = this.app

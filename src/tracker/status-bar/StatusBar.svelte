@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Menu } from 'obsidian'
   import { NO_ACTIVITY_NAME_PLACEHOLDER, ProgressType } from 'src/constants'
   import type { Activity, Maybe } from 'src/types'
   import { parseMins2Time } from 'src/util/helper'
@@ -6,6 +7,7 @@
   import ProgressCircle from './ProgressCircle.svelte'
 
   export let jump2ActivityRow: (activity: Activity) => void = () => {}
+  export let beginActivity: (activity: Activity) => void = () => {}
 
   export let now: Maybe<Activity>
   export let next: Maybe<Activity>
@@ -17,6 +19,17 @@
 
   const formatActivityName = (name: string) =>
     name.trim().length > 0 ? name : NO_ACTIVITY_NAME_PLACEHOLDER
+
+  function handleContextMenu(e: MouseEvent, act: Activity) {
+    const menu = new Menu()
+    menu.addItem((item) =>
+      item
+        .setTitle('Begin activity')
+        .setIcon('chevron-last')
+        .onClick(() => beginActivity(act))
+    )
+    menu.showAtMouseEvent(e)
+  }
 </script>
 
 <div class="container">
@@ -42,6 +55,7 @@
     {#if next}
       <div
         on:click={() => next && jump2ActivityRow(next)}
+        on:contextmenu={(e) => next && handleContextMenu(e, next)}
         on:keydown={(e) => e.key === 'Space' && next && jump2ActivityRow(next)}
         class="next clickable"
       >
