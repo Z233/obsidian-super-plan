@@ -1,20 +1,22 @@
 import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
 
-export type PlanTableInfo = {
-  /**
-   * The range of the table
-   */
-  range: Range
+export type UserData = {
+  miniTracker: {
+    position: {
+      x: number
+      y: number
+    }
+  }
+}
 
-  /**
-   * An array of lines in the range.
-   */
-  lines: string[]
-
-  /**
-   * A table object read from the text editor.
-   */
-  table: Table
+export type Activity = {
+  activity: string
+  length: number
+  start: number
+  stop: number
+  isFixed: boolean
+  isRigid: boolean
+  actLen: number
 }
 
 export type ActivityData = {
@@ -37,18 +39,22 @@ export type PlanTableState = {
   focus: Focus
 }
 
-export type Activity = {
-  activity: string
-  length: number
-  start: number
-  stop: number
-  isFixed: boolean
-  isRigid: boolean
-  actLen: number
+export type PlanTableInfo = {
+  /**
+   * The range of the table
+   */
+  range: Range
+
+  /**
+   * An array of lines in the range.
+   */
+  lines: string[]
+
+  /**
+   * A table object read from the text editor.
+   */
+  table: Table
 }
-
-export type Activities = Activity[]
-
 // https://stackoverflow.com/a/52490977
 export type Tuple<T, N extends number> = N extends N
   ? number extends N

@@ -8,12 +8,13 @@ import { SuperPlanSettingsTab } from './setting/settings-tab'
 import { PlanTracker } from './tracker/plan-tracker'
 import { timer } from './tracker/timer'
 import { SplitConfirmModal } from './ui/modals'
-import type { ActivitiesData, Maybe } from './types'
+import type { ActivitiesData, Maybe, UserData } from './types'
 import { isEqual } from 'lodash-es'
 import 'electron'
 import { ActivitySuggester } from './ui/suggest/activity-suggester'
 import { ActivityProvider } from './ui/suggest/activity-provider'
 import './style.css'
+import { MiniTracker } from './window'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -46,6 +47,12 @@ export default class SuperPlan extends Plugin {
       const provider = (this.activityProvider = new ActivityProvider(this.settings))
       editorExtension.setProvider(provider)
       this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
+    }
+
+    if (this.settings.enableMiniTracker) {
+      const window = MiniTracker.new(this, this.tracker)
+      if (!window.isOpen) window.open()
+      // const window = createMiniTrackerWindow(this.app)
     }
 
     this.addCommand({
@@ -114,23 +121,6 @@ export default class SuperPlan extends Plugin {
       }),
     })
 
-    this.addCommand({
-      id: 'open-tracker-window',
-      name: 'Open tracker window',
-      callback: () => {
-        const { BrowserWindow } = (require('electron') as any)
-          .remote as Electron.RemoteMainInterface
-
-        const win = new BrowserWindow()
-
-        if (__DEV__) {
-          win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'windows/tracker/index.html')
-        } else {
-          win.loadFile('./windows/tracker.html')
-        }
-      },
-    })
-
     this.addSettingTab(new SuperPlanSettingsTab(this.app, this))
 
     this.registerInterval(timer.intervalId)
@@ -159,6 +149,7 @@ export default class SuperPlan extends Plugin {
 
   onunload() {
     timer.removeListener()
+    MiniTracker.clean()
   }
 
   readonly newPerformPlanActionCM6 =
@@ -190,12 +181,32 @@ export default class SuperPlan extends Plugin {
     }
 
   async loadSettings() {
-    const settingsOptions = Object.assign(defaultSettings, await this.loadData())
+    const data = await this.loadData()
+    const settingsOptions = Object.assign(defaultSettings, data['settingsData'])
     this.settings = new SuperPlanSettings(this, settingsOptions)
-    this.saveData(this.settings.serialize())
+    this.saveSettings()
   }
 
   async saveSettings() {
-    await this.saveData(this.settings.serialize())
+    await this.saveData(
+      Object.assign({}, await this.loadData(), {
+        settingsData: this.settings.serialize(),
+      })
+    )
+  }
+
+  async loadUserData() {
+    const data = await this.loadData()
+    const userData: Partial<UserData> = Object.assign({}, data['userData'])
+    return userData
+  }
+
+  async saveUserData(userData: UserData) {
+    const data = await this.loadData()
+    await this.saveData(
+      Object.assign({}, data, {
+        userData: userData,
+      })
+    )
   }
 }
