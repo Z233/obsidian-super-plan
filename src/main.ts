@@ -1,4 +1,13 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, Setting } from 'obsidian'
+import {
+  App,
+  Editor,
+  MarkdownView,
+  Modal,
+  Notice,
+  Plugin,
+  Setting,
+  type EditorRange,
+} from 'obsidian'
 import { PlanFile } from './file'
 import { Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
@@ -86,6 +95,14 @@ export default class SuperPlan extends Plugin {
       name: 'Begin activity',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.beginCursorActivity()
+      }),
+    })
+
+    this.addCommand({
+      id: 'test',
+      name: 'Test',
+      editorCheckCallback: this.newPerformTableAction((te) => {
+        te.highlightCursorRow()
       }),
     })
 

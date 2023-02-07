@@ -17,6 +17,8 @@ export const CURSOR_CH_AFTER_FOCUS = 3
 
 export const TriggerScheduleColumn: PlanCellType[] = ['length', 'start', 'f', 'r']
 
+export const HIGHLIGHT_CLASS_NAME = 'is-flashing'
+
 export enum ActivityDataColumn {
   'f',
   'start',

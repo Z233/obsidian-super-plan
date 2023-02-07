@@ -40,6 +40,8 @@ export class EditorExtension {
     const currentCell = current && getStartCell(current.row)
     const scheduled = te.executeSchedule(this.lastState)
 
+    te.clearHighlights()
+
     // set isFixed to true when user manually input start time
     if (
       this.lastState?.type === 'start' &&
@@ -124,8 +126,8 @@ export class EditorExtension {
     keymaps.push({
       key: 'Enter',
       run: (): boolean =>
-        this.plugin.newPerformPlanActionCM6((pe) => {
-          const state = pe.getState()
+        this.plugin.newPerformPlanActionCM6((te) => {
+          const state = te.getState()
           if (!state) return
 
           if (shouldNextRow(state.type)) {
@@ -133,13 +135,13 @@ export class EditorExtension {
             const shouldInsertActivity = focus.row === table.getHeight() - 2
 
             if (shouldInsertActivity) {
-              pe.insertActivityBelow()
+              te.insertActivityBelow()
             } else {
               const offsetColumn = -focus.column + getActivityDataIndex('activity')
-              pe.moveFocus(1, offsetColumn)
+              te.moveFocus(1, offsetColumn)
             }
           } else {
-            pe.nextCell()
+            te.nextCell()
           }
         })(),
       preventDefault: true,

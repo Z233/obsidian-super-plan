@@ -1,4 +1,17 @@
 import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
+import type { Editor, EditorRange } from 'obsidian'
+
+export interface UnsafeEditor extends Editor {
+  addHighlights: (
+    range: EditorRange[],
+    className: string,
+    unknownFlag1: boolean,
+    unknownFlag2: boolean
+  ) => void
+  hasHighlight: (unknownArg?: any) => boolean
+  removeHighlights: (unknownArg?: any) => void
+}
+
 
 export type UserData = {
   miniTracker: {

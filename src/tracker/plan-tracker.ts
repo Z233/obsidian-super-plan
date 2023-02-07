@@ -1,12 +1,12 @@
 import { timer } from './timer'
-import type { ActivitiesData, Activity, Maybe, PlanTableInfo } from '../types'
+import type { ActivitiesData, Activity, Maybe, PlanTableInfo, UnsafeEditor } from '../types'
 import { getNowMins } from '../util/helper'
 import type { Parser } from '../parser'
 import type { PlanFile } from '../file'
 import type { SuperPlanSettings } from '../setting/settings'
 import { find, findLastIndex, isEqual } from 'lodash-es'
 import { MarkdownView, type App, type Workspace } from 'obsidian'
-import { CURSOR_CH_AFTER_FOCUS } from '../constants'
+import { CURSOR_CH_AFTER_FOCUS, HIGHLIGHT_CLASS_NAME } from '../constants'
 import StatusBar from './status-bar/StatusBar.svelte'
 import { Scheduler } from 'src/scheduler'
 import { TableEditor } from 'src/editor/table-editor'
@@ -88,26 +88,46 @@ export class PlanTracker {
       await leaf.openFile(file, { active: true })
     }
 
-    const editor = workspace.activeEditor!.editor!
+    const editor = workspace.activeEditor!.editor! as UnsafeEditor
 
     const { range } = this.tableInfo
 
     const activityIndex = this.scheduler.activities.findIndex((a) => isEqual(a, activity))
     const rowIndex = activityIndex + 2
 
+    const targetLine = range.start.row + rowIndex
+
     editor.focus()
-    editor.setCursor(range.start.row + rowIndex, CURSOR_CH_AFTER_FOCUS)
+    editor.setCursor(targetLine, CURSOR_CH_AFTER_FOCUS)
     editor.scrollIntoView(
       {
         from: {
-          line: range.start.row,
+          line: targetLine,
           ch: CURSOR_CH_AFTER_FOCUS,
         },
         to: {
-          line: range.start.row,
+          line: targetLine,
           ch: CURSOR_CH_AFTER_FOCUS,
         },
       },
+      true
+    )
+
+    editor.addHighlights(
+      [
+        {
+          from: {
+            line: targetLine,
+            ch: 1,
+          },
+          to: {
+            line: targetLine,
+            ch: -1,
+          },
+        },
+      ],
+      HIGHLIGHT_CLASS_NAME,
+      true,
       true
     )
   }

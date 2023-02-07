@@ -11,8 +11,8 @@ import {
 } from '@tgrosinger/md-advanced-tables'
 import { deleteRow } from '@tgrosinger/md-advanced-tables/lib/formatter'
 import { isEqual } from 'lodash-es'
-import type { App, Editor, TFile } from 'obsidian'
-import { PlanLinesLiteral, TriggerScheduleColumn } from '../constants'
+import type { App, Editor, TFile, EditorRange } from 'obsidian'
+import { HIGHLIGHT_CLASS_NAME, PlanLinesLiteral, TriggerScheduleColumn } from '../constants'
 import { ObsidianTextEditor } from './obsidian-text-editor'
 import type { SuperPlanSettings } from '../setting/settings'
 import type {
@@ -22,6 +22,7 @@ import type {
   Maybe,
   PlanCellType,
   PlanTableInfo,
+  UnsafeEditor,
 } from '../types'
 import {
   check,
@@ -39,7 +40,7 @@ export class TableEditor {
   private readonly mte: MdTableEditor
   private readonly ote: ObsidianTextEditor
 
-  constructor(file: TFile, editor: Editor, settings: SuperPlanSettings) {
+  constructor(file: TFile, private editor: Editor, settings: SuperPlanSettings) {
     this.settings = settings
 
     this.ote = new ObsidianTextEditor(app, file, editor, settings)
@@ -350,27 +351,6 @@ export class TableEditor {
     this.schedule(updatedActivityData)
   }
 
-  nextRow() {
-    this.mte.nextRow(this.settings.asOptions())
-  }
-
-  nextCell() {
-    if (!this.tableInfo) return
-
-    const columnCount = this.tableInfo.table.getRows()[0].getCells().length
-    const isLastColumn = this.tableInfo.focus.column === columnCount - 1
-
-    this.mte.moveFocus(
-      isLastColumn ? 1 : 0,
-      isLastColumn ? -columnCount + 1 : 1,
-      this.settings.asOptions()
-    )
-  }
-
-  previousCell() {
-    this.mte.previousCell(this.settings.asOptions())
-  }
-
   insertPlanTable() {
     const table = readTable(
       [
@@ -482,7 +462,55 @@ export class TableEditor {
     }
   }
 
+  nextRow() {
+    this.mte.nextRow(this.settings.asOptions())
+  }
+
+  nextCell() {
+    if (!this.tableInfo) return
+
+    const columnCount = this.tableInfo.table.getRows()[0].getCells().length
+    const isLastColumn = this.tableInfo.focus.column === columnCount - 1
+
+    this.moveFocus(isLastColumn ? 1 : 0, isLastColumn ? -columnCount + 1 : 1)
+  }
+
+  previousCell() {
+    this.mte.previousCell(this.settings.asOptions())
+  }
+
   moveFocus(rowOffset: number, columnOffset: number) {
     this.mte.moveFocus(rowOffset, columnOffset, this.settings.asOptions())
+  }
+
+  highlightCursorRow() {
+    const cursor = this.ote.getCursorPosition()
+    const editor = this.editor as UnsafeEditor
+
+    editor.addHighlights(
+      [
+        {
+          from: {
+            line: cursor.row,
+            ch: 1,
+          },
+          to: {
+            line: cursor.row,
+            ch: -1,
+          },
+        },
+      ],
+      HIGHLIGHT_CLASS_NAME,
+      true,
+      true
+    )
+  }
+
+  clearHighlights() {
+    const editor = this.editor as UnsafeEditor
+
+    if (editor.hasHighlight()) {
+      editor.removeHighlights()
+    }
   }
 }
