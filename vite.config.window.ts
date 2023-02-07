@@ -17,7 +17,7 @@ export default defineConfig({
     sourcemap: isDev ? 'inline' : false,
     rollupOptions: {
       input: {
-        tracker: r('src/window/tracker/index.html'),
+        'mini-tracker': r('src/window/mini-tracker/index.html'),
       },
     },
   },
