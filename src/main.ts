@@ -24,16 +24,21 @@ import { ActivitySuggester } from './ui/suggest/activity-suggester'
 import { ActivityProvider } from './ui/suggest/activity-provider'
 import './style.css'
 import { MiniTracker } from './window'
+import { DataStore, SettingsDataKey } from './store'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
   activityProvider: Maybe<ActivityProvider> = null
+
+  private store: DataStore
 
   private file: PlanFile
   private parser: Parser
   private tracker: PlanTracker
 
   async onload() {
+    this.store = new DataStore(this)
+
     await this.loadSettings()
 
     this.parser = new Parser(this.settings)
@@ -59,7 +64,7 @@ export default class SuperPlan extends Plugin {
     }
 
     if (this.settings.enableMiniTracker) {
-      const window = MiniTracker.new(this, this.tracker)
+      const window = MiniTracker.new(this.store, this.tracker)
       if (!window.isOpen) window.open()
       // const window = createMiniTrackerWindow(this.app)
     }
@@ -198,32 +203,13 @@ export default class SuperPlan extends Plugin {
     }
 
   async loadSettings() {
-    const data = await this.loadData()
-    const settingsOptions = Object.assign(defaultSettings, data['settingsData'])
+    const data = await this.store.get(SettingsDataKey)
+    const settingsOptions = Object.assign(defaultSettings, data)
     this.settings = new SuperPlanSettings(this, settingsOptions)
     this.saveSettings()
   }
 
   async saveSettings() {
-    await this.saveData(
-      Object.assign({}, await this.loadData(), {
-        settingsData: this.settings.serialize(),
-      })
-    )
-  }
-
-  async loadUserData() {
-    const data = await this.loadData()
-    const userData: Partial<UserData> = Object.assign({}, data['userData'])
-    return userData
-  }
-
-  async saveUserData(userData: UserData) {
-    const data = await this.loadData()
-    await this.saveData(
-      Object.assign({}, data, {
-        userData: userData,
-      })
-    )
+    await this.store.set(SettingsDataKey, this.settings.serialize())
   }
 }

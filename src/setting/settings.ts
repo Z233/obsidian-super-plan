@@ -20,7 +20,7 @@ interface PlanTrackerSettings {
   enableMiniTracker: boolean
 }
 
-type ISettings = PlanEditorSettings & PlanTrackerSettings
+export type ISettings = PlanEditorSettings & PlanTrackerSettings
 
 export const defaultSettings: Partial<ISettings> = {
   // PlanEditorSettings
@@ -80,6 +80,6 @@ export class SuperPlanSettings implements ISettings {
         obj[key] = this[key] as any
       }
     }
-    return obj
+    return obj as unknown as ISettings
   }
 }

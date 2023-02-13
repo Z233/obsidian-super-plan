@@ -1,24 +1,22 @@
 import type { BrowserWindow } from 'electron'
 import { debounce } from 'obsidian'
-import type SuperPlan from 'src/main'
+import { UserDataKey, type DataStore, type MiniTrackerData, type Position } from 'src/store'
 import type { PlanTracker } from 'src/tracker/plan-tracker'
 import type { Maybe } from 'src/types'
 import { getElectronAPI } from 'src/window/utils'
-
-type Position = {
-  x: number
-  y: number
-}
 
 export class MiniTracker {
   private win: Maybe<BrowserWindow> = null
   private static instance: Maybe<MiniTracker> = null
 
-  private constructor(private plugin: SuperPlan, private tracker: PlanTracker) {}
+  private constructor(
+    private store: DataStore,
+    private tracker: PlanTracker
+  ) {}
 
-  static new(app: SuperPlan, tracker: PlanTracker) {
+  static new(store: DataStore, tracker: PlanTracker) {
     if (MiniTracker.instance) return MiniTracker.instance
-    return (MiniTracker.instance = new MiniTracker(app, tracker))
+    return (MiniTracker.instance = new MiniTracker(store, tracker))
   }
 
   static clean() {
@@ -40,8 +38,8 @@ export class MiniTracker {
   async open() {
     const { BrowserWindow, MessageChannelMain } = getElectronAPI()
 
-    const { miniTracker } = await this.plugin.loadUserData()
-    const position: Position | null = miniTracker ? miniTracker.position : null
+    const data = await this.loadData()
+    const position: Position | null = data ? data.position : null
 
     this.win = new BrowserWindow({
       frame: false,
@@ -69,13 +67,25 @@ export class MiniTracker {
   private handleWindowMove() {
     if (!this.win) return
     const { x, y } = this.win.getBounds()
-    this.plugin.saveUserData({
-      miniTracker: {
-        position: {
-          x,
-          y,
-        },
+    this.saveData({
+      position: {
+        x,
+        y,
       },
     })
+  }
+
+  private async saveData(data: Partial<MiniTrackerData>) {
+    const userData = await this.store.get(UserDataKey)
+    const miniTrackerData: MiniTrackerData = userData['miniTracker']
+    this.store.set(UserDataKey, {
+      ...userData,
+      miniTracker: Object.assign(miniTrackerData, data),
+    })
+  }
+
+  private async loadData() {
+    const userData = await this.store.get(UserDataKey)
+    return userData['miniTracker']
   }
 }
