@@ -65,6 +65,7 @@ export default class SuperPlan extends Plugin {
 
     if (this.settings.enableMiniTracker) {
       const window = MiniTracker.new(this.store, this.tracker)
+      console.log('onload -> window', window.isOpen)
       if (!window.isOpen) window.open()
       // const window = createMiniTrackerWindow(this.app)
     }

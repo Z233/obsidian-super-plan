@@ -13,7 +13,21 @@ import { TableEditor } from 'src/editor/table-editor'
 
 type StatusBarProps = StatusBar['$$prop_def']
 
+export type TrackerState = {
+  ongoing: Ongoing | null
+  upcoming: Upcoming | null
+}
+
+type Ongoing = { activity: Activity; leftSecs: number; progress: number }
+type Upcoming = { activity: Activity }
+
+export type Observer = {
+  update: (state: TrackerState) => void
+}
+
 export class PlanTracker {
+  private observers: Observer[] = []
+
   private scheduler: Maybe<Scheduler>
   private tableInfo: Maybe<PlanTableInfo>
 
@@ -24,6 +38,21 @@ export class PlanTracker {
   private next: Maybe<Activity>
 
   private lastSendNotificationActivity: Maybe<Activity>
+
+  addObserver(observer: Observer): void {
+    this.observers.push(observer)
+  }
+
+  removeObserver(observer: Observer): void {
+    const index = this.observers.indexOf(observer)
+    if (index !== -1) {
+      this.observers.splice(index, 1)
+    }
+  }
+
+  notifyObservers(params: Parameters<Observer['update']>[0]): void {
+    this.observers.forEach((observer) => observer.update(params))
+  }
 
   constructor(
     private app: App,
@@ -132,13 +161,18 @@ export class PlanTracker {
     )
   }
 
-  private getStatusBarProps(): StatusBarProps {
-    if (!this.scheduler)
-      return {
-        now: null,
-        next: null,
-        isAllDone: false,
-      }
+  private computeProgress() {
+    const initialState = {
+      now: null,
+      next: null,
+      progress: 0,
+      leftSecs: 0,
+      leftMins: 0,
+      isAllDone: false,
+    }
+
+    if (!this.scheduler) return initialState
+
     const nowMins = getNowMins()
     const nowIndex = findLastIndex(
       this.scheduler.activities,
@@ -148,8 +182,8 @@ export class PlanTracker {
 
     if (nowIndex === this.scheduler.activities.length - 1 && nowMins >= now.stop) {
       return {
+        ...initialState,
         now,
-        next: null,
         isAllDone: true,
       }
     }
@@ -163,9 +197,11 @@ export class PlanTracker {
     const next = find(this.scheduler.activities, (a) => a.actLen > 0, nowIndex + 1)
 
     return {
+      ...initialState,
       now,
       next,
       progress: progress <= 100 ? progress : 100,
+      leftSecs: totalSecs - durationSecs,
       leftMins: totalMins - durationMins,
       isAllDone: false,
     }
@@ -174,15 +210,33 @@ export class PlanTracker {
   private async onTick() {
     if (!this.scheduler) return
 
-    const props = this.getStatusBarProps()
-    this.updateStatusBar(props)
+    const { leftSecs, ...props } = this.computeProgress()
 
-    const { now, next } = props
+    this.updateStatusBar(props)
+    const { now, next, progress } = props
 
     if (!isEqual(now, this.now)) {
       this.prev = this.now
       this.now = now
     }
+
+    const ongoing: Ongoing | null = now
+      ? {
+          activity: now,
+          leftSecs,
+          progress,
+        }
+      : null
+
+    const upcoming: Upcoming | null = next
+      ? {
+          activity: next,
+        }
+      : null
+
+    this.notifyObservers({ ongoing, upcoming })
+
+    // Notification
 
     const nowMins = getNowMins()
     const nowMinsSecs = new Date().getSeconds()
@@ -217,6 +271,6 @@ export class PlanTracker {
   setData(activitiesData: Maybe<ActivitiesData>, tableInfo: Maybe<PlanTableInfo>) {
     this.scheduler = activitiesData ? new Scheduler(activitiesData) : null
     this.tableInfo = tableInfo
-    this.updateStatusBar(this.getStatusBarProps())
+    this.updateStatusBar(this.computeProgress())
   }
 }

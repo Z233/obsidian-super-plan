@@ -9,10 +9,7 @@ export class MiniTracker {
   private win: Maybe<BrowserWindow> = null
   private static instance: Maybe<MiniTracker> = null
 
-  private constructor(
-    private store: DataStore,
-    private tracker: PlanTracker
-  ) {}
+  private constructor(private store: DataStore, private tracker: PlanTracker) {}
 
   static new(store: DataStore, tracker: PlanTracker) {
     if (MiniTracker.instance) return MiniTracker.instance
@@ -32,7 +29,7 @@ export class MiniTracker {
   }
 
   get isOpen() {
-    return !this.win?.isDestroyed() && this.win?.isFocusable()
+    return !this.win?.isDestroyed() && this.win?.isVisible()
   }
 
   async open() {
@@ -53,13 +50,22 @@ export class MiniTracker {
       },
       x: position?.x,
       y: position?.y,
+      focusable: false,
+      resizable: false,
     })
 
     if (__DEV__) {
       this.win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'window/mini-tracker/index.html')
+      // this.win.webContents.openDevTools()
     } else {
       this.win.loadFile('./window/mini-tracker.html')
     }
+
+    this.tracker.addObserver({
+      update: (ongoing) => {
+        this.win!.webContents.send('update', ongoing)
+      },
+    })
 
     this.win.on('move', debounce(this.handleWindowMove, 500).bind(this))
   }
