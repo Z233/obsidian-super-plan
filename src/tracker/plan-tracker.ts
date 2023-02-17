@@ -194,7 +194,7 @@ export class PlanTracker {
     const totalSecs = totalMins * 60
     const progress = (durationSecs / totalSecs) * 100
 
-    const next = find(this.scheduler.activities, (a) => a.actLen > 0, nowIndex + 1)
+    const next = find(this.scheduler.activities, (a) => a.actLen >= 0, nowIndex + 1)
 
     return {
       ...initialState,
