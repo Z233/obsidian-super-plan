@@ -12,7 +12,7 @@ import {
 import { deleteRow } from '@tgrosinger/md-advanced-tables/lib/formatter'
 import { isEqual } from 'lodash-es'
 import type { App, Editor, TFile, EditorRange } from 'obsidian'
-import { HIGHLIGHT_CLASS_NAME, PlanLinesLiteral, TriggerScheduleColumn } from '../constants'
+import { PlanLinesLiteral, TriggerScheduleColumn } from '../constants'
 import { ObsidianTextEditor } from './obsidian-text-editor'
 import type { SuperPlanSettings } from '../setting/settings'
 import type {

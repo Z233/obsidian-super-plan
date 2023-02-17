@@ -6,3 +6,11 @@
   top: 50%;
   transform: translateY(-50%);
 }
+
+.obsidian-super-plan.highlight {
+  transition: all 0.25s ease;
+  background-color: hsla(var(--color-accent-hsl), 0.3);
+  color: var(--text-normal);
+  mix-blend-mode: var(--highlight-mix-blend-mode);
+  border-radius: var(--radius-s);
+}
