@@ -147,11 +147,11 @@ export class PlanTracker {
         {
           from: {
             line: targetLine,
-            ch: 1,
+            ch: 0,
           },
           to: {
-            line: targetLine,
-            ch: -1,
+            line: targetLine + 1,
+            ch: 0,
           },
         },
       ],

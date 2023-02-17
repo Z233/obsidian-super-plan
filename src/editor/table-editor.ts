@@ -483,29 +483,6 @@ export class TableEditor {
     this.mte.moveFocus(rowOffset, columnOffset, this.settings.asOptions())
   }
 
-  highlightCursorRow() {
-    const cursor = this.ote.getCursorPosition()
-    const editor = this.editor as UnsafeEditor
-
-    editor.addHighlights(
-      [
-        {
-          from: {
-            line: cursor.row,
-            ch: 1,
-          },
-          to: {
-            line: cursor.row,
-            ch: -1,
-          },
-        },
-      ],
-      HIGHLIGHT_CLASS_NAME,
-      true,
-      true
-    )
-  }
-
   clearHighlights() {
     const editor = this.editor as UnsafeEditor
 

@@ -107,14 +107,6 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
-      id: 'test',
-      name: 'Test',
-      editorCheckCallback: this.newPerformTableAction((te) => {
-        te.highlightCursorRow()
-      }),
-    })
-
-    this.addCommand({
       id: 'split-activity',
       name: 'Split activity',
       editorCheckCallback: this.newPerformTableAction((pe) => {
