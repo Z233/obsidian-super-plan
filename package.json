@@ -11,7 +11,7 @@
     "build:js": "vite build --config vite.config.ts",
     "build:web": "vite build --config vite.config.window.ts",
     "release": "run-s build pack",
-    "pack": "rimraf plugin.zip && cd dist/ && bestzip ../plugin.zip * ../main.js ../styles.css ../manifest.json",
+    "pack": "rimraf plugin.zip && bestzip plugin.zip window main.js styles.css manifest.json",
     "clear": "rimraf assets window main.js styles.css",
     "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
