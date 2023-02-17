@@ -26,6 +26,18 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
     return ''
   }
 
+  private toggleReloadHint(el: HTMLElement, disabled: boolean) {
+    if (!el.querySelector('.option-restart-hint') && disabled) {
+      el.createDiv({
+        text: 'Reload to apply changes.',
+        cls: 'option-restart-hint mod-warning',
+      })
+    } else {
+      const hintEl = el.querySelector('.option-restart-hint')
+      hintEl && hintEl.remove()
+    }
+  }
+
   display() {
     const { containerEl } = this
 
@@ -109,18 +121,7 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
             enableActivityAutoCompletion: value,
           })
 
-          if (
-            !comp.toggleEl.querySelector('.option-restart-hint') &&
-            lastEnableActivityAutoCompletion !== value
-          ) {
-            comp.toggleEl.createDiv({
-              text: 'Requires a restart of Obsidian.',
-              cls: 'option-restart-hint mod-warning',
-            })
-          } else {
-            const el = comp.toggleEl.querySelector('.option-restart-hint')
-            el && el.remove()
-          }
+          this.toggleReloadHint(comp.toggleEl, lastEnableActivityAutoCompletion !== value)
         })
       })
 
@@ -152,14 +153,18 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
         )
       )
 
+    let lastEnableMiniTracker = this.plugin.settings.enableMiniTracker
     createSetting()
       .setName('Enable Mini Tracker')
+      .setDesc('Display a small tracking window that stays on top of all other windows.')
       .addToggle((comp) => {
-        comp.setValue(this.plugin.settings.enableMiniTracker).onChange((value) =>
+        comp.setValue(this.plugin.settings.enableMiniTracker).onChange((value) => {
           this.plugin.settings.update({
             enableMiniTracker: value,
           })
-        )
+
+          this.toggleReloadHint(comp.toggleEl, lastEnableMiniTracker !== value)
+        })
       })
   }
 }
