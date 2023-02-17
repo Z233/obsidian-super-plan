@@ -1,5 +1,5 @@
 import type { BrowserWindow } from 'electron'
-import { debounce } from 'obsidian'
+import { debounce, normalizePath } from 'obsidian'
 import { UserDataKey, type DataStore, type MiniTrackerData, type Position } from 'src/store'
 import type { PlanTracker } from 'src/tracker/plan-tracker'
 import type { Maybe } from 'src/types'
@@ -32,8 +32,8 @@ export class MiniTracker {
     return !this.win?.isDestroyed() && this.win?.isVisible()
   }
 
-  async open() {
-    const { BrowserWindow, MessageChannelMain } = getElectronAPI()
+  async open(windowFolderPath: string) {
+    const { BrowserWindow } = getElectronAPI()
 
     const data = await this.loadData()
     const position: Position | null = data ? data.position : null
@@ -56,9 +56,14 @@ export class MiniTracker {
 
     if (__DEV__) {
       this.win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'window/mini-tracker/index.html')
-      // this.win.webContents.openDevTools()
     } else {
-      this.win.loadFile('./window/mini-tracker.html')
+      const filePath = normalizePath(`${windowFolderPath}/mini-tracker/index.html`)
+
+      const fs = require('node:fs/promises')
+      const buffer = await fs.readFile(filePath)
+      const content = buffer.toString('utf8')
+
+      this.win.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(content)}`)
     }
 
     this.tracker.addObserver({
@@ -68,6 +73,10 @@ export class MiniTracker {
     })
 
     this.win.on('move', debounce(this.handleWindowMove, 500).bind(this))
+
+    window.addEventListener('pagehide', (e) => {
+      MiniTracker.clean()
+    })
   }
 
   private handleWindowMove() {

@@ -154,12 +154,12 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
 
     createSetting()
       .setName('Enable Mini Tracker')
-      .addToggle((comp) =>
+      .addToggle((comp) => {
         comp.setValue(this.plugin.settings.enableMiniTracker).onChange((value) =>
           this.plugin.settings.update({
             enableMiniTracker: value,
           })
         )
-      )
+      })
   }
 }

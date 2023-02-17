@@ -3,6 +3,7 @@ import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 import { isDev, r } from './scripts/utils'
 import { windi } from 'svelte-windicss-preprocess'
 import { join } from 'path'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,7 +14,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: r('dist'),
+    outDir: r('.'),
     sourcemap: isDev ? 'inline' : false,
     rollupOptions: {
       input: {
@@ -26,5 +27,6 @@ export default defineConfig({
     svelte({
       preprocess: [vitePreprocess(), windi({})],
     }),
+    viteSingleFile(),
   ],
 })

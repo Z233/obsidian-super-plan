@@ -1,13 +1,4 @@
-import {
-  App,
-  Editor,
-  MarkdownView,
-  Modal,
-  Notice,
-  Plugin,
-  Setting,
-  type EditorRange,
-} from 'obsidian'
+import { Editor, FileSystemAdapter, MarkdownView, Notice, Plugin } from 'obsidian'
 import { PlanFile } from './file'
 import { Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
@@ -17,7 +8,7 @@ import { SuperPlanSettingsTab } from './setting/settings-tab'
 import { PlanTracker } from './tracker/plan-tracker'
 import { timer } from './tracker/timer'
 import { SplitConfirmModal } from './ui/modals'
-import type { ActivitiesData, Maybe, UserData } from './types'
+import type { ActivitiesData, Maybe } from './types'
 import { isEqual } from 'lodash-es'
 import 'electron'
 import { ActivitySuggester } from './ui/suggest/activity-suggester'
@@ -64,10 +55,21 @@ export default class SuperPlan extends Plugin {
     }
 
     if (this.settings.enableMiniTracker) {
-      const window = MiniTracker.new(this.store, this.tracker)
-      console.log('onload -> window', window.isOpen)
-      if (!window.isOpen) window.open()
-      // const window = createMiniTrackerWindow(this.app)
+      const miniTracker = MiniTracker.new(this.store, this.tracker)
+
+      let windowFolder: string | undefined
+      const pluginDir = this.manifest.dir
+      if (this.app.vault.adapter instanceof FileSystemAdapter && pluginDir) {
+        windowFolder = this.app.vault.adapter.getFullPath(`${pluginDir}/window`)
+      }
+
+      if (windowFolder) {
+        miniTracker.open(windowFolder)
+      } else {
+        new Notice(`Error: can't init mini tracker window.`)
+      }
+    } else {
+      MiniTracker.clean()
     }
 
     this.addCommand({
