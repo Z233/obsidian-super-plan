@@ -142,23 +142,25 @@ export class PlanTracker {
       true
     )
 
-    editor.addHighlights(
-      [
-        {
-          from: {
-            line: targetLine,
-            ch: 0,
+    setImmediate(() => {
+      editor.addHighlights(
+        [
+          {
+            from: {
+              line: targetLine,
+              ch: 0,
+            },
+            to: {
+              line: targetLine + 1,
+              ch: 0,
+            },
           },
-          to: {
-            line: targetLine + 1,
-            ch: 0,
-          },
-        },
-      ],
-      HIGHLIGHT_CLASS_NAME,
-      true,
-      true
-    )
+        ],
+        HIGHLIGHT_CLASS_NAME,
+        true,
+        true
+      )
+    })
   }
 
   private computeProgress() {
