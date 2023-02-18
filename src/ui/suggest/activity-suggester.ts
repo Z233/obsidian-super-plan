@@ -108,7 +108,7 @@ export class ActivitySuggester
       else break
     }
 
-    if (cursor === query.length && cursor < record.length) {
+    if (cursor === query.length && cursor <= record.length) {
       const html = `${this.mark(query)}${record.slice(cursor)}`
       return {
         value: record,
@@ -127,6 +127,8 @@ export class ActivitySuggester
       const match = this.search(context.query, record)
       if (match) matches.push(match)
     })
+
+    matches = matches.sort((a, b) => a.value.length - b.value.length)
 
     return matches.map((x) => ({
       value: x.value,
