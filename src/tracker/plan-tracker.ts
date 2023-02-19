@@ -128,21 +128,22 @@ export class PlanTracker {
 
     editor.focus()
     editor.setCursor(targetLine, CURSOR_CH_AFTER_FOCUS)
-    editor.scrollIntoView(
-      {
-        from: {
-          line: targetLine,
-          ch: CURSOR_CH_AFTER_FOCUS,
-        },
-        to: {
-          line: targetLine,
-          ch: CURSOR_CH_AFTER_FOCUS,
-        },
-      },
-      true
-    )
 
     setImmediate(() => {
+      editor.scrollIntoView(
+        {
+          from: {
+            line: targetLine,
+            ch: CURSOR_CH_AFTER_FOCUS,
+          },
+          to: {
+            line: targetLine,
+            ch: CURSOR_CH_AFTER_FOCUS,
+          },
+        },
+        true
+      )
+
       editor.addHighlights(
         [
           {
