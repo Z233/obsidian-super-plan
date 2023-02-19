@@ -1,4 +1,12 @@
-import { Editor, FileSystemAdapter, MarkdownView, Notice, Plugin } from 'obsidian'
+import {
+  Editor,
+  FileSystemAdapter,
+  MarkdownView,
+  Notice,
+  Plugin,
+  Platform,
+  type Command,
+} from 'obsidian'
 import { PlanFile } from './file'
 import { Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
@@ -16,6 +24,7 @@ import { ActivityProvider } from './ui/suggest/activity-provider'
 import './style.css'
 import { MiniTracker } from './window'
 import { DataStore, SettingsDataKey } from './store'
+import { loadIcons } from './ui/icons'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -54,7 +63,7 @@ export default class SuperPlan extends Plugin {
       this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
     }
 
-    if (this.settings.enableMiniTracker) {
+    if (this.settings.enableMiniTracker && Platform.isDesktopApp) {
       const miniTracker = MiniTracker.new(this.store, this.tracker)
 
       let windowFolder: string | undefined
@@ -72,9 +81,12 @@ export default class SuperPlan extends Plugin {
       MiniTracker.clean()
     }
 
+    loadIcons()
+
     this.addCommand({
       id: 'insert-plan-table',
       name: 'Insert plan table',
+      icon: 'table-2',
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.newPerformTableAction((pe) => {
           pe.insertPlanTable()
@@ -85,6 +97,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'insert-activity-below-current',
       name: 'Insert activity below current',
+      icon: 'row-insert-bottom',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.insertActivityBelow()
       }),
@@ -93,6 +106,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'insert-activity-above-current',
       name: 'Insert activity above current',
+      icon: 'row-insert-top',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.insertActivityAbove()
       }),
@@ -101,6 +115,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'begin-activity',
       name: 'Begin activity',
+      icon: 'play',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.beginCursorActivity()
       }),
@@ -109,6 +124,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'split-activity',
       name: 'Split activity',
+      icon: 'separator-horizontal',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         new SplitConfirmModal(this.app, pe, this.tracker).open()
       }),
@@ -117,6 +133,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'ignore-activity',
       name: 'Ignore activity',
+      icon: 'list-minus',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.ignoreActivity()
       }),
@@ -125,6 +142,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'toggle-fix-activity',
       name: 'Toggle fix to activity',
+      icon: 'toggle-left',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.toggleFixCursorActivity()
       }),
@@ -133,8 +151,53 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'unfix-all-activities',
       name: 'Unfix all activities',
+      icon: 'list-minus',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.unfixAllActivities()
+      }),
+    })
+
+    // Mobile only
+
+    const addMobileCommand = (command: Omit<Command, 'mobileOnly'>) =>
+      this.addCommand({
+        mobileOnly: true,
+        ...command,
+      })
+
+    addMobileCommand({
+      id: 'move-left',
+      name: 'Move left',
+      icon: 'arrow-left',
+      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
+        te.moveLeft()
+      }),
+    })
+
+    addMobileCommand({
+      id: 'move-up',
+      name: 'Move up',
+      icon: 'arrow-up',
+      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
+        te.moveUp()
+      }),
+    })
+
+    addMobileCommand({
+      id: 'move-right',
+      name: 'Move right',
+      icon: 'arrow-right',
+      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
+        te.moveRight()
+      }),
+    })
+
+    addMobileCommand({
+      id: 'move-down',
+      name: 'Move down',
+      icon: 'arrow-down',
+      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
+        te.moveDown()
       }),
     })
 

@@ -462,11 +462,69 @@ export class TableEditor {
     }
   }
 
-  nextRow() {
+  moveLeft() {
+    if (!this.tableInfo) return
+
+    const columnCount = this.tableInfo.table.getRows()[0].getCells().length
+    const isFirstColumn = this.tableInfo.focus.column === 0
+
+    if (isFirstColumn) {
+      this.moveFocus(0, columnCount - 1)
+    } else {
+      this.moveFocus(0, -1)
+    }
+  }
+
+  moveUp() {
+    if (!this.tableInfo) return
+
+    const { table, focus } = this.tableInfo
+
+    const rowCount = table.getRows().length
+    const isFirstRow = focus.row === 0
+
+    if (isFirstRow) {
+      this.moveFocus(rowCount - 1, 0)
+    } else {
+      this.moveFocus(-1, 0)
+    }
+  }
+
+  moveRight() {
+    if (!this.tableInfo) return
+
+    const columnCount = this.tableInfo.table.getRows()[0].getCells().length
+    const isLastColumn = this.tableInfo.focus.column === columnCount - 1
+
+    if (isLastColumn) {
+      this.moveFocus(0, -columnCount + 1)
+    } else {
+      this.moveFocus(0, 1)
+    }
+  }
+
+  moveDown() {
+    if (!this.tableInfo) return
+
+    const { table, focus } = this.tableInfo
+
+    const rowCount = table.getRows().length
+    const isLastRow = focus.row === rowCount - 1
+
+    if (isLastRow) {
+      this.moveFocus(-rowCount + 1, 0)
+    } else {
+      this.moveFocus(1, 0)
+    }
+  }
+
+  moveToNextRow() {
     this.mte.nextRow(this.settings.asOptions())
   }
 
-  nextCell() {
+  moveToPreviousRow() {}
+
+  moveToNextCell() {
     if (!this.tableInfo) return
 
     const columnCount = this.tableInfo.table.getRows()[0].getCells().length
@@ -475,7 +533,7 @@ export class TableEditor {
     this.moveFocus(isLastColumn ? 1 : 0, isLastColumn ? -columnCount + 1 : 1)
   }
 
-  previousCell() {
+  moveToPreviousCell() {
     this.mte.previousCell(this.settings.asOptions())
   }
 

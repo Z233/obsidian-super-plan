@@ -141,7 +141,7 @@ export class EditorExtension {
               te.moveFocus(1, offsetColumn)
             }
           } else {
-            te.nextCell()
+            te.moveToNextCell()
           }
         })(),
       preventDefault: true,
@@ -151,10 +151,10 @@ export class EditorExtension {
       key: 'Tab',
       run: (): boolean =>
         this.plugin.newPerformPlanActionCM6((pe: TableEditor) => {
-          pe.nextCell()
+          pe.moveToNextCell()
         })(),
       shift: (): boolean =>
-        this.plugin.newPerformPlanActionCM6((pe: TableEditor) => pe.previousCell())(),
+        this.plugin.newPerformPlanActionCM6((pe: TableEditor) => pe.moveToPreviousCell())(),
       preventDefault: true,
     })
 
