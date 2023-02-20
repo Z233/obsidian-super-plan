@@ -20,18 +20,10 @@ export function loadIcons() {
     />
     <path
       opacity="0.8"
-      d="M50 66V88"
-      stroke="currentColor"
-      stroke-width="8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-    <path
-      d="M61 77H39"
-      stroke="currentColor"
-      stroke-width="8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M54 66C54 63.7909 52.2091 62 50 62C47.7909 62 46 63.7909 46 66V73H39C36.7909 73 35 74.7909 35 77C35 79.2091 36.7909 81 39 81H46V88C46 90.2091 47.7909 92 50 92C52.2091 92 54 90.2091 54 88V81H61C63.2091 81 65 79.2091 65 77C65 74.7909 63.2091 73 61 73H54V66Z"
+      fill="currentColor"
     />
   </g>
   <defs>
@@ -61,19 +53,10 @@ export function loadIcons() {
       stroke-linejoin="round"
     />
     <path
-      opacity="0.8"
-      d="M50 20V42"
-      stroke="currentColor"
-      stroke-width="8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-    <path
-      d="M61 31H39"
-      stroke="currentColor"
-      stroke-width="8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M54 20C54 17.7909 52.2091 16 50 16C47.7909 16 46 17.7909 46 20V27H39C36.7909 27 35 28.7909 35 31C35 33.2091 36.7909 35 39 35H46V42C46 44.2091 47.7909 46 50 46C52.2091 46 54 44.2091 54 42V35H61C63.2091 35 65 33.2091 65 31C65 28.7909 63.2091 27 61 27H54V20Z"
+      fill="currentColor"
     />
   </g>
   <defs>
@@ -84,4 +67,42 @@ export function loadIcons() {
 </svg>
 `
   )
+
+  addIcon('clear-all', `<svg
+  width="100"
+  height="100"
+  viewBox="0 0 100 100"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <g clip-path="url(#clip0_1007_2)">
+    <path
+      d="M30.6202 20.9302H88.7597"
+      stroke="currentColor"
+      stroke-width="9.68992"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M20.9302 50H79.0698"
+      stroke="currentColor"
+      stroke-width="9.68992"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M11.2403 79.0698H69.3798"
+      stroke="currentColor"
+      stroke-width="9.68992"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+  <defs>
+    <clipPath id="clip0_1007_2">
+      <rect width="100" height="100" fill="white" />
+    </clipPath>
+  </defs>
+</svg>
+`)
 }

@@ -86,7 +86,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'insert-plan-table',
       name: 'Insert plan table',
-      icon: 'table-2',
+      icon: 'list-plus',
       editorCallback: (editor: Editor, view: MarkdownView) => {
         this.newPerformTableAction((pe) => {
           pe.insertPlanTable()
@@ -133,7 +133,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'ignore-activity',
       name: 'Ignore activity',
-      icon: 'list-minus',
+      icon: 'slash',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.ignoreActivity()
       }),
@@ -151,7 +151,7 @@ export default class SuperPlan extends Plugin {
     this.addCommand({
       id: 'unfix-all-activities',
       name: 'Unfix all activities',
-      icon: 'list-minus',
+      icon: 'clear-all',
       editorCheckCallback: this.newPerformTableAction((pe) => {
         pe.unfixAllActivities()
       }),
