@@ -39,6 +39,8 @@ export class ActivitySuggester
   // Used to avoid re-registration
   keymapEventHandlers: KeymapEventHandler[] = []
 
+  private lastCellContent = ''
+
   constructor(
     private app: App,
     private provider: ActivityProvider,
@@ -82,7 +84,11 @@ export class ActivitySuggester
     if (!state || state.type !== 'activity') return null
 
     const cellContent = state.cell.content
+
     if (cellContent.trim().length === 0) return null
+    if (cellContent === this.lastCellContent) return null
+
+    this.lastCellContent = cellContent
 
     const line = editor.getLine(cursor.line)
     return {
