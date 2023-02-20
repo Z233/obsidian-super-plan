@@ -35,8 +35,7 @@ export class MiniTracker {
   async open(windowFolderPath: string) {
     const { BrowserWindow } = getElectronAPI()
 
-    const data = await this.loadData()
-    const position: Position | null = data ? data.position : null
+    const position = await this.loadPosition()
 
     this.win = new BrowserWindow({
       frame: false,
@@ -82,12 +81,7 @@ export class MiniTracker {
   private handleWindowMove() {
     if (!this.win) return
     const { x, y } = this.win.getBounds()
-    this.saveData({
-      position: {
-        x,
-        y,
-      },
-    })
+    this.savePosition({ x, y })
   }
 
   private async saveData(data: Partial<MiniTrackerData>) {
@@ -102,5 +96,26 @@ export class MiniTracker {
   private async loadData() {
     const userData = await this.store.get(UserDataKey)
     return userData['miniTracker']
+  }
+
+  private async loadPosition() {
+    const data = await this.loadData()
+    const { screen } = getElectronAPI()
+    const primaryDisplayId = screen.getPrimaryDisplay().id
+
+    return data.position?.[primaryDisplayId]
+  }
+
+  private async savePosition(pos: Position) {
+    const data = await this.loadData()
+    const { screen } = getElectronAPI()
+    const primaryDisplayId = screen.getPrimaryDisplay().id
+
+    this.saveData({
+      position: {
+        ...data.position,
+        [primaryDisplayId]: pos,
+      },
+    })
   }
 }

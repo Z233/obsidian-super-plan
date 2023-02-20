@@ -9,7 +9,7 @@ export type UserData = {
 }
 
 export type MiniTrackerData = {
-  position: Position
+  position: Record<string, Position | undefined>
 }
 
 export type Position = {
