@@ -1,17 +1,13 @@
-import { isEqual } from 'lodash-es'
 import { Modal, Notice, type App } from 'obsidian'
 import type { TableEditor } from '../editor/table-editor'
-import type { PlanTracker } from '../tracker/plan-tracker'
-import { generateActivityData, getNowMins } from '../util/helper'
+import { getNowMins, parseTime2Mins } from '../util/helper'
 
 export class SplitConfirmModal extends Modal {
   private readonly pe: TableEditor
-  private readonly tracker: PlanTracker
 
-  constructor(app: App, pe: TableEditor, tracker: PlanTracker) {
+  constructor(app: App, pe: TableEditor) {
     super(app)
     this.pe = pe
-    this.tracker = tracker
   }
 
   onOpen() {
@@ -23,8 +19,11 @@ export class SplitConfirmModal extends Modal {
     }
 
     const { data } = cursor
-    const nowData = this.tracker.now && generateActivityData(this.tracker.now)
-    const isNowData = isEqual(nowData, data)
+
+    const nowMins = getNowMins()
+    const minsPassed = nowMins - parseTime2Mins(data.start)
+    const isOngoing = minsPassed > 0 && minsPassed <= +data.actLen
+
     const maxLength = Math.max(+data.length, +data.actLen) - 1
 
     this.titleEl.textContent = 'Split activity'
@@ -35,7 +34,7 @@ export class SplitConfirmModal extends Modal {
     })
 
     const inputEl = this.contentEl.createEl('input', undefined, (el) => {
-      el.value = isNowData ? `${getNowMins() - this.tracker.now!.start}` : maxLength.toString()
+      el.value = isOngoing ? minsPassed.toString() : Math.floor(maxLength / 2).toString()
       el.setAttribute('style', 'margin: 0 var(--size-4-2)')
       el.setAttribute('id', 'length')
       el.setAttribute('type', 'number')
