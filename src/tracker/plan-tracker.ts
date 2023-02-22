@@ -1,4 +1,3 @@
-import { timer } from './timer'
 import type { ActivitiesData, Activity, Maybe, PlanTableInfo, UnsafeEditor } from '../types'
 import { getNowMins } from '../util/helper'
 import type { Parser } from '../parser'
@@ -10,6 +9,7 @@ import { CURSOR_CH_AFTER_FOCUS, HIGHLIGHT_CLASS_NAME } from '../constants'
 import StatusBar from './status-bar/StatusBar.svelte'
 import { Scheduler } from 'src/scheduler'
 import { TableEditor } from 'src/editor/table-editor'
+import { Timer } from './timer'
 
 type StatusBarProps = StatusBar['$$prop_def']
 
@@ -82,6 +82,7 @@ export class PlanTracker {
       }
     })
 
+    const timer = Timer.new()
     timer.onTick(this.onTick.bind(this))
   }
 

@@ -1,13 +1,24 @@
+import type { Maybe } from 'src/types'
 import { EventEmitter } from 'typed-event-emitter'
 
-class Timer extends EventEmitter {
+export class Timer extends EventEmitter {
+  private static instance: Maybe<Timer>
+
   onTick = this.registerEvent()
   readonly intervalId: number
 
-  constructor() {
+  private constructor() {
     super()
     this.intervalId = window.setInterval(() => this.emit(this.onTick), 1000)
   }
-}
 
-export const timer = new Timer()
+  static new() {
+    if (Timer.instance) return Timer.instance
+    else return (Timer.instance = new Timer())
+  }
+
+  static clean() {
+    if (this.instance) this.instance.removeListener()
+    this.instance = null
+  }
+}

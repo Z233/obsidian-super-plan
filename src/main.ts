@@ -1,30 +1,19 @@
-import {
-  Editor,
-  FileSystemAdapter,
-  MarkdownView,
-  Notice,
-  Plugin,
-  Platform,
-  type Command,
-} from 'obsidian'
-import { PlanFile } from './file'
+import { Editor, MarkdownView, Plugin, Platform, type Command } from 'obsidian'
 import { Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { EditorExtension } from './editor/editor-extension'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
-import { PlanTracker } from './tracker/plan-tracker'
-import { timer } from './tracker/timer'
 import { SplitConfirmModal } from './ui/modals'
-import type { ActivitiesData, Maybe } from './types'
-import { isEqual } from 'lodash-es'
-import 'electron'
+import type { Maybe } from './types'
 import { ActivitySuggester } from './ui/suggest/activity-suggester'
 import { ActivityProvider } from './ui/suggest/activity-provider'
-import './style.css'
 import { MiniTracker } from './window'
 import { DataStore, SettingsDataKey } from './store'
 import { loadIcons } from './ui/icons'
+import { desktopInit } from './platform/desktop'
+import { Timer } from './tracker/timer'
+import './style.css'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -32,26 +21,23 @@ export default class SuperPlan extends Plugin {
 
   private store: DataStore
 
-  private file: PlanFile
   private parser: Parser
-  private tracker: PlanTracker
 
   async onload() {
     this.store = new DataStore(this)
 
     await this.loadSettings()
+    this.addSettingTab(new SuperPlanSettingsTab(this.app, this))
 
     this.parser = new Parser(this.settings)
-    this.file = new PlanFile(this.app.vault, this.parser, this.settings)
 
-    this.tracker = new PlanTracker(
-      this.app,
-      this.parser,
-      this.file,
-      this.settings,
-      this.addStatusBarItem()
-    )
-    this.tracker.init()
+    if (Platform.isDesktopApp) {
+      const timer = Timer.new()
+
+      this.registerInterval(timer.intervalId)
+
+      desktopInit(this.app, this.manifest, this.settings, this.store, this.addStatusBarItem())
+    }
 
     const editorExtension = new EditorExtension(this, this.parser)
     this.registerEditorExtension(editorExtension.makeEditorRemappingExtension())
@@ -61,24 +47,6 @@ export default class SuperPlan extends Plugin {
       const provider = (this.activityProvider = new ActivityProvider(this.settings))
       editorExtension.setProvider(provider)
       this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
-    }
-
-    if (this.settings.enableMiniTracker && Platform.isDesktopApp) {
-      const miniTracker = MiniTracker.new(this.store, this.tracker)
-
-      let windowFolder: string | undefined
-      const pluginDir = this.manifest.dir
-      if (this.app.vault.adapter instanceof FileSystemAdapter && pluginDir) {
-        windowFolder = this.app.vault.adapter.getFullPath(`${pluginDir}/window`)
-      }
-
-      if (windowFolder) {
-        miniTracker.open(windowFolder)
-      } else {
-        new Notice(`Error: can't init mini tracker window.`)
-      }
-    } else {
-      MiniTracker.clean()
     }
 
     loadIcons()
@@ -126,7 +94,7 @@ export default class SuperPlan extends Plugin {
       name: 'Split activity',
       icon: 'separator-horizontal',
       editorCheckCallback: this.newPerformTableAction((pe) => {
-        new SplitConfirmModal(this.app, pe, this.tracker).open()
+        new SplitConfirmModal(this.app, pe).open()
       }),
     })
 
@@ -200,35 +168,10 @@ export default class SuperPlan extends Plugin {
         te.moveDown()
       }),
     })
-
-    this.addSettingTab(new SuperPlanSettingsTab(this.app, this))
-
-    this.registerInterval(timer.intervalId)
-
-    this.tick()
-    timer.onTick(this.tick.bind(this))
-  }
-
-  private lastActivitiesData: Maybe<ActivitiesData> = null
-  async tick() {
-    const content = await this.file.getTodayPlanFileContent()
-    if (content) {
-      const tableInfo = this.parser.findPlanTable(content)
-      if (tableInfo) {
-        const { table } = tableInfo
-        const activitiesData = this.parser.transformTable(table)
-        if (!isEqual(activitiesData, this.lastActivitiesData)) {
-          this.lastActivitiesData = activitiesData
-          this.tracker.setData(activitiesData, tableInfo)
-        }
-      } else {
-        this.tracker.setData(null, null)
-      }
-    }
   }
 
   onunload() {
-    timer.removeListener()
+    Timer.clean()
     MiniTracker.clean()
   }
 
