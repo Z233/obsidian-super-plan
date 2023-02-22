@@ -5,6 +5,10 @@ import type { PlanTracker } from 'src/tracker/plan-tracker'
 import type { Maybe } from 'src/types'
 import { getElectronAPI } from 'src/window/utils'
 
+const defaultMiniTrackerData: MiniTrackerData = {
+  position: {},
+}
+
 export class MiniTracker {
   private win: Maybe<BrowserWindow> = null
   private static instance: Maybe<MiniTracker> = null
@@ -86,16 +90,17 @@ export class MiniTracker {
 
   private async saveData(data: Partial<MiniTrackerData>) {
     const userData = await this.store.get(UserDataKey)
-    const miniTrackerData: MiniTrackerData = userData['miniTracker']
+    const miniTrackerData = userData?.['miniTracker']
     this.store.set(UserDataKey, {
       ...userData,
-      miniTracker: Object.assign(miniTrackerData, data),
+      miniTracker: Object.assign({}, miniTrackerData, data),
     })
   }
 
   private async loadData() {
     const userData = await this.store.get(UserDataKey)
-    return userData['miniTracker']
+    const data = userData?.miniTracker ?? defaultMiniTrackerData
+    return data
   }
 
   private async loadPosition() {

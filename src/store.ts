@@ -18,8 +18,8 @@ export type Position = {
 }
 
 type Data = {
-  [UserDataKey]: UserData
-  [SettingsDataKey]: ISettings
+  [UserDataKey]?: UserData
+  [SettingsDataKey]?: ISettings
 }
 
 export class DataStore {
