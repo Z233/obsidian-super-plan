@@ -4,33 +4,21 @@
   export let backgroundSize: number
   export let overlaySize: number
 
-  const dashArray = 2 * Math.PI * (overlaySize / 4)
-  $: dashOffset = dashArray - (dashArray * progress) / 100
+  $: overlayAngle = (360 * progress) / 100
 </script>
 
-<div class="progress-circle-wrapper" style={`--circle-progress-size: ${backgroundSize}px`}>
-  <div class="progress-circle-container">
-    <svg
-      width={backgroundSize}
-      height={backgroundSize}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={`0 0 ${backgroundSize} ${backgroundSize}`}
-      style="transform: rotate(calc(-90deg))"
-    >
-      <circle fill="var(--bg-color)" cx="50%" cy="50%" r={backgroundSize / 2} />
-      <circle
-        class="progress-circle-overlay"
-        fill="transparent"
-        stroke="var(--overlay-color)"
-        cx="50%"
-        cy="50%"
-        r={overlaySize / 4}
-        stroke-width={overlaySize / 2}
-        stroke-dasharray={dashArray}
-        stroke-dashoffset={dashOffset}
-      />
-    </svg>
-  </div>
+<div
+  class="progress-circle-wrapper"
+  style={`
+    --circle-progress-size: ${backgroundSize}px;
+    --circle-overlay-size: ${overlaySize}px;
+  `}
+>
+  <div
+    class="progress-circle-overlay"
+    style={`--circle-overlay-degree: ${overlayAngle}deg;
+  `}
+  />
 </div>
 
 <style>
@@ -41,9 +29,20 @@
     margin: 0 var(--size-4-2);
     display: grid;
     place-items: center;
+    background: var(--circle-background-color);
+    border-radius: 50%;
   }
 
   .progress-circle-overlay {
-    transition: stroke-dashoffset 1s linear;
+    height: var(--circle-overlay-size);
+    width: var(--circle-overlay-size);
+    border-radius: 50%;
+    transition: background 1000ms linear;
+    will-change: transform;
+    background: conic-gradient(
+        transparent 0deg var(--circle-overlay-degree),
+        var(--circle-background-color) var(--circle-overlay-degree) 360deg
+      ),
+      conic-gradient(var(--circle-overlay-color) 0deg, var(--circle-overlay-color));
   }
 </style>

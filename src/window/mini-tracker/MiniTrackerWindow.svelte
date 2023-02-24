@@ -30,13 +30,15 @@
         {progress}
         backgroundSize={34}
         overlaySize={30}
-        --overlay-color="white"
-        --bg-color="#8770EB"
+        --circle-overlay-color="white"
+        --circle-background-color="#8770EB"
       />
     </div>
     <div class="col-span-3">
       <div class="text-gray-900 truncate">{now?.activity ?? 'No activity'}</div>
-      <div class="text-xs text-gray-400 truncate">{next ? `Next: ${next.activity}` : 'All done'}</div>
+      <div class="text-xs text-gray-400 truncate">
+        {next ? `Next: ${next.activity}` : 'All done'}
+      </div>
     </div>
   </div>
 </div>

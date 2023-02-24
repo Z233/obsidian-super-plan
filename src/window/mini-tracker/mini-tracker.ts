@@ -37,7 +37,8 @@ export class MiniTracker {
   }
 
   async open(windowFolderPath: string) {
-    const { BrowserWindow } = getElectronAPI()
+    const electronAPI = getElectronAPI()
+    const { BrowserWindow } = electronAPI
 
     const position = await this.loadPosition()
 
@@ -55,10 +56,12 @@ export class MiniTracker {
       y: position?.y,
       focusable: false,
       resizable: false,
+      skipTaskbar: true,
     })
 
     if (__DEV__) {
       this.win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'window/mini-tracker/index.html')
+      this.win.webContents.openDevTools()
     } else {
       const filePath = normalizePath(`${windowFolderPath}/mini-tracker/index.html`)
 
