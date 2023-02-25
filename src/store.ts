@@ -40,7 +40,8 @@ export class DataStore {
 
   private async ensureDataLoaded() {
     if (!this.data) {
-      this.data = await this.plugin.loadData()
+      const loadedData = await this.plugin.loadData()
+      this.data = loadedData || {}
     }
   }
 }

@@ -22,11 +22,11 @@ interface PlanTrackerSettings {
 
 export type ISettings = PlanEditorSettings & PlanTrackerSettings
 
-export const defaultSettings: Partial<ISettings> = {
+export const defaultSettings: ISettings = {
   // PlanEditorSettings
   planTableId: 'plan',
   formatType: FormatType.NORMAL,
-  enableActivityAutoCompletion: checkIsDataviewEnabled(),
+  enableActivityAutoCompletion: false,
 
   // PlanTrackerSettings
   dailyPlanNoteFolder: '/',

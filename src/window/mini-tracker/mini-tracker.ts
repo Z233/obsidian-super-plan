@@ -100,8 +100,16 @@ export class MiniTracker {
   }
 
   private async loadData() {
-    const userData = await this.store.get(UserDataKey)
-    const data = userData?.miniTracker ?? defaultMiniTrackerData
+    let loadedUserData = await this.store.get(UserDataKey)
+    if (!loadedUserData) {
+      loadedUserData = {
+        miniTracker: defaultMiniTrackerData,
+      }
+
+      await this.store.set(UserDataKey, loadedUserData)
+    }
+
+    const data = loadedUserData?.miniTracker ?? defaultMiniTrackerData
     return data
   }
 
