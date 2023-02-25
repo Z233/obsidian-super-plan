@@ -149,23 +149,30 @@ export class ActivitySuggester
 
   selectSuggestion(value: ActivitySuggestValue, evt: MouseEvent | KeyboardEvent): void {
     const { editor, query } = value.context
-    const { value: insertValue } = value
+    const { value: selectedValue } = value
     const { ch, line } = editor.getCursor()
+
+    const lineText = editor.getLine(line)
+    const queryStartCh = lineText.indexOf(query)
+    const cursorChInQuery = ch - queryStartCh - 1
+    const insertText = selectedValue.slice(cursorChInQuery + 1)
+    const afterInsertCh = queryStartCh + selectedValue.length
+
     editor.replaceRange(
-      insertValue,
-      {
-        ch: ch - query.length,
-        line,
-      },
+      insertText,
       {
         ch,
         line,
       },
-      query
+      {
+        ch: queryStartCh + query.length,
+        line,
+      }
     )
+
     editor.setCursor({
       line: line,
-      ch: ch + insertValue.length - query.length,
+      ch: afterInsertCh,
     })
   }
 }
