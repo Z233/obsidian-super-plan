@@ -61,7 +61,6 @@ export class MiniTracker {
 
     if (__DEV__) {
       this.win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'window/mini-tracker/index.html')
-      this.win.webContents.openDevTools()
     } else {
       const filePath = normalizePath(`${windowFolderPath}/mini-tracker/index.html`)
 

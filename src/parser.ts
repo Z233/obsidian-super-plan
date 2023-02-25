@@ -25,9 +25,7 @@ export class Parser {
     this.settings = settings
   }
 
-  checkIsTemplate() {
-
-  }
+  checkIsTemplate() {}
 
   findPlanTable(contentOrLines: string | string[]): Maybe<PlanTableInfo> {
     const rows = isArray(contentOrLines) ? contentOrLines : contentOrLines.split('\n')
@@ -35,25 +33,27 @@ export class Parser {
 
     const lines: string[] = []
 
-    let startRow,
-      endRow = 0
+    let startRow: number | undefined
+    let endRow = 0
 
     for (let i = 0; i < rows.length; i++) {
-      const isTableRow = re.test(rows[i])
-      if (!isTableRow) continue
-      if (isNumber(startRow) && !isTableRow) break
+      const row = rows[i]
 
-      if (startRow === undefined) startRow = i
-      else endRow++
+      if (re.test(row)) {
+        if (startRow === undefined) {
+          startRow = i
+          endRow = i
+        } else if (i - endRow <= 1) {
+          endRow = i
+        }
 
-      lines.push(rows[i])
+        lines.push(row)
+      }
     }
-
-    if (startRow === undefined || !lines.length) return
 
     const table = readTable(lines, this.settings.asOptions())
     const range = new Range(
-      new Point(startRow, 0),
+      new Point(startRow!, 0),
       new Point(endRow, lines[lines.length - 1].length)
     )
 
