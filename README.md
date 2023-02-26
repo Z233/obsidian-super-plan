@@ -1,5 +1,8 @@
 # Obsidian Super Plan
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/z233/obsidian-super-plan?style=plastic)
+![GitHub all releases](https://img.shields.io/github/downloads/z233/obsidian-super-plan/total?style=plastic)
+
 > ⚠ This plugin is in its early stages and is still under development. 
 
 An Obsidian plugin that helps you plan your day with full productivity.
