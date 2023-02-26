@@ -24,3 +24,5 @@ with it, you can get started by exploring the following resources:
 ## Installation
 
 To install the plugin, simply download the latest zip file from the [Github Releases page](https://github.com/Z233/obsidian-super-plan/releases/latest), and extract the contents to the plugins folder in your Obsidian vault.
+
+## WIP...
