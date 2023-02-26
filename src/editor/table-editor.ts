@@ -336,6 +336,31 @@ export class TableEditor {
     this.schedule(this.getActivitiesData())
   }
 
+  cutActivity() {
+    const { line } = this.editor.getCursor()
+    const lineText = this.editor.getLine(line)
+
+    // Write to clipboard
+    const clipboard = navigator.clipboard
+    clipboard.writeText(lineText)
+
+    this.editor.exec('deleteLine')
+  }
+
+  async pasteActivity() {
+    const { line } = this.editor.getCursor()
+
+    const clipboard = navigator.clipboard
+    const text = await clipboard.readText()
+
+    // Insert new line with text
+    this.editor.replaceRange(`${text}\n`, { line, ch: 0 }, { line, ch: 0 })
+
+    setImmediate(() => {
+      this.schedule(this.getActivitiesData())
+    })
+  }
+
   unfixAllActivities() {
     const activitiesData = this.getActivitiesData()
     const updatedActivityData = activitiesData.map((a, i) =>

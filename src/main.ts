@@ -168,6 +168,24 @@ export default class SuperPlan extends Plugin {
         te.moveDown()
       }),
     })
+
+    addMobileCommand({
+      id: 'cut-activity',
+      name: 'Cut activity',
+      icon: 'cut',
+      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
+        te.cutActivity()
+      }),
+    })
+
+    addMobileCommand({
+      id: 'paste-activity',
+      name: 'Paste activity',
+      icon: 'clipboard-plus',
+      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
+        te.pasteActivity()
+      }),
+    })
   }
 
   onunload() {
