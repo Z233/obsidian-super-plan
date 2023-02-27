@@ -44,12 +44,6 @@ export function getNowMins() {
   return hours * 60 + mins
 }
 
-export function parseMins2TodayUnix(mins: number) {
-  const todayDate = moment().format('YYYY-MM-DD 00:00')
-  const todayUnix = moment(todayDate).unix()
-  return todayUnix + mins * 60
-}
-
 export function formatNumberCell(content: number) {
   return Number.isNumber(content)
     ? !Number.isNaN(content)

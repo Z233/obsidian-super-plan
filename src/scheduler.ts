@@ -1,43 +1,63 @@
 import type { ActivitiesData, Activity } from './types'
-import { check, generateActivityData, parseMins2TodayUnix, parseTime2Mins } from './util/helper'
+import { check, generateActivityData, getNowMins, parseTime2Mins } from './util/helper'
 
 export class Scheduler {
   activities: Activity[]
-  private readonly startMins: number
-  private readonly endMins: number
-  readonly startUnix: number
-  readonly endUnix: number
+  private startMins: number
+  private endMins: number
+  startUnix: number
+  endUnix: number
 
-  constructor(private data: ActivitiesData) {
-    this.startMins = parseTime2Mins(data[0].start)
-    this.endMins = parseTime2Mins(data[data.length - 1].start)
-
-    if (this.endMins < this.startMins) {
-      this.endMins = this.endMins + 24 * 60
-    }
-
-    this.startUnix = parseMins2TodayUnix(this.startMins)
-    this.endUnix = parseMins2TodayUnix(this.endMins)
-
-    this.init()
+  constructor(data: ActivitiesData) {
+    this.init(data)
   }
 
-  private init() {
-    this.activities = this.data.map((act, i) => {
-      const startMins = i === this.data.length - 1 ? this.endMins : parseTime2Mins(act.start)
+  private init(data: ActivitiesData) {
+    // Init activities
+    const activities: Activity[] = data.map((act) => ({
+      activity: act.activity,
+      length: +act.length,
+      start: parseTime2Mins(act.start),
+      stop: 0,
+      isFixed: check(act.f),
+      isRigid: check(act.r),
+      actLen: 0,
+    }))
 
-      const actLen = +act.actLen
+    for (let idx = 1; idx < activities.length; idx++) {
+      const act = activities[idx]
+      const prevAct = activities[idx - 1]
 
-      return {
-        activity: act.activity,
-        length: +act.length,
-        start: startMins,
-        stop: startMins + actLen,
-        isFixed: check(act.f),
-        isRigid: check(act.r),
-        actLen: actLen,
+      const start = act.start < prevAct.start ? act.start + 24 * 60 : act.start
+
+      activities[idx] = {
+        ...act,
+        start,
       }
-    })
+    }
+
+    this.activities = activities
+    this.startMins = this.activities[0].start
+    this.endMins = this.activities[this.activities.length - 1].start
+
+    // Compute startUnix and endUnix
+    let d = new Date()
+    d.setSeconds(0, 0)
+
+    const nowMins = getNowMins()
+    const nowUnix = d.getTime() / 1000
+
+    let startUnix = nowUnix - (nowMins - this.startMins) * 60
+    let endUnix = nowUnix + (this.endMins - nowMins) * 60
+
+    const isSameDate = nowMins >= this.startMins
+    if (!isSameDate) {
+      startUnix -= 24 * 60 * 60
+      endUnix -= 24 * 60 * 60
+    }
+
+    this.startUnix = startUnix
+    this.endUnix = endUnix
   }
 
   schedule() {
