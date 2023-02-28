@@ -1,6 +1,11 @@
 import type { ActivitiesData, Activity } from './types'
 import { check, generateActivityData, getNowMins, parseTime2Mins } from './util/helper'
 
+type SchedulerPart = {
+  duration: number
+  activities: Activity[]
+}
+
 export class Scheduler {
   activities: Activity[]
   private startMins: number
@@ -14,36 +19,23 @@ export class Scheduler {
 
   private init(data: ActivitiesData) {
     // Init activities
-    const activities: Activity[] = data.map((act) => ({
-      activity: act.activity,
-      length: +act.length,
-      start: parseTime2Mins(act.start),
-      stop: 0,
-      isFixed: check(act.f),
-      isRigid: check(act.r),
-      actLen: +act.actLen,
-    }))
+    const activities: Activity[] = data.map((act) => {
+      const isFixed = check(act.f)
 
-    // Compute start and stop for each activity
-    for (let idx = 1; idx < activities.length; idx++) {
-      const act = activities[idx]
-      const prevAct = activities[idx - 1]
-
-      let start = act.start
-      while (start < prevAct.start) {
-        start += 24 * 60
+      return {
+        activity: act.activity,
+        length: +act.length,
+        start: isFixed ? parseTime2Mins(act.start) : 0,
+        stop: 0,
+        isFixed,
+        isRigid: check(act.r),
+        actLen: 0,
       }
-
-      const stop = start + act.actLen
-
-      activities[idx] = {
-        ...act,
-        start,
-        stop,
-      }
-    }
+    })
 
     this.activities = activities
+    this.schedule()
+
     this.startMins = this.activities[0].start
     this.endMins = this.activities[this.activities.length - 1].start
 
@@ -70,42 +62,61 @@ export class Scheduler {
   }
 
   schedule() {
-    const duration = this.endMins - this.startMins
-    const parts = this.divideParts(duration, this.activities)
-    const scheduledActivities = parts.flatMap((part) =>
-      this.schedulePart(part.duration, part.activities)
-    )
+    const parts = this.divideParts(this.activities).map((p) => ({
+      duration: p.duration,
+      activities: this.schedulePart(p.duration, p.activities),
+    }))
+
+    const scheduledActivities: Activity[] = this.mergeParts(parts)
     this.activities = scheduledActivities
   }
 
-  private divideParts(duration: number, activities: Activity[]) {
-    let partIndex = 0
-    let usedDuration = 0
+  private mergeParts(parts: SchedulerPart[]) {
+    const partsToMerge = parts.concat()
 
-    const parts: {
-      duration: number
-      activities: Activity[]
-    }[] = [
+    const mergedActivities: Activity[] = [...partsToMerge[0].activities]
+    for (let i = 1; i < partsToMerge.length; i++) {
+      const activities = partsToMerge[i].activities
+      const prevPart = partsToMerge[i - 1]
+
+      activities[0].start = prevPart.activities[prevPart.activities.length - 1].stop
+
+      mergedActivities.push(...activities)
+    }
+
+    return mergedActivities
+  }
+
+  private divideParts(activities: Activity[]) {
+    const parts: SchedulerPart[] = [
       {
-        duration: duration,
+        duration: 0,
         activities: [],
       },
     ]
 
-    for (let i = 0; i < activities.length; i++) {
+    for (let i = 0, partIndex = 0; i < activities.length; i++) {
       const activity = activities[i]
       const nextActivity = activities[i + 1]
 
       parts[partIndex].activities.push(activity)
 
-      if (nextActivity && nextActivity.isFixed) {
-        const part = parts[partIndex]
-        part.duration = nextActivity.start - part.activities[0].start
-        usedDuration += part.duration
-        parts[++partIndex] = {
-          duration: duration - usedDuration,
-          activities: [],
-        }
+      if (!nextActivity?.isFixed) continue
+
+      const lastPart = parts[partIndex]
+
+      let lastPartStart = lastPart.activities[0].start
+      let lastPartEnd = nextActivity.start
+
+      while (lastPartEnd < lastPartStart) {
+        lastPartEnd += 24 * 60
+      }
+
+      lastPart.duration = lastPartEnd - lastPartStart
+
+      parts[++partIndex] = {
+        duration: 0,
+        activities: [],
       }
     }
 
