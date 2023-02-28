@@ -21,18 +21,25 @@ export class Scheduler {
       stop: 0,
       isFixed: check(act.f),
       isRigid: check(act.r),
-      actLen: 0,
+      actLen: +act.actLen,
     }))
 
+    // Compute start and stop for each activity
     for (let idx = 1; idx < activities.length; idx++) {
       const act = activities[idx]
       const prevAct = activities[idx - 1]
 
-      const start = act.start < prevAct.start ? act.start + 24 * 60 : act.start
+      let start = act.start
+      while (start < prevAct.start) {
+        start += 24 * 60
+      }
+
+      const stop = start + act.actLen
 
       activities[idx] = {
         ...act,
         start,
+        stop,
       }
     }
 
@@ -50,6 +57,8 @@ export class Scheduler {
     let startUnix = nowUnix - (nowMins - this.startMins) * 60
     let endUnix = nowUnix + (this.endMins - nowMins) * 60
 
+    // If not same date, means `nowUnix` is in the next day
+    // So we need to minus 24 hours
     const isSameDate = nowMins >= this.startMins
     if (!isSameDate) {
       startUnix -= 24 * 60 * 60
