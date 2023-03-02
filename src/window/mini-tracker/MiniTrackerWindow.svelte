@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { TrackerState } from 'src/tracker/plan-tracker'
   import type { Activity, Maybe } from 'src/types'
-  import ProgressCircle from './ProgressCircle.svelte'
+  import MiniClock from './MiniClock.svelte'
 
   let now: Maybe<Activity> = null
   let next: Maybe<Activity> = null
@@ -26,13 +26,7 @@
 <div class="w-full h-full grid place-content-center" style="-webkit-app-region: drag">
   <div class="grid items-center space-x-3 grid-cols-4 px-4">
     <div class="col-span-1">
-      <ProgressCircle
-        {progress}
-        backgroundSize={34}
-        overlaySize={30}
-        --circle-overlay-color="white"
-        --circle-background-color="#8770EB"
-      />
+      <MiniClock {progress} size={36} />
     </div>
     <div class="col-span-3">
       <div class="text-gray-900 truncate">{now?.activity ?? 'No activity'}</div>
