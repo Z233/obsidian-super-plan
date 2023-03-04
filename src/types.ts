@@ -12,6 +12,13 @@ export interface UnsafeEditor extends Editor {
   removeHighlights: (unknownArg?: any) => void
 }
 
+export type PlanRecord = {
+  F: string
+  Start: string
+  Activity: string
+  Length: string
+  R: string
+}
 
 export type UserData = {
   miniTracker: {

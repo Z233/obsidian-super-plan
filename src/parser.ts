@@ -9,6 +9,7 @@ import {
   formatTable,
   Range,
   Point,
+  defaultOptions,
 } from '@tgrosinger/md-advanced-tables'
 import {
   _createIsTableFormulaRegex,
@@ -17,6 +18,45 @@ import {
 import { ActivityDataColumn, PlanLinesLiteral } from './constants'
 import { getActivityDataKey } from './util/helper'
 import { isArray, isNumber } from 'lodash-es'
+
+export class MdTableParser {
+  static parse(markupOrLines: string | string[]) {
+    const lines = isArray(markupOrLines) ? markupOrLines : markupOrLines.split('\n')
+    const table = readTable(lines, defaultOptions)
+
+    return {
+      table,
+      toRecords: () => MdTableParser._toRecords(table),
+    }
+  }
+
+  static stringify(table: Table): string {
+    return formatTable(table, defaultOptions).table.toLines().join('\n')
+  }
+
+  private static _toRecords(table: Table) {
+    const headers = table
+      .getRows()[0]
+      .getCells()
+      .map((cell) => cell.content)
+
+    const records: Record<string, string>[] = []
+
+    const rows = table.getRows()
+    for (let rowIdx = 2; rowIdx < rows.length; rowIdx++) {
+      const row = rows[rowIdx]
+      const record: Record<string, string> = {}
+      for (let colIdx = 0; colIdx < headers.length; colIdx++) {
+        const header = headers[colIdx]
+        const cell = row.getCells()[colIdx]
+        record[header] = cell.content
+      }
+      records.push(record)
+    }
+
+    return records
+  }
+}
 
 export class Parser {
   private readonly settings: SuperPlanSettings

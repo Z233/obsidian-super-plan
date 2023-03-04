@@ -21,6 +21,7 @@
   "devDependencies": {
     "@codemirror/state": "0.19.0",
     "@codemirror/view": "0.19.29",
+    "@preact/preset-vite": "^2.5.0",
     "@sveltejs/vite-plugin-svelte": "^1.4.0",
     "@tsconfig/svelte": "^3.0.0",
     "@types/lodash-es": "^4.17.6",
@@ -50,7 +51,10 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
+    "@tanstack/react-table": "^8.7.9",
     "@tgrosinger/md-advanced-tables": "^3.8.0",
-    "lodash-es": "^4.17.21"
+    "lodash-es": "^4.17.21",
+    "preact": "^10.13.0",
+    "zod": "^3.21.0"
   }
 }

@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, Plugin, Platform, type Command } from 'obsidian'
-import { Parser } from './parser'
+import { MdTableParser, Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { EditorExtension } from './editor/editor-extension'
@@ -14,6 +14,7 @@ import { loadIcons } from './ui/icons'
 import { desktopInit } from './platform/desktop'
 import { Timer } from './tracker/timer'
 import './style.css'
+import { renderPlan } from './ui/plan'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -48,6 +49,10 @@ export default class SuperPlan extends Plugin {
       editorExtension.setProvider(provider)
       this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
     }
+
+    this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
+      renderPlan(el, source)
+    })
 
     loadIcons()
 
