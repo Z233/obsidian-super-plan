@@ -144,24 +144,26 @@ export class Scheduler {
       .reduce((sum, act) => sum + act.length, 0)
 
     let offsetValue = rigidTotal
+    let floatOffsetValue = 0
 
     if (isAllRigid) {
       offsetValue = 0
     }
 
-    // if (!isAllRound && totalRound > duration) {
-    //   offsetValue = duration - duration * (total / totalRound)
-    // }
-
     const ret = activities.reduce((arr, act, i) => {
       let actLen = 0
 
-      if (act.length > 0) {
-        if (act.isRigid && !isAllRigid) {
-          actLen = act.length
-        } else {
-          actLen = Math.round((duration - offsetValue) * (act.length / (total - offsetValue)))
-        }
+      if (act.isRigid && !isAllRigid) {
+        actLen = act.length
+      } else {
+        const floatLen = (duration - offsetValue) * (act.length / (total - offsetValue))
+        actLen = Math.round(floatLen)
+        floatOffsetValue += floatLen - actLen
+      }
+
+      // Assign floatOffsetValue to last activity
+      if (i === activities.length - 1) {
+        actLen += Math.round(floatOffsetValue)
       }
 
       const start = i > 0 ? arr[i - 1].stop : act.start
