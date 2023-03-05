@@ -1,3 +1,4 @@
+import type { PlanData } from './schemas'
 import type { ActivitiesData, Activity } from './types'
 import { check, generateActivityData, getNowMins, parseTime2Mins } from './util/helper'
 
@@ -181,7 +182,7 @@ export class Scheduler {
     return ret
   }
 
-  getData() {
+  getData(): PlanData {
     return this.activities.map((a) => generateActivityData(a))
   }
 }

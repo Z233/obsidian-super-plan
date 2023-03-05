@@ -1,5 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState, type FC } from 'preact/compat'
+import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { TableEditor } from 'src/editor/table-editor'
 import { Scheduler } from 'src/scheduler'
 import type { PlanData, PlanDataItem } from 'src/schemas'
@@ -31,8 +32,8 @@ const tableColumns: ColumnDef<PlanDataItem>[] = [
   },
 ]
 
-export const PlanTable: FC<{ initialData: PlanData; te: TableEditor }> = (props) => {
-  const { initialData, te } = props
+export const PlanTable: FC<{ initialData: PlanData; mte: MdTableEditor }> = (props) => {
+  const { initialData, mte } = props
 
   const [data, setData] = useState<PlanData>([])
 
@@ -45,7 +46,24 @@ export const PlanTable: FC<{ initialData: PlanData; te: TableEditor }> = (props)
   useEffect(() => {
     const scheduler = new Scheduler(initialData)
     scheduler.schedule()
-    setData(scheduler.getData())
+
+    const scheduledData = scheduler.getData()
+
+    setData(scheduledData)
+
+    // Iterate over the scheduled data and compare it to the old data.
+    // If there are any changes, get the row and column of the change.
+    for (let row = 0; row < scheduledData.length; row++) {
+      const oldItem = initialData[row]
+      const newItem = scheduledData[row]
+
+      Object.entries(newItem).forEach(([k, value], col) => {
+        const key = k as keyof PlanDataItem
+        if (oldItem[key] !== value) {
+          mte.updateCell(row, col, value)
+        }
+      })
+    }
   }, [initialData])
 
   return (

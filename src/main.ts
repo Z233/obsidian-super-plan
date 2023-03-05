@@ -16,6 +16,8 @@ import { Timer } from './tracker/timer'
 import './style.css'
 import { renderPlan } from './ui/plan'
 import { PlanFile } from './file'
+import { MdTableEditor } from './editor/md-table-editor'
+import type { Table } from '@tgrosinger/md-advanced-tables'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -52,11 +54,24 @@ export default class SuperPlan extends Plugin {
     }
 
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
+      const selection = ctx.getSectionInfo(el)
       const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
       const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
-      if (file && editor) {
-        const tableEditor = new TableEditor(file, editor, this.settings)
-        renderPlan(el, source, tableEditor)
+
+      if (file && editor && selection) {
+        const { lineStart, lineEnd } = selection
+
+        const getMte = (table: Table) =>
+          new MdTableEditor({
+            app: this.app,
+            file,
+            editor,
+            table,
+            startRow: lineStart + 1,
+            endRow: lineEnd - 1,
+          })
+
+        renderPlan(el, source, getMte)
       }
     })
 
