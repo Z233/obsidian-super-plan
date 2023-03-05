@@ -86,3 +86,5 @@ type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N
   : _TupleOf<T, N, [T, ...R]>
 
 export type Maybe<T> = T | null | undefined
+
+export type ValueOf<T> = T[keyof T]

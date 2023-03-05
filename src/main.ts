@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Plugin, Platform, type Command } from 'obsidian'
+import { Editor, MarkdownView, Plugin, Platform, type Command, TFile } from 'obsidian'
 import { MdTableParser, Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
@@ -15,6 +15,7 @@ import { desktopInit } from './platform/desktop'
 import { Timer } from './tracker/timer'
 import './style.css'
 import { renderPlan } from './ui/plan'
+import { PlanFile } from './file'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -51,7 +52,12 @@ export default class SuperPlan extends Plugin {
     }
 
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
-      renderPlan(el, source)
+      const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
+      const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+      if (file && editor) {
+        const tableEditor = new TableEditor(file, editor, this.settings)
+        renderPlan(el, source, tableEditor)
+      }
     })
 
     loadIcons()

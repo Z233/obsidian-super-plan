@@ -18,14 +18,12 @@ export class ObsidianTextEditor extends ITextEditor {
   private readonly app: App
   private readonly file: TFile
   private readonly editor: Editor
-  private readonly settings: SuperPlanSettings
 
-  constructor(app: App, file: TFile, editor: Editor, settings: SuperPlanSettings) {
+  constructor(app: App, file: TFile, editor: Editor) {
     super()
     this.app = app
     this.file = file
     this.editor = editor
-    this.settings = settings
   }
 
   public getCursorPosition = (): Point => {
@@ -100,40 +98,6 @@ export class ObsidianTextEditor extends ITextEditor {
     } else {
       this.editor.replaceRange(line + '\n', { line: row, ch: 0 })
     }
-  }
-
-  public insertLineBelow = (row: number, line: string): void => {
-    console.debug(`insertLine was called at line ${row}`)
-
-    const activityLine = this.getActivityLine(line, {
-      length: `0`,
-    })
-
-    console.debug(`New line: ${activityLine}`)
-
-    if (row > this.getLastRow()) {
-      this.editor.replaceRange(`${activityLine}\n`, {
-        line: row + 1,
-        ch: 0,
-      })
-    } else {
-      this.editor.replaceRange(`\n${activityLine}`, {
-        line: row,
-        ch: 0,
-      })
-    }
-  }
-
-  private getActivityLine(line: string, activityData: Partial<ActivityData>) {
-    const table = readTable([line], this.settings.asOptions())
-    const row = table.getRows()[0]
-
-    let modifiedRow = row
-    Object.keys(activityData).forEach((k: keyof ActivityData) => {
-      modifiedRow = modifiedRow.setCellAt(getActivityDataIndex(k), activityData[k]!)
-    })
-
-    return modifiedRow.toText()
   }
 
   public deleteLine = (row: number): void => {

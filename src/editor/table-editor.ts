@@ -43,7 +43,7 @@ export class TableEditor {
   constructor(file: TFile, private editor: Editor, settings: SuperPlanSettings) {
     this.settings = settings
 
-    this.ote = new ObsidianTextEditor(app, file, editor, settings)
+    this.ote = new ObsidianTextEditor(app, file, editor)
     this.mte = new MdTableEditor(this.ote)
   }
 

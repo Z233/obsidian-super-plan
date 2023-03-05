@@ -1,43 +1,52 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
-import type { FC } from 'preact/compat'
-import { planRecordSchema, type PlanRecord } from 'src/schemas'
+import { useEffect, useState, type FC } from 'preact/compat'
+import type { TableEditor } from 'src/editor/table-editor'
+import { Scheduler } from 'src/scheduler'
+import type { PlanData, PlanDataItem } from 'src/schemas'
 
-const headerEnum = planRecordSchema.keyof().Enum
-
-const tableColumns: ColumnDef<PlanRecord>[] = [
+const tableColumns: ColumnDef<PlanDataItem>[] = [
   {
-    header: headerEnum.F,
+    header: 'F',
     accessorKey: 'f',
-    accessorFn: (record) => record.F,
   },
   {
-    header: headerEnum.Start,
+    header: 'Start',
     accessorKey: 'start',
-    accessorFn: (record) => record.Start,
   },
   {
-    header: headerEnum.Activity,
+    header: 'Activity',
     accessorKey: 'activity',
-    accessorFn: (record) => record.Activity,
   },
   {
-    header: headerEnum.Length,
+    header: 'Length',
     accessorKey: 'length',
-    accessorFn: (record) => record.Length,
   },
   {
-    header: headerEnum.R,
+    header: 'R',
     accessorKey: 'r',
-    accessorFn: (record) => record.R,
+  },
+  {
+    header: 'ActLen',
+    accessorKey: 'actLen',
   },
 ]
 
-export const PlanTable: FC<{ records: PlanRecord[] }> = (props) => {
+export const PlanTable: FC<{ initialData: PlanData; te: TableEditor }> = (props) => {
+  const { initialData, te } = props
+
+  const [data, setData] = useState<PlanData>([])
+
   const table = useReactTable({
-    data: props.records,
+    data,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
   })
+
+  useEffect(() => {
+    const scheduler = new Scheduler(initialData)
+    scheduler.schedule()
+    setData(scheduler.getData())
+  }, [initialData])
 
   return (
     <table>
