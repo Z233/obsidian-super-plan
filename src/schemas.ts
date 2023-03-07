@@ -31,6 +31,7 @@ export const planDataItemSchema = z.object({
   actLen: z.string(),
 })
 
+// TODO: Change to tuple
 export type PlanDataItem = z.infer<typeof planDataItemSchema>
 
 const planRecordsTransformer = (input: z.infer<typeof planRecordsSchema>) => {

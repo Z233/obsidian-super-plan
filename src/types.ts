@@ -1,5 +1,13 @@
 import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
 import type { Editor, EditorRange } from 'obsidian'
+import type { UpdateFlag } from './constants'
+
+// Extend global
+declare global {
+  interface Window {
+    [UpdateFlag]?: boolean
+  }
+}
 
 export interface UnsafeEditor extends Editor {
   addHighlights: (

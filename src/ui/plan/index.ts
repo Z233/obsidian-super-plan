@@ -1,1 +1,1 @@
-export { renderPlan } from './Plan'
+export { MdPlan } from './Plan'

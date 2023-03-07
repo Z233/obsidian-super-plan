@@ -1,6 +1,13 @@
+import { INVAlID_NUMBER_LITERAL } from './constants'
 import type { PlanData } from './schemas'
 import type { ActivitiesData, Activity } from './types'
-import { check, generateActivityData, getNowMins, parseTime2Mins } from './util/helper'
+import {
+  check,
+  formatNumberCell,
+  getNowMins,
+  parseMins2Time,
+  parseTime2Mins,
+} from './util/helper'
 
 type SchedulerPart = {
   duration: number
@@ -183,6 +190,13 @@ export class Scheduler {
   }
 
   getData(): PlanData {
-    return this.activities.map((a) => generateActivityData(a))
+    return this.activities.map((act) => ({
+      f: act.isFixed ? 'x' : '',
+      start: Number.isNaN(act.start) ? INVAlID_NUMBER_LITERAL : parseMins2Time(act.start),
+      activity: act.activity,
+      length: formatNumberCell(act.length),
+      r: act.isRigid ? 'x' : '',
+      actLen: formatNumberCell(act.actLen),
+    }))
   }
 }

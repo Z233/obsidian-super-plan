@@ -1,5 +1,7 @@
 import type { PlanCellType } from './types'
 
+export const UpdateFlag: unique symbol = Symbol('super-plan-update-flag')
+
 export const PlanLinesLiteral = {
   header: `| F   | Start | Activity | Length | R   | ActLen |`,
   divider: `| --- | ----- | -------- | ------ | --- | ------ |`,

@@ -1,14 +1,15 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
-import { useEffect, useState, type FC } from 'preact/compat'
-import type { MdTableEditor } from 'src/editor/md-table-editor'
-import type { TableEditor } from 'src/editor/table-editor'
-import { Scheduler } from 'src/scheduler'
+import type { FC } from 'preact/compat'
 import type { PlanData, PlanDataItem } from 'src/schemas'
+import { renderCheckboxCell } from './cells'
 
-const tableColumns: ColumnDef<PlanDataItem>[] = [
+export type PlanTableColumnDef = ColumnDef<PlanDataItem>
+
+export const tableColumns: PlanTableColumnDef[] = [
   {
     header: 'F',
     accessorKey: 'f',
+    cell: renderCheckboxCell,
   },
   {
     header: 'Start',
@@ -25,6 +26,7 @@ const tableColumns: ColumnDef<PlanDataItem>[] = [
   {
     header: 'R',
     accessorKey: 'r',
+    cell: renderCheckboxCell,
   },
   {
     header: 'ActLen',
@@ -32,39 +34,14 @@ const tableColumns: ColumnDef<PlanDataItem>[] = [
   },
 ]
 
-export const PlanTable: FC<{ initialData: PlanData; mte: MdTableEditor }> = (props) => {
-  const { initialData, mte } = props
-
-  const [data, setData] = useState<PlanData>([])
+export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
+  const { initialData } = props
 
   const table = useReactTable({
-    data,
+    data: initialData,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
   })
-
-  useEffect(() => {
-    const scheduler = new Scheduler(initialData)
-    scheduler.schedule()
-
-    const scheduledData = scheduler.getData()
-
-    setData(scheduledData)
-
-    // Iterate over the scheduled data and compare it to the old data.
-    // If there are any changes, get the row and column of the change.
-    for (let row = 0; row < scheduledData.length; row++) {
-      const oldItem = initialData[row]
-      const newItem = scheduledData[row]
-
-      Object.entries(newItem).forEach(([k, value], col) => {
-        const key = k as keyof PlanDataItem
-        if (oldItem[key] !== value) {
-          mte.updateCell(row, col, value)
-        }
-      })
-    }
-  }, [initialData])
 
   return (
     <table>

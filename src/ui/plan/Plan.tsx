@@ -5,14 +5,17 @@ import type { FC } from 'preact/compat'
 import { PlanTable } from './PlanTable'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { Table } from '@tgrosinger/md-advanced-tables'
+import { PlanProvider } from './context'
+import { MarkdownRenderChild } from 'obsidian'
 
-const Plan: FC<{ table: Table; data: PlanData; mte: MdTableEditor }> = (props) => {
-  const { table, data, mte } = props
+const Plan: FC<{ data: PlanData; mte: MdTableEditor }> = (props) => {
+  const { data, mte } = props
 
-  function patch(newData: PlanData) {
-  }
-
-  return <PlanTable initialData={data} mte={mte} />
+  return (
+    <PlanProvider mte={mte} data={data}>
+      <PlanTable initialData={data} />
+    </PlanProvider>
+  )
 }
 
 const Error: FC<{ message: string }> = (props) => {
@@ -24,21 +27,30 @@ const Error: FC<{ message: string }> = (props) => {
   )
 }
 
-export function renderPlan(
-  el: HTMLElement,
-  source: string,
-  getMte: (table: Table) => MdTableEditor
-) {
-  try {
-    const parsed = MdTableParser.parse(source)
-    const records = parsed.toRecords()
-
-    const validPlanData = planDataSchema.parse(records)
-
-    const mte = getMte(parsed.table)
-
-    render(<Plan table={parsed.table} data={validPlanData} mte={mte} />, el)
-  } catch (e) {
-    render(<Error message={e.message} />, el)
+export class MdPlan extends MarkdownRenderChild {
+  constructor(
+    private _container: HTMLElement,
+    private _source: string,
+    private _getMte: (table: Table) => MdTableEditor
+  ) {
+    super(_container)
   }
+
+  onload() {
+    try {
+
+      const parsed = MdTableParser.parse(this._source)
+      const records = parsed.toRecords()
+
+      const validPlanData = planDataSchema.parse(records)
+
+      const mte = this._getMte(parsed.table)
+
+      render(<Plan data={validPlanData} mte={mte} />, this._container)
+    } catch (e) {
+      render(<Error message={e.message} />, this._container)
+    }
+  }
+
+  onunload() {}
 }

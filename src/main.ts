@@ -14,10 +14,10 @@ import { loadIcons } from './ui/icons'
 import { desktopInit } from './platform/desktop'
 import { Timer } from './tracker/timer'
 import './style.css'
-import { renderPlan } from './ui/plan'
-import { PlanFile } from './file'
 import { MdTableEditor } from './editor/md-table-editor'
 import type { Table } from '@tgrosinger/md-advanced-tables'
+import { MdPlan } from './ui/plan/Plan'
+import { UpdateFlag } from './constants'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -55,23 +55,21 @@ export default class SuperPlan extends Plugin {
 
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
       const selection = ctx.getSectionInfo(el)
-      const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
-      const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
 
-      if (file && editor && selection) {
+      if (selection && !window[UpdateFlag]) {
         const { lineStart, lineEnd } = selection
+        const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
 
         const getMte = (table: Table) =>
           new MdTableEditor({
             app: this.app,
             file,
-            editor,
             table,
             startRow: lineStart + 1,
             endRow: lineEnd - 1,
           })
 
-        renderPlan(el, source, getMte)
+        ctx.addChild(new MdPlan(el, source, getMte))
       }
     })
 
