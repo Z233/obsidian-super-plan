@@ -1,7 +1,13 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
 import type { FC } from 'preact/compat'
 import type { PlanData, PlanDataItem } from 'src/schemas'
-import { renderCheckboxCell } from './cells'
+import {
+  renderActivityCell,
+  renderActLenCell,
+  renderCheckboxCell,
+  renderLengthCell,
+  renderStartCell,
+} from './cells'
 
 export type PlanTableColumnDef = ColumnDef<PlanDataItem>
 
@@ -14,14 +20,17 @@ export const tableColumns: PlanTableColumnDef[] = [
   {
     header: 'Start',
     accessorKey: 'start',
+    cell: renderStartCell,
   },
   {
     header: 'Activity',
     accessorKey: 'activity',
+    cell: renderActivityCell,
   },
   {
     header: 'Length',
     accessorKey: 'length',
+    cell: renderLengthCell,
   },
   {
     header: 'R',
@@ -31,6 +40,7 @@ export const tableColumns: PlanTableColumnDef[] = [
   {
     header: 'ActLen',
     accessorKey: 'actLen',
+    cell: renderActLenCell,
   },
 ]
 
@@ -59,11 +69,9 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
       <tbody>
         {table.getRowModel().rows.map((row) => (
           <tr key={row.id}>
-            {row.getVisibleCells().map((cell) => (
-              <td key={cell.column.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
+            {row
+              .getVisibleCells()
+              .map((cell) => flexRender(cell.column.columnDef.cell, cell.getContext()))}
           </tr>
         ))}
       </tbody>

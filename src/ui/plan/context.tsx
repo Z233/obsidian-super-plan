@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  type FC,
-} from 'preact/compat'
+import { createContext, useContext, useEffect, useRef, type FC } from 'preact/compat'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import { Scheduler } from 'src/scheduler'
 import type { PlanData, PlanDataItem } from 'src/schemas'
@@ -46,27 +39,17 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
         const oldItem = previousDataRef.current[row]
         const newItem = scheduledData[row]
 
-        console.log('oldItem', oldItem)
-        console.log('newItem', newItem)
-
         Object.entries(newItem).forEach(([k, value], col) => {
           const key = k as keyof PlanDataItem
           if (oldItem[key] !== value) {
-            console.log('change detected', row, col, value)
             mte.setCellAt(row, col, value)
           }
         })
       }
 
       mte.applyChanges()
-
-      // previousDataRef.current = data
     }
   }, [data])
-
-  useLayoutEffect(() => {
-    // mte.applyChanges()
-  }, [])
 
   return <PlanContext.Provider value={{ updateCell }} children={props.children} />
 }
