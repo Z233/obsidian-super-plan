@@ -9,6 +9,41 @@ export const PlanLinesLiteral = {
   endRow: `| x   | 00:00 | END      | 0      |     | 0      |`,
 }
 
+export enum Columns {
+  F = 0,
+  Start = 1,
+  Activity = 2,
+  Length = 3,
+  R = 4,
+  ActLen = 5,
+}
+
+export enum ColumnKeys {
+  F = 'f',
+  Start = 'start',
+  Activity = 'activity',
+  Length = 'length',
+  R = 'r',
+  ActLen = 'actLen',
+}
+
+export const ColumnKeysMap = {
+  // key to index
+  [Columns.F]: ColumnKeys.F,
+  [Columns.Start]: ColumnKeys.Start,
+  [Columns.Activity]: ColumnKeys.Activity,
+  [Columns.Length]: ColumnKeys.Length,
+  [Columns.R]: ColumnKeys.R,
+  [Columns.ActLen]: ColumnKeys.ActLen,
+  // index to key
+  [ColumnKeys.F]: Columns.F,
+  [ColumnKeys.Start]: Columns.Start,
+  [ColumnKeys.Activity]: Columns.Activity,
+  [ColumnKeys.Length]: Columns.Length,
+  [ColumnKeys.R]: Columns.R,
+  [ColumnKeys.ActLen]: Columns.ActLen,
+} as const
+
 export const DEFAULT_NOTE_FORMAT = 'YYYY-MM-DD'
 export const DEFAULT_CIRCLE_PROGRESS_SIZE = 16
 export const NO_ACTIVITY_NAME_PLACEHOLDER = '[No Name]'

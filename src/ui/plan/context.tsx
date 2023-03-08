@@ -1,11 +1,12 @@
-import { createContext, useContext, useEffect, useRef, type FC } from 'preact/compat'
+import { createContext, useContext, useEffect, useState, useRef, type FC } from 'preact/compat'
+import { ColumnKeys, ColumnKeysMap } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import { Scheduler } from 'src/scheduler'
 import type { PlanData, PlanDataItem } from 'src/schemas'
 import { useImmer } from 'use-immer'
 
 type PlanContextValue = {
-  updateCell: (row: number, columnKey: keyof PlanDataItem, value: string) => void
+  updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
@@ -14,12 +15,21 @@ const shallowCompare = (obj1: Record<any, any>, obj2: Record<any, any>) =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
   Object.keys(obj1).every((key) => obj2.hasOwnProperty(key) && obj1[key] === obj2[key])
 
+const IGNORED_CELLS: ColumnKeys[] = [ColumnKeys.Activity]
+
 export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) => {
   const { mte, data: initialData } = props
   const previousDataRef = useRef(initialData)
+  const updatedCells = useRef(new Set<keyof PlanDataItem>())
   const [data, setData] = useImmer(initialData)
 
   const updateCell: PlanContextValue['updateCell'] = (row, columnKey, value) => {
+    updatedCells.current.add(columnKey)
+
+    if (IGNORED_CELLS.includes(columnKey)) {
+      mte.setCellAt(row, ColumnKeysMap[columnKey], value)
+    }
+
     setData((draft) => {
       previousDataRef.current = data
       draft[row][columnKey] = value
@@ -27,6 +37,16 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
   }
 
   useEffect(() => {
+    const updatedCellsArr = [...updatedCells.current]
+    const shouldSchedule = !(
+      updatedCellsArr.length && updatedCellsArr.every((key) => IGNORED_CELLS.includes(key))
+    )
+
+    if (!shouldSchedule) {
+      mte.applyChanges()
+      return
+    }
+
     const scheduler = new Scheduler(data)
     scheduler.schedule()
 

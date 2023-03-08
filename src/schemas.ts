@@ -1,4 +1,5 @@
 import * as z from 'zod'
+import { ColumnKeys, ColumnKeysMap, Columns } from './constants'
 
 export const planRecordSchema = z.object({
   F: z.string(),
@@ -13,41 +14,31 @@ export const planRecordsSchema = z.array(planRecordSchema).nonempty()
 
 export type PlanRecord = z.infer<typeof planRecordSchema>
 
-const PlanDataAttributeMap = {
-  F: 'f',
-  Start: 'start',
-  Activity: 'activity',
-  Length: 'length',
-  R: 'r',
-  ActLen: 'actLen',
-} as const
-
 export const planDataItemSchema = z.object({
-  f: z.string(),
-  start: z.string(),
-  activity: z.string(),
-  length: z.string(),
-  r: z.string(),
-  actLen: z.string(),
+  [ColumnKeysMap[Columns.F]]: z.string(),
+  [ColumnKeysMap[Columns.Start]]: z.string(),
+  [ColumnKeysMap[Columns.Activity]]: z.string(),
+  [ColumnKeysMap[Columns.Length]]: z.string(),
+  [ColumnKeysMap[Columns.R]]: z.string(),
+  [ColumnKeysMap[Columns.ActLen]]: z.string(),
 })
 
-// TODO: Change to tuple
 export type PlanDataItem = z.infer<typeof planDataItemSchema>
 
 const planRecordsTransformer = (input: z.infer<typeof planRecordsSchema>) => {
   const output: PlanDataItem[] = []
   for (const record of input) {
     const item: PlanDataItem = {
-      f: '',
-      start: '',
-      activity: '',
-      length: '',
-      r: '',
-      actLen: '',
+      [ColumnKeys.F]: '',
+      [ColumnKeys.Start]: '',
+      [ColumnKeys.Activity]: '',
+      [ColumnKeys.Length]: '',
+      [ColumnKeys.R]: '',
+      [ColumnKeys.ActLen]: '',
     }
-    for (const [key, value] of Object.entries(record)) {
-      const attr = PlanDataAttributeMap[key as keyof typeof PlanDataAttributeMap]
-      item[attr] = value
+    for (const [column, value] of Object.entries(record)) {
+      const key = ColumnKeysMap[Columns[column as keyof typeof Columns]]
+      item[key] = value
     }
     output.push(item)
   }

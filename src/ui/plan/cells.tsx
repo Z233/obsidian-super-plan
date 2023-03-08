@@ -1,9 +1,12 @@
-import { useEffect, useState, type ChangeEventHandler, useRef } from 'preact/compat'
+import { useEffect, useState, useRef, type ChangeEventHandler } from 'preact/compat'
+import type { JSXInternal } from 'preact/src/jsx'
+import type { ColumnKeys } from 'src/constants'
 import type { PlanDataItem } from 'src/schemas'
 import { check } from 'src/util/helper'
 import { usePlanContext } from './context'
 import { DefaultInput } from './lib'
 import type { PlanTableColumnDef } from './PlanTable'
+import { focusStyle } from './styles'
 
 export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
   const { updateCell } = usePlanContext()
@@ -40,12 +43,16 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     setInput(value)
   }
 
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLTableCellElement> = (e) => {
+    setIsFocus(false)
+    if (input !== prevValueRef.current) {
+      updateCell(row.index, column.id as ColumnKeys, input)
+      prevValueRef.current = input
+    }
+  }
+
   return (
-    <td
-      className={isFocus ? 'outline outline-2 outline-$interactive-accent' : ''}
-      onFocus={() => setIsFocus(true)}
-      onBlur={() => setIsFocus(false)}
-    >
+    <td className={isFocus ? focusStyle : ''} onFocus={() => setIsFocus(true)} onBlur={handleBlur}>
       <DefaultInput type="text" value={input} onChange={handleChange} />
     </td>
   )

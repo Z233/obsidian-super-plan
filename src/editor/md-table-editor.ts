@@ -1,5 +1,5 @@
 import { defaultOptions, formatTable, Table, TableEditor } from '@tgrosinger/md-advanced-tables'
-import { Editor, MarkdownView, type App, type TFile } from 'obsidian'
+import { MarkdownView, type App, type TFile } from 'obsidian'
 import { UpdateFlag } from 'src/constants'
 import type { Maybe } from 'src/types'
 import { ObsidianTextEditor } from './obsidian-text-editor'

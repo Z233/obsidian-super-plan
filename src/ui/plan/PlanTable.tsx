@@ -1,5 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
 import type { FC } from 'preact/compat'
+import { ColumnKeys } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
 import {
   renderActivityCell,
@@ -14,32 +15,32 @@ export type PlanTableColumnDef = ColumnDef<PlanDataItem>
 export const tableColumns: PlanTableColumnDef[] = [
   {
     header: 'F',
-    accessorKey: 'f',
+    accessorKey: ColumnKeys.F,
     cell: renderCheckboxCell,
   },
   {
     header: 'Start',
-    accessorKey: 'start',
+    accessorKey: ColumnKeys.Start,
     cell: renderStartCell,
   },
   {
     header: 'Activity',
-    accessorKey: 'activity',
+    accessorKey: ColumnKeys.Activity,
     cell: renderActivityCell,
   },
   {
     header: 'Length',
-    accessorKey: 'length',
+    accessorKey: ColumnKeys.Length,
     cell: renderLengthCell,
   },
   {
     header: 'R',
-    accessorKey: 'r',
+    accessorKey: ColumnKeys.R,
     cell: renderCheckboxCell,
   },
   {
     header: 'ActLen',
-    accessorKey: 'actLen',
+    accessorKey: ColumnKeys.ActLen,
     cell: renderActLenCell,
   },
 ]
