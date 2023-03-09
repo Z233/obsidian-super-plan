@@ -5,7 +5,7 @@ import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { EditorExtension } from './editor/editor-extension'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
 import { SplitConfirmModal } from './ui/modals'
-import type { Maybe } from './types'
+import type { Maybe, UnsafeWorkspaceLeaf } from './types'
 import { ActivitySuggester } from './ui/suggest/activity-suggester'
 import { ActivityProvider } from './ui/suggest/activity-provider'
 import { MiniTracker } from './window'
@@ -24,8 +24,8 @@ export default class SuperPlan extends Plugin {
   activityProvider: Maybe<ActivityProvider> = null
 
   private store: DataStore
-
   private parser: Parser
+  private leafsMte: Map<string, MdTableEditor> = new Map()
 
   async onload() {
     this.store = new DataStore(this)
@@ -53,25 +53,7 @@ export default class SuperPlan extends Plugin {
       this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
     }
 
-    this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
-      const selection = ctx.getSectionInfo(el)
-
-      if (selection && !window[UpdateFlag]) {
-        const { lineStart, lineEnd } = selection
-        const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
-
-        const getMte = (table: Table) =>
-          new MdTableEditor({
-            app: this.app,
-            file,
-            table,
-            startRow: lineStart + 1,
-            endRow: lineEnd - 1,
-          })
-
-        ctx.addChild(new MdPlan(el, source, getMte))
-      }
-    })
+    this.registerCodeBlockProcessor()
 
     loadIcons()
 
@@ -215,6 +197,73 @@ export default class SuperPlan extends Plugin {
   onunload() {
     Timer.clean()
     MiniTracker.clean()
+  }
+
+  private registerCodeBlockProcessor() {
+    const queue: Set<() => void> = new Set()
+    let activeLeafId: Maybe<string> = null
+
+    this.registerEvent(
+      this.app.workspace.on('active-leaf-change', (leaf) => {
+        const unsafeLeaf = leaf as Maybe<UnsafeWorkspaceLeaf>
+        if (!unsafeLeaf) return
+
+        activeLeafId = unsafeLeaf.id
+        if (queue.size) {
+          queue.forEach((job) => job())
+          queue.clear()
+        }
+
+        const newLeafsMte = new Map<string, MdTableEditor>()
+
+        for (const leaf of unsafeLeaf.parent?.children ?? []) {
+          const mte = this.leafsMte.get(leaf.id)
+          if (mte) {
+            newLeafsMte.set(leaf.id, mte)
+          }
+        }
+
+        this.leafsMte = newLeafsMte
+      })
+    )
+
+    this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
+      const job = () => {
+        const selection = ctx.getSectionInfo(el)
+
+        if (selection && !window[UpdateFlag] && activeLeafId) {
+          const { lineStart, lineEnd } = selection
+          const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
+
+          const getMte = (table: Table) => {
+            let mte: Maybe<MdTableEditor> = null
+
+            if (this.leafsMte.has(activeLeafId!)) {
+              mte = this.leafsMte.get(activeLeafId!)!
+            } else {
+              mte = new MdTableEditor({
+                app: this.app,
+                file,
+                table,
+                startRow: lineStart + 1,
+                endRow: lineEnd - 1,
+              })
+              this.leafsMte.set(activeLeafId!, mte)
+            }
+
+            return mte
+          }
+
+          ctx.addChild(new MdPlan(el, source, getMte))
+        }
+      }
+
+      if (!activeLeafId) {
+        queue.add(job)
+      } else {
+        job()
+      }
+    })
   }
 
   readonly newPerformPlanActionCM6 =

@@ -1,5 +1,5 @@
 import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
-import type { Editor, EditorRange } from 'obsidian'
+import type { Editor, EditorRange, WorkspaceLeaf } from 'obsidian'
 import type { UpdateFlag } from './constants'
 
 // Extend global
@@ -7,6 +7,12 @@ declare global {
   interface Window {
     [UpdateFlag]?: boolean
   }
+}
+
+export interface UnsafeWorkspaceLeaf extends WorkspaceLeaf {
+  id: string
+  parent?: UnsafeWorkspaceLeaf
+  children?: UnsafeWorkspaceLeaf[]
 }
 
 export interface UnsafeEditor extends Editor {

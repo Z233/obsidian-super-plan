@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, type FC } from 'preact/compat'
-import { ColumnKeys, ColumnKeysMap } from 'src/constants'
+import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import { Scheduler } from 'src/scheduler'
 import type { PlanData, PlanDataItem } from 'src/schemas'
@@ -7,6 +7,8 @@ import { useImmer } from 'use-immer'
 
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
+  setFocus: (row: number, columnKey: ColumnKeys) => void
+  getFocus: () => { row: number; columnKey: ColumnKeys } | null
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
@@ -34,6 +36,17 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
       previousDataRef.current = data
       draft[row][columnKey] = value
     })
+  }
+
+  const setFocus: PlanContextValue['setFocus'] = (row, columnKey) => {
+    mte.setFocusState(row, ColumnKeysMap[columnKey])
+  }
+
+  const getFocus: PlanContextValue['getFocus'] = () => {
+    const focusState = mte.getFocusState()
+    if (!focusState) return null
+    const { row, col } = focusState
+    return { row, columnKey: ColumnKeysMap[col as Columns] }
   }
 
   useEffect(() => {
@@ -71,7 +84,9 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
     }
   }, [data])
 
-  return <PlanContext.Provider value={{ updateCell }} children={props.children} />
+  return (
+    <PlanContext.Provider value={{ updateCell, setFocus, getFocus }} children={props.children} />
+  )
 }
 
 export function usePlanContext() {

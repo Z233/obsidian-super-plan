@@ -9,9 +9,11 @@ import type { PlanTableColumnDef } from './PlanTable'
 import { focusStyle } from './styles'
 
 export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell, setFocus, getFocus } = usePlanContext()
   const prevValueRef = useRef(check(getValue() as string))
+  const inputRef = useRef<HTMLInputElement>(null)
   const [checked, setChecked] = useState(() => prevValueRef.current)
+  const [isFocus, setIsFocus] = useState(false)
 
   useEffect(() => {
     if (checked !== prevValueRef.current) {
@@ -25,16 +27,33 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     setChecked(checked)
   }
 
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLTableCellElement> = (e) => {
+    setIsFocus(false)
+  }
+
+  const handleFocus: JSXInternal.FocusEventHandler<HTMLTableCellElement> = (e) => {
+    setIsFocus(true)
+    setFocus(row.index, column.id as ColumnKeys)
+  }
+
+  useEffect(() => {
+    const focus = getFocus()
+    if (focus?.row === row.index && focus?.columnKey === column.id) {
+      inputRef.current?.focus()
+    }
+  }, [])
+
   return (
-    <td>
-      <input type="checkbox" checked={checked} onChange={handleChange} />
+    <td className={isFocus ? focusStyle : ''} onFocus={handleFocus} onBlur={handleBlur}>
+      <input ref={inputRef} type="checkbox" checked={checked} onChange={handleChange} />
     </td>
   )
 }
 
 export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell, setFocus, getFocus } = usePlanContext()
   const prevValueRef = useRef(getValue() as string)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [input, setInput] = useState(() => prevValueRef.current)
   const [isFocus, setIsFocus] = useState(false)
 
@@ -51,9 +70,21 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     }
   }
 
+  const handleFocus: JSXInternal.FocusEventHandler<HTMLTableCellElement> = (e) => {
+    setIsFocus(true)
+    setFocus(row.index, column.id as ColumnKeys)
+  }
+
+  useEffect(() => {
+    const focus = getFocus()
+    if (focus?.row === row.index && focus?.columnKey === column.id) {
+      inputRef.current?.focus()
+    }
+  }, [])
+
   return (
-    <td className={isFocus ? focusStyle : ''} onFocus={() => setIsFocus(true)} onBlur={handleBlur}>
-      <DefaultInput type="text" value={input} onChange={handleChange} />
+    <td className={isFocus ? focusStyle : ''} onFocus={handleFocus} onBlur={handleBlur}>
+      <DefaultInput ref={inputRef} type="text" value={input} onChange={handleChange} />
     </td>
   )
 }

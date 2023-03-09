@@ -12,8 +12,14 @@ type MdTableEditorOptions = {
   endRow: number
 }
 
+type FocusState = {
+  row: number
+  col: number
+}
+
 export class MdTableEditor {
   private _mte: Maybe<TableEditor>
+  private _focusState: Maybe<FocusState>
 
   private _app: App
   private _file: TFile
@@ -32,6 +38,14 @@ export class MdTableEditor {
   setCellAt(row: number, col: number, value: string) {
     const newTable = this._table.setCellAt(row + 2, col, value)
     this._updateTable(newTable)
+  }
+
+  setFocusState(row: number, col: number) {
+    this._focusState = { row, col }
+  }
+
+  getFocusState() {
+    return this._focusState
   }
 
   applyChanges() {
