@@ -1,20 +1,15 @@
 import { useEffect, useState, useRef, type ChangeEventHandler } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import type { ColumnKeys } from 'src/constants'
-import type { PlanDataItem } from 'src/schemas'
 import { check } from 'src/util/helper'
 import { usePlanContext } from './context'
-import { useCellFocus } from './hooks'
+import { useFocusOnMount } from './hooks'
 import { DefaultInput } from './lib'
 import type { PlanTableColumnDef } from './PlanTable'
-import { focusStyle } from './styles'
 
 export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
   const { updateCell } = usePlanContext()
-  const { focusElRef, onBlur, onFocus, isFocused } = useCellFocus(
-    row.index,
-    column.id as ColumnKeys
-  )
+  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
 
   const prevValueRef = useRef(check(getValue() as string))
   const [checked, setChecked] = useState(() => prevValueRef.current)
@@ -31,19 +26,12 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     setChecked(checked)
   }
 
-  return (
-    <td className={isFocused ? focusStyle : ''} onFocus={onFocus} onBlur={onBlur}>
-      <input ref={focusElRef} type="checkbox" checked={checked} onChange={handleChange} />
-    </td>
-  )
+  return <input ref={focusElRef} type="checkbox" checked={checked} onChange={handleChange} />
 }
 
 export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
   const { updateCell } = usePlanContext()
-  const { focusElRef, onBlur, onFocus, isFocused } = useCellFocus(
-    row.index,
-    column.id as ColumnKeys
-  )
+  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -53,33 +41,32 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     setInput(value)
   }
 
-  const handleBlur: JSXInternal.FocusEventHandler<HTMLTableCellElement> = (e) => {
-    onBlur()
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
     if (input !== prevValueRef.current) {
       updateCell(row.index, column.id as ColumnKeys, input)
       prevValueRef.current = input
     }
   }
 
-  const handleFocus: JSXInternal.FocusEventHandler<HTMLTableCellElement> = (e) => {
-    onFocus()
-  }
-
   return (
-    <td className={isFocused ? focusStyle : ''} onFocus={handleFocus} onBlur={handleBlur}>
-      <DefaultInput ref={focusElRef} type="text" value={input} onChange={handleChange} />
-    </td>
+    <DefaultInput
+      ref={focusElRef}
+      type="text"
+      value={input}
+      onChange={handleChange}
+      onBlur={handleBlur}
+    />
   )
 }
 
 export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  return <td>{getValue() as string}</td>
+  return getValue()
 }
 
 export const renderLengthCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  return <td>{getValue() as string}</td>
+  return getValue()
 }
 
 export const renderActLenCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  return <td>{getValue() as string}</td>
+  return getValue()
 }

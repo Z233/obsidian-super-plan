@@ -1,21 +1,11 @@
-import { useEffect, useRef, useState, type Ref } from 'preact/compat'
+import { useEffect, useRef } from 'preact/compat'
 import type { ColumnKeys } from 'src/constants'
 import { usePlanContext } from './context'
 
-export function useCellFocus(rowIndex: number, columnKey: ColumnKeys) {
-  const { setFocus, getFocus } = usePlanContext()
+export function useFocusOnMount(rowIndex: number, columnKey: ColumnKeys) {
+  const { getFocus } = usePlanContext()
 
   const focusElRef = useRef<HTMLInputElement>(null)
-  const [isFocused, setIsFocused] = useState(false)
-
-  const onBlur = () => {
-    setIsFocused(false)
-  }
-
-  const onFocus = () => {
-    setIsFocused(true)
-    setFocus(rowIndex, columnKey)
-  }
 
   useEffect(() => {
     const focus = getFocus()
@@ -24,5 +14,5 @@ export function useCellFocus(rowIndex: number, columnKey: ColumnKeys) {
     }
   }, [])
 
-  return { focusElRef, isFocused, onBlur, onFocus }
+  return { focusElRef }
 }
