@@ -228,6 +228,8 @@ export default class SuperPlan extends Plugin {
     )
 
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
+      el.parentElement?.setAttribute('style', 'contain: none !important;')
+
       const job = () => {
         const selection = ctx.getSectionInfo(el)
 

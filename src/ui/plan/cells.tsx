@@ -26,7 +26,15 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     setChecked(checked)
   }
 
-  return <input ref={focusElRef} type="checkbox" checked={checked} onChange={handleChange} />
+  return (
+    <input
+      className="relative top-[1.5px]"
+      ref={focusElRef}
+      type="checkbox"
+      checked={checked}
+      onChange={handleChange}
+    />
+  )
 }
 
 export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
