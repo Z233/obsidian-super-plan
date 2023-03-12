@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
-import { useEffect, useState, type FC } from 'preact/compat'
+import { useEffect, useState, type FC, createElement } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
@@ -12,6 +12,7 @@ import {
   renderStartCell,
 } from './cells'
 import { usePlanContext } from './context'
+import { PlusIcon } from './lib'
 import { focusStyle, indexCellStyle } from './styles'
 
 export type PlanTableColumnDef = ColumnDef<PlanDataItem>
@@ -107,6 +108,16 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
     }
   }, [])
 
+  const [hoverRowIndex, setHoverRowIndex] = useState<number>(-1)
+
+  const handleMouseEnter = (rowIndex: number) => {
+    setHoverRowIndex(rowIndex)
+  }
+
+  const handleMouseLeave = (rowIndex: number) => {
+    setHoverRowIndex(-1)
+  }
+
   return (
     <table onBlur={handleBlur}>
       <thead>
@@ -123,10 +134,23 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
       </thead>
       <tbody>
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id} className="![&>*:nth-child(2)]:border-l-0">
+          <tr
+            key={row.id}
+            className="![&>*:nth-child(2)]:border-l-0"
+            onMouseEnter={() => handleMouseEnter(row.index)}
+            onMouseLeave={() => handleMouseLeave(row.index)}
+          >
             <td className={indexCellStyle}>
-              <div className="w-6">{row.index + 1}</div>
+              {(() =>
+                hoverRowIndex === row.index ? (
+                  <div>
+                    <PlusIcon />
+                  </div>
+                ) : (
+                  <div className="w-6">{row.index + 1}</div>
+                ))()}
             </td>
+
             {row.getVisibleCells().map((cell) => {
               const isFocused =
                 focusedPosition?.rowIndex === row.index &&

@@ -27,13 +27,15 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
   }
 
   return (
-    <input
-      className="relative top-[1.5px]"
-      ref={focusElRef}
-      type="checkbox"
-      checked={checked}
-      onChange={handleChange}
-    />
+    <div className="flex">
+      <input
+        className="m-auto"
+        ref={focusElRef}
+        type="checkbox"
+        checked={checked}
+        onChange={handleChange}
+      />
+    </div>
   )
 }
 
