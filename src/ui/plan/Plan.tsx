@@ -7,7 +7,7 @@ import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { Table } from '@tgrosinger/md-advanced-tables'
 import { PlanProvider } from './context'
 import { MarkdownRenderChild } from 'obsidian'
-import 'windi.css'
+import 'uno.css'
 
 const Plan: FC<{ data: PlanData; mte: MdTableEditor }> = (props) => {
   const { data, mte } = props
