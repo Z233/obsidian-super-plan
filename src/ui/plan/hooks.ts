@@ -9,7 +9,7 @@ export function useFocusOnMount(rowIndex: number, columnKey: ColumnKeys) {
 
   useEffect(() => {
     const focus = getFocus()
-    if (focus?.row === rowIndex && focus?.columnKey === columnKey) {
+    if (focus?.rowIndex === rowIndex && focus?.columnKey === columnKey) {
       focusElRef.current?.focus()
     }
   }, [])

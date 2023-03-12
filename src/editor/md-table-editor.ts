@@ -40,8 +40,8 @@ export class MdTableEditor {
     this._updateTable(newTable)
   }
 
-  setFocusState(row: number, col: number) {
-    this._focusState = { row, col }
+  setFocusState(focusState: Maybe<{ row: number; col: number }>) {
+    this._focusState = focusState ?? null
   }
 
   getFocusState() {

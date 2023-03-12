@@ -1,5 +1,6 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState, type FC } from 'preact/compat'
+import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
@@ -48,15 +49,25 @@ export const tableColumns: PlanTableColumnDef[] = [
   },
 ]
 
+export type FocusPosition = {
+  rowIndex: number
+  columnKey: ColumnKeys
+}
+
 export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   const { initialData } = props
   const { setFocus, getFocus } = usePlanContext()
-  const [focusedPosition, setFocusedPosition] = useState<
-    Maybe<{
-      rowIndex: number
-      columnKey: ColumnKeys
-    }>
-  >()
+  const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
+
+  const saveFocus = (focusPosition: Maybe<FocusPosition>) => {
+    if (focusPosition) {
+      setFocus(focusPosition)
+      setFocusedPosition(focusPosition)
+    } else {
+      setFocus(null)
+      setFocusedPosition(null)
+    }
+  }
 
   const table = useReactTable({
     data: initialData,
@@ -65,19 +76,41 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   })
 
   const handleCellFocus = (rowIndex: number, columnKey: ColumnKeys) => {
-    setFocus(rowIndex, columnKey)
-    setFocusedPosition({ rowIndex, columnKey })
+    saveFocus({ rowIndex, columnKey })
+  }
+
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
+    const relatedTarget = e.relatedTarget
+
+    if (relatedTarget) {
+      const path = (e as any).path as HTMLElement[]
+      const startIndex = path.indexOf(relatedTarget as HTMLElement)
+
+      let isWithinTable = false
+
+      for (let i = startIndex; i < path.length; i++) {
+        const el = path[i]
+        if (el && el.dataset?.row && el.dataset?.column) {
+          isWithinTable = true
+          break
+        }
+      }
+
+      console.log(isWithinTable)
+
+      !isWithinTable && saveFocus(null)
+    }
   }
 
   useEffect(() => {
     const focus = getFocus()
     if (focus) {
-      setFocusedPosition({ rowIndex: focus.row, columnKey: focus.columnKey })
+      setFocusedPosition(focus)
     }
   }, [])
 
   return (
-    <table>
+    <table onBlur={handleBlur}>
       <thead>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={headerGroup.id}>
@@ -99,6 +132,8 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
 
               return (
                 <td
+                  data-row={row.index}
+                  data-column={cell.column.id}
                   onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
                   className={isFocused ? focusStyle : ''}
                 >

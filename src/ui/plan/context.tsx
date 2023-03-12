@@ -3,12 +3,14 @@ import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import { Scheduler } from 'src/scheduler'
 import type { PlanData, PlanDataItem } from 'src/schemas'
+import type { Maybe } from 'src/types'
 import { useImmer } from 'use-immer'
+import type { FocusPosition } from './PlanTable'
 
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
-  setFocus: (row: number, columnKey: ColumnKeys) => void
-  getFocus: () => { row: number; columnKey: ColumnKeys } | null
+  setFocus: (pos: Maybe<FocusPosition>) => void
+  getFocus: () => Maybe<FocusPosition>
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
@@ -38,15 +40,19 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
     })
   }
 
-  const setFocus: PlanContextValue['setFocus'] = (row, columnKey) => {
-    mte.setFocusState(row, ColumnKeysMap[columnKey])
+  const setFocus: PlanContextValue['setFocus'] = (pos) => {
+    if (pos) {
+      mte.setFocusState({ row: pos.rowIndex, col: ColumnKeysMap[pos.columnKey] })
+    } else {
+      mte.setFocusState(null)
+    }
   }
 
   const getFocus: PlanContextValue['getFocus'] = () => {
     const focusState = mte.getFocusState()
     if (!focusState) return null
-    const { row, col } = focusState
-    return { row, columnKey: ColumnKeysMap[col as Columns] }
+    const { row: rowIndex, col } = focusState
+    return { rowIndex, columnKey: ColumnKeysMap[col as Columns] }
   }
 
   useEffect(() => {

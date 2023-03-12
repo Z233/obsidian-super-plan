@@ -68,11 +68,65 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
 }
 
 export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  return getValue()
+  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
+  const { updateCell } = usePlanContext()
+
+  const prevValueRef = useRef(getValue() as string)
+  const [input, setInput] = useState(() => prevValueRef.current)
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const value = (e.target as any).value
+    setInput(value)
+  }
+
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
+    if (input !== prevValueRef.current) {
+      updateCell(row.index, column.id as ColumnKeys, input)
+      prevValueRef.current = input
+    }
+  }
+
+  return (
+    <DefaultInput
+      ref={focusElRef}
+      type="text"
+      className="!w-10"
+      value={input}
+      onChange={handleChange}
+      onBlur={handleBlur}
+    />
+  )
 }
 
 export const renderLengthCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  return getValue()
+  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
+  const { updateCell } = usePlanContext()
+
+  const prevValueRef = useRef(getValue() as string)
+  const [input, setInput] = useState(() => prevValueRef.current)
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+    const value = (e.target as any).value
+    setInput(value)
+  }
+
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
+    if (input !== prevValueRef.current) {
+      updateCell(row.index, column.id as ColumnKeys, input)
+      prevValueRef.current = input
+    }
+  }
+
+  return (
+    <DefaultInput
+      ref={focusElRef}
+      type="number"
+      className="!w-10"
+      value={input}
+      onChange={handleChange}
+      onBlur={handleBlur}
+    />
+  )
 }
 
 export const renderActLenCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
