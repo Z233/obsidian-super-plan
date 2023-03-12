@@ -12,7 +12,7 @@ import {
   renderStartCell,
 } from './cells'
 import { usePlanContext } from './context'
-import { focusStyle } from './styles'
+import { focusStyle, indexCellStyle } from './styles'
 
 export type PlanTableColumnDef = ColumnDef<PlanDataItem>
 
@@ -96,8 +96,6 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
         }
       }
 
-      console.log(isWithinTable)
-
       !isWithinTable && saveFocus(null)
     }
   }
@@ -113,7 +111,8 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
     <table onBlur={handleBlur}>
       <thead>
         {table.getHeaderGroups().map((headerGroup) => (
-          <tr key={headerGroup.id}>
+          <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
+            <th className={indexCellStyle}>#</th>
             {headerGroup.headers.map((header) => (
               <th key={header.column.id}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
@@ -124,7 +123,10 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
       </thead>
       <tbody>
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id}>
+          <tr key={row.id} className="![&>*:nth-child(2)]:border-l-0">
+            <td className={indexCellStyle}>
+              <div className="w-6">{row.index + 1}</div>
+            </td>
             {row.getVisibleCells().map((cell) => {
               const isFocused =
                 focusedPosition?.rowIndex === row.index &&
