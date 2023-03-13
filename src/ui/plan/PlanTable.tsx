@@ -59,7 +59,7 @@ export type FocusPosition = {
 
 export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   const { initialData } = props
-  const { setFocus, getFocus } = usePlanContext()
+  const { deleteRow, setFocus, getFocus } = usePlanContext()
 
   const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
   const [highlightedRow, setHighlightedRow] = useState(-1)
@@ -82,6 +82,14 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
 
   const handleCellFocus = (rowIndex: number, columnKey: ColumnKeys) => {
     saveFocus({ rowIndex, columnKey })
+  }
+
+  const handleCellMouseDown: JSXInternal.MouseEventHandler<HTMLTableCellElement> = (e) => {
+    // Disable default behavior for right click
+    if (e.button === 2) {
+      e.preventDefault()
+      return false
+    }
   }
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
@@ -131,10 +139,10 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
 
     menu.addItem((item) =>
       item
-        .setTitle('Copy')
-        .setIcon('documents')
+        .setTitle('Delete')
+        .setIcon('trash')
         .onClick(() => {
-          new Notice('Copied')
+          deleteRow(rowIndex)
         })
     )
 
@@ -194,6 +202,7 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
                 <td
                   data-row={row.index}
                   data-column={cell.column.id}
+                  onMouseDown={handleCellMouseDown}
                   onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
                   className={isFocused ? focusStyle : ''}
                 >

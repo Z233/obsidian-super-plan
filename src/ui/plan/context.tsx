@@ -9,6 +9,7 @@ import type { FocusPosition } from './PlanTable'
 
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
+  deleteRow: (row: number) => void
   setFocus: (pos: Maybe<FocusPosition>) => void
   getFocus: () => Maybe<FocusPosition>
 }
@@ -38,6 +39,11 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
       previousDataRef.current = data
       draft[row][columnKey] = value
     })
+  }
+
+  const deleteRow: PlanContextValue['deleteRow'] = (row) => {
+    mte.deleteRow(row)
+    mte.applyChanges()
   }
 
   const setFocus: PlanContextValue['setFocus'] = (pos) => {
@@ -71,7 +77,10 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
 
     const scheduledData = scheduler.getData()
 
-    if (!scheduledData.every((d, i) => shallowCompare(d, previousDataRef.current[i]))) {
+    if (
+      scheduledData.length === previousDataRef.current.length &&
+      !scheduledData.every((d, i) => shallowCompare(d, previousDataRef.current[i]))
+    ) {
       // Iterate over the scheduled data and compare it to the old data.
       // If there are any changes, get the row and column of the change.
       for (let row = 0; row < scheduledData.length; row++) {
@@ -91,7 +100,10 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
   }, [data])
 
   return (
-    <PlanContext.Provider value={{ updateCell, setFocus, getFocus }} children={props.children} />
+    <PlanContext.Provider
+      value={{ updateCell, deleteRow, setFocus, getFocus }}
+      children={props.children}
+    />
   )
 }
 
