@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, type ChangeEventHandler } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
-import type { ColumnKeys } from 'src/constants'
+import { ColumnKeysMap, Columns, type ColumnKeys } from 'src/constants'
 import { check } from 'src/util/helper'
 import { usePlanContext } from './context'
 import { useFocusOnMount } from './hooks'
@@ -84,6 +84,7 @@ export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, col
   const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
     if (input !== prevValueRef.current) {
       updateCell(row.index, column.id as ColumnKeys, input)
+      updateCell(row.index, ColumnKeysMap[Columns.F], 'x')
       prevValueRef.current = input
     }
   }

@@ -1,4 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
+import { Menu, Notice } from 'obsidian'
 import { useEffect, useState, type FC, createElement } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys } from 'src/constants'
@@ -14,6 +15,7 @@ import {
 import { usePlanContext } from './context'
 import { PlusIcon } from './lib'
 import { focusStyle, indexCellStyle } from './styles'
+import clsx from 'clsx'
 
 export type PlanTableColumnDef = ColumnDef<PlanDataItem>
 
@@ -58,7 +60,9 @@ export type FocusPosition = {
 export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   const { initialData } = props
   const { setFocus, getFocus } = usePlanContext()
+
   const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
+  const [highlightedRow, setHighlightedRow] = useState(-1)
 
   const saveFocus = (focusPosition: Maybe<FocusPosition>) => {
     if (focusPosition) {
@@ -118,6 +122,31 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
     setHoverRowIndex(-1)
   }
 
+  const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
+    e.preventDefault()
+
+    setHighlightedRow(rowIndex)
+
+    const menu = new Menu()
+
+    menu.addItem((item) =>
+      item
+        .setTitle('Copy')
+        .setIcon('documents')
+        .onClick(() => {
+          new Notice('Copied')
+        })
+    )
+
+    menu.onHide(() => {
+      setHighlightedRow(-1)
+    })
+
+    menu.showAtMouseEvent(e)
+
+    return false
+  }
+
   return (
     <table onBlur={handleBlur}>
       <thead>
@@ -136,7 +165,11 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
         {table.getRowModel().rows.map((row) => (
           <tr
             key={row.id}
-            className="![&>*:nth-child(2)]:border-l-0"
+            className={clsx({
+              '![&>*:nth-child(2)]:border-l-0': true,
+              [focusStyle]: row.index === highlightedRow,
+            })}
+            onContextMenu={(e) => handleContextMenu(e, row.index)}
             onMouseEnter={() => handleMouseEnter(row.index)}
             onMouseLeave={() => handleMouseLeave(row.index)}
           >
@@ -153,6 +186,7 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
 
             {row.getVisibleCells().map((cell) => {
               const isFocused =
+                highlightedRow < 0 &&
                 focusedPosition?.rowIndex === row.index &&
                 focusedPosition?.columnKey === cell.column.id
 

@@ -54,6 +54,7 @@
     "@popperjs/core": "^2.11.6",
     "@tanstack/react-table": "^8.7.9",
     "@tgrosinger/md-advanced-tables": "^3.8.0",
+    "clsx": "^1.2.1",
     "immer": "^9.0.19",
     "lodash-es": "^4.17.21",
     "preact": "^10.13.0",
