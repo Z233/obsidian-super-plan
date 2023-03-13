@@ -4,6 +4,7 @@ import {
   Table,
   TableEditor,
   readTable,
+  TableRow,
 } from '@tgrosinger/md-advanced-tables'
 import { MarkdownView, type App, type TFile } from 'obsidian'
 import { UpdateFlag } from 'src/constants'
@@ -30,13 +31,18 @@ export class MdTableEditor {
   private _app: App
   private _file: TFile
   private _table: Table
-  private readonly _startRow: number
-  private readonly _endRow: number
+  private _startRow: number
+  private _endRow: number
 
   constructor({ app, file, table, startRow, endRow }: MdTableEditorOptions) {
     this._app = app
     this._file = file
     this._table = table
+    this._startRow = startRow
+    this._endRow = endRow
+  }
+
+  setRange(startRow: number, endRow: number) {
     this._startRow = startRow
     this._endRow = endRow
   }
@@ -49,6 +55,15 @@ export class MdTableEditor {
   deleteRow(row: number) {
     const lines = this._table.toLines()
     const newLines = lines.slice(0, row + 2).concat(lines.slice(row + 3))
+    const newTable = readTable(newLines, defaultOptions)
+    this._updateTable(newTable)
+  }
+
+  insertRow(tableRow: TableRow, targetRow: number) {
+    const lines = this._table.toLines()
+    const newLines = lines
+      .slice(0, targetRow + 2)
+      .concat([tableRow.toText()], lines.slice(targetRow + 2))
     const newTable = readTable(newLines, defaultOptions)
     this._updateTable(newTable)
   }

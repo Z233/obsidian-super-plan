@@ -242,6 +242,7 @@ export default class SuperPlan extends Plugin {
 
             if (this.leafsMte.has(activeLeafId!)) {
               mte = this.leafsMte.get(activeLeafId!)!
+              mte.setRange(lineStart + 1, lineEnd - 1)
             } else {
               mte = new MdTableEditor({
                 app: this.app,

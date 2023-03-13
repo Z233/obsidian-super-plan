@@ -59,7 +59,7 @@ export type FocusPosition = {
 
 export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   const { initialData } = props
-  const { deleteRow, setFocus, getFocus } = usePlanContext()
+  const { deleteRow, insertRowBelow, setFocus, getFocus } = usePlanContext()
 
   const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
   const [highlightedRow, setHighlightedRow] = useState(-1)
@@ -90,6 +90,10 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
       e.preventDefault()
       return false
     }
+  }
+
+  const handlePlusClick = (rowIndex: number) => {
+    insertRowBelow(rowIndex)
   }
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
@@ -185,7 +189,10 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
               {(() =>
                 hoverRowIndex === row.index ? (
                   <div>
-                    <PlusIcon />
+                    <PlusIcon
+                      onClick={() => handlePlusClick(row.index)}
+                      className="hover:text-$interactive-accent"
+                    />
                   </div>
                 ) : (
                   <div className="w-6">{row.index + 1}</div>

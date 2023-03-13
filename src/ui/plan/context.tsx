@@ -1,3 +1,4 @@
+import { TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
 import { createContext, useContext, useEffect, useState, useRef, type FC } from 'preact/compat'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
@@ -10,6 +11,7 @@ import type { FocusPosition } from './PlanTable'
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
   deleteRow: (row: number) => void
+  insertRowBelow: (row: number) => void
   setFocus: (pos: Maybe<FocusPosition>) => void
   getFocus: () => Maybe<FocusPosition>
 }
@@ -43,6 +45,14 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
 
   const deleteRow: PlanContextValue['deleteRow'] = (row) => {
     mte.deleteRow(row)
+    mte.applyChanges()
+  }
+
+  const insertRowBelow: PlanContextValue['insertRowBelow'] = (row) => {
+    const cells = Array.from({ length: Object.keys(data[0]).length }, (_, i) => new TableCell(''))
+    const tableRow = new TableRow(cells, '', '')
+    mte.insertRow(tableRow, row + 1)
+    mte.setFocusState({ row: row + 1, col: ColumnKeysMap[ColumnKeys.Activity] })
     mte.applyChanges()
   }
 
@@ -101,7 +111,7 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
 
   return (
     <PlanContext.Provider
-      value={{ updateCell, deleteRow, setFocus, getFocus }}
+      value={{ updateCell, deleteRow, insertRowBelow: insertRowBelow, setFocus, getFocus }}
       children={props.children}
     />
   )
