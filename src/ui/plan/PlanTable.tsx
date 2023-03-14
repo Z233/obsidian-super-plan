@@ -2,7 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tan
 import { Menu, Notice } from 'obsidian'
 import { useEffect, useState, type FC, createElement } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
-import { ColumnKeys } from 'src/constants'
+import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
 import {
@@ -59,7 +59,7 @@ export type FocusPosition = {
 
 export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   const { initialData } = props
-  const { deleteRow, insertRowBelow, setFocus, getFocus } = usePlanContext()
+  const { deleteRow, insertRowBelow, setFocus, getFocus, rerender } = usePlanContext()
 
   const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
   const [highlightedRow, setHighlightedRow] = useState(-1)
@@ -89,6 +89,28 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
     if (e.button === 2) {
       e.preventDefault()
       return false
+    }
+  }
+
+  const handleCellKeyDown = (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
+    const { key } = e
+    // Binding Enter
+    if (key === 'Enter' && focusedPosition) {
+      // Move to next column or create new row
+      const column = ColumnKeysMap[columnKey]
+
+      let nextColumn = ((column + 1) % tableColumns.length) as Columns
+      let nextRowIndex = rowIndex
+
+      if (nextColumn > Columns.R) {
+        nextColumn = Columns.Activity
+        nextRowIndex += 1
+        // saveFocus({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+        insertRowBelow(rowIndex)
+      } else {
+        saveFocus({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+        rerender()
+      }
     }
   }
 
@@ -210,6 +232,7 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
                   data-row={row.index}
                   data-column={cell.column.id}
                   onMouseDown={handleCellMouseDown}
+                  onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
                   onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
                   className={isFocused ? focusStyle : ''}
                 >
