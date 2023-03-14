@@ -35,13 +35,17 @@ export const DefaultButton = forwardRef(
   }
 )
 
-export const PlusIcon: FC<JSX.HTMLAttributes<HTMLSpanElement>> = (props) => {
-  const { className, ref: _, ...rest } = props
+export const Icon: FC<
+  JSX.HTMLAttributes<HTMLSpanElement> & {
+    svg: SVGSVGElement
+  }
+> = (props) => {
+  const { className, ref: _, svg, ...rest } = props
   const wrapperRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
     if (wrapperRef.current) {
-      wrapperRef.current.appendChild(getIcon('plus')!)
+      wrapperRef.current.appendChild(svg)
     }
   }, [])
 

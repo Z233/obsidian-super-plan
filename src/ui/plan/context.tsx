@@ -1,5 +1,7 @@
 import { TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
 import { createContext, useContext, useEffect, useReducer, useRef, type FC } from 'preact/compat'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import { Scheduler } from 'src/scheduler'
@@ -124,8 +126,9 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
         rerender,
         seed,
       }}
-      children={props.children}
-    />
+    >
+      <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>
+    </PlanContext.Provider>
   )
 }
 

@@ -1,6 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
-import { Menu, Notice } from 'obsidian'
-import { useEffect, useState, type FC, createElement } from 'preact/compat'
+import { useEffect, useState, type FC, createElement, useRef } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
@@ -13,9 +12,9 @@ import {
   renderStartCell,
 } from './cells'
 import { usePlanContext } from './context'
-import { PlusIcon } from './lib'
+import { DragLayer } from './DragLayer'
 import { focusStyle, indexCellStyle } from './styles'
-import clsx from 'clsx'
+import { TableRow } from './TableRow'
 
 export type PlanTableColumnDef = ColumnDef<PlanDataItem>
 
@@ -87,6 +86,7 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   const handleCellMouseDown: JSXInternal.MouseEventHandler<HTMLTableCellElement> = (e) => {
     // Disable default behavior for right click
     if (e.button === 2) {
+      saveFocus(null)
       e.preventDefault()
       return false
     }
@@ -146,103 +146,70 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
     }
   }, [])
 
-  const [hoverRowIndex, setHoverRowIndex] = useState<number>(-1)
+  const tableWrapperRef = useRef<HTMLTableElement>(null)
+  const [tableWrapperInfo, setTableWrapperInfo] = useState<{
+    offsetY: number
+    height: number
+    width: number
+  }>()
 
-  const handleMouseEnter = (rowIndex: number) => {
-    setHoverRowIndex(rowIndex)
-  }
-
-  const handleMouseLeave = (rowIndex: number) => {
-    setHoverRowIndex(-1)
-  }
-
-  const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
-    e.preventDefault()
-
-    setHighlightedRow(rowIndex)
-
-    const menu = new Menu()
-
-    menu.addItem((item) =>
-      item
-        .setTitle('Delete')
-        .setIcon('trash')
-        .onClick(() => {
-          deleteRow(rowIndex)
-        })
-    )
-
-    menu.onHide(() => {
-      setHighlightedRow(-1)
-    })
-
-    menu.showAtMouseEvent(e)
-
-    return false
-  }
+  useEffect(() => {
+    if (tableWrapperRef.current) {
+      const clientRect = tableWrapperRef.current.getBoundingClientRect()
+      setTableWrapperInfo({
+        offsetY: clientRect.top,
+        height: clientRect.height,
+        width: clientRect.width,
+      })
+    }
+  }, [])
 
   return (
-    <table onBlur={handleBlur}>
-      <thead>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
-            <th className={indexCellStyle}>#</th>
-            {headerGroup.headers.map((header) => (
-              <th key={header.column.id}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
-              </th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody>
-        {table.getRowModel().rows.map((row) => (
-          <tr
-            key={row.id}
-            className={clsx({
-              '![&>*:nth-child(2)]:border-l-0': true,
-              [focusStyle]: row.index === highlightedRow,
-            })}
-            onContextMenu={(e) => handleContextMenu(e, row.index)}
-            onMouseEnter={() => handleMouseEnter(row.index)}
-            onMouseLeave={() => handleMouseLeave(row.index)}
-          >
-            <td className={indexCellStyle}>
-              {(() =>
-                hoverRowIndex === row.index ? (
-                  <div>
-                    <PlusIcon
-                      onClick={() => handlePlusClick(row.index)}
-                      className="hover:text-$interactive-accent"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-6">{row.index + 1}</div>
-                ))()}
-            </td>
+    <div className="relative">
+      <DragLayer
+        parentOffsetY={tableWrapperInfo?.offsetY ?? 0}
+        parentHeight={tableWrapperInfo?.height ?? 0}
+        width={tableWrapperInfo?.width ?? 0}
+      />
+      <table ref={tableWrapperRef} className="relative" onBlur={handleBlur}>
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
+              <th className={indexCellStyle}>#</th>
+              {headerGroup.headers.map((header) => (
+                <th key={header.column.id}>
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow row={row}>
+              {row.getVisibleCells().map((cell) => {
+                const isFocused =
+                  highlightedRow < 0 &&
+                  focusedPosition?.rowIndex === row.index &&
+                  focusedPosition?.columnKey === cell.column.id
 
-            {row.getVisibleCells().map((cell) => {
-              const isFocused =
-                highlightedRow < 0 &&
-                focusedPosition?.rowIndex === row.index &&
-                focusedPosition?.columnKey === cell.column.id
-
-              return (
-                <td
-                  data-row={row.index}
-                  data-column={cell.column.id}
-                  onMouseDown={handleCellMouseDown}
-                  onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
-                  onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
-                  className={isFocused ? focusStyle : ''}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              )
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+                return (
+                  <td
+                    data-row={row.index}
+                    data-column={cell.column.id}
+                    onMouseDown={handleCellMouseDown}
+                    onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
+                    onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
+                    className={isFocused ? focusStyle : ''}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                )
+              })}
+            </TableRow>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }

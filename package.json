@@ -58,6 +58,8 @@
     "immer": "^9.0.19",
     "lodash-es": "^4.17.21",
     "preact": "^10.13.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "use-immer": "^0.8.1",
     "zod": "^3.21.0"
   }
