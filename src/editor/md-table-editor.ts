@@ -34,12 +34,18 @@ export class MdTableEditor {
   private _startRow: number
   private _endRow: number
 
+  private _changeListener: Maybe<() => void>
+
   constructor({ app, file, table, startRow, endRow }: MdTableEditorOptions) {
     this._app = app
     this._file = file
     this._table = table
     this._startRow = startRow
     this._endRow = endRow
+  }
+
+  setChangeListener(listener: () => void) {
+    this._changeListener = listener
   }
 
   setRange(startRow: number, endRow: number) {
@@ -84,11 +90,9 @@ export class MdTableEditor {
     const formatted = formatTable(this._table, defaultOptions)
     const newLines = formatted.table.toLines()
 
-    window[UpdateFlag] = true
     this._mte._updateLines(this._startRow, this._endRow + 1, newLines)
-    window[UpdateFlag] = false
 
-    this._mte._updateLines(this._startRow, this._startRow + 1, [newLines[0] + ' '])
+    // this._mte._updateLines(this._startRow, this._startRow + 1, [newLines[0] + ' '])
   }
 
   private _ensureEditorLoaded() {

@@ -118,3 +118,18 @@ export function transformTable(table: Table): ActivitiesData {
 }
 
 export const checkIsDataviewEnabled = () => !!getAPI()
+
+export function debounceWithRAF(cb: (...args: any) => any) {
+  let scheduled = false
+
+  return function debounced(...args: any) {
+    if (!scheduled) {
+      scheduled = true
+
+      requestAnimationFrame(() => {
+        cb(...args)
+        scheduled = false
+      })
+    }
+  }
+}

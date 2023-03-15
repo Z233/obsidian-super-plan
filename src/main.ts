@@ -18,6 +18,7 @@ import { MdTableEditor } from './editor/md-table-editor'
 import type { Table } from '@tgrosinger/md-advanced-tables'
 import { MdPlan } from './ui/plan/Plan'
 import { UpdateFlag } from './constants'
+import { debounceWithRAF } from './util/helper'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -230,16 +231,15 @@ export default class SuperPlan extends Plugin {
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
       el.parentElement?.setAttribute('style', 'contain: none !important;')
 
-      const job = () => {
+      const job = debounceWithRAF(() => {
         const selection = ctx.getSectionInfo(el)
 
-        if (selection && !window[UpdateFlag] && activeLeafId) {
+        if (selection && activeLeafId) {
           const { lineStart, lineEnd } = selection
           const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
 
           const getMte = (table: Table) => {
             let mte: Maybe<MdTableEditor> = null
-
             if (this.leafsMte.has(activeLeafId!)) {
               mte = this.leafsMte.get(activeLeafId!)!
               mte.setRange(lineStart + 1, lineEnd - 1)
@@ -259,7 +259,7 @@ export default class SuperPlan extends Plugin {
 
           ctx.addChild(new MdPlan(el, source, getMte))
         }
-      }
+      })
 
       if (!activeLeafId) {
         queue.add(job)
