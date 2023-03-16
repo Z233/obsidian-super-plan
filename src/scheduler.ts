@@ -1,13 +1,8 @@
+import { nanoid } from 'nanoid'
 import { INVAlID_NUMBER_LITERAL } from './constants'
 import type { PlanData } from './schemas'
 import type { ActivitiesData, Activity } from './types'
-import {
-  check,
-  formatNumberCell,
-  getNowMins,
-  parseMins2Time,
-  parseTime2Mins,
-} from './util/helper'
+import { check, formatNumberCell, getNowMins, parseMins2Time, parseTime2Mins } from './util/helper'
 
 type SchedulerPart = {
   duration: number
@@ -31,6 +26,7 @@ export class Scheduler {
       const isFixed = check(act.f)
 
       return {
+        id: act.id,
         activity: act.activity,
         length: +act.length,
         start: isFixed ? parseTime2Mins(act.start) : 0,
@@ -191,6 +187,7 @@ export class Scheduler {
 
   getData(): PlanData {
     return this.activities.map((act) => ({
+      id: act.id,
       f: act.isFixed ? 'x' : '',
       start: Number.isNaN(act.start) ? INVAlID_NUMBER_LITERAL : parseMins2Time(act.start),
       activity: act.activity,

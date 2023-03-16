@@ -15,6 +15,7 @@ export const planRecordsSchema = z.array(planRecordSchema).nonempty()
 export type PlanRecord = z.infer<typeof planRecordSchema>
 
 export const planDataItemSchema = z.object({
+  [ColumnKeysMap[Columns.ID]]: z.string(),
   [ColumnKeysMap[Columns.F]]: z.string(),
   [ColumnKeysMap[Columns.Start]]: z.string(),
   [ColumnKeysMap[Columns.Activity]]: z.string(),
@@ -29,6 +30,7 @@ const planRecordsTransformer = (input: z.infer<typeof planRecordsSchema>) => {
   const output: PlanDataItem[] = []
   for (const record of input) {
     const item: PlanDataItem = {
+      [ColumnKeys.ID]: '',
       [ColumnKeys.F]: '',
       [ColumnKeys.Start]: '',
       [ColumnKeys.Activity]: '',

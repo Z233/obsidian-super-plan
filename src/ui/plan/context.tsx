@@ -1,4 +1,5 @@
 import { TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
+import { nanoid } from 'nanoid'
 import { createContext, useContext, useEffect, useReducer, useRef, type FC } from 'preact/compat'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -21,10 +22,6 @@ type PlanContextValue = {
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
 
-const shallowCompare = (obj1: Record<any, any>, obj2: Record<any, any>) =>
-  Object.keys(obj1).length === Object.keys(obj2).length &&
-  Object.keys(obj1).every((key) => obj2.hasOwnProperty(key) && obj1[key] === obj2[key])
-
 const IGNORED_CELLS: ColumnKeys[] = [ColumnKeys.Activity]
 
 export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
@@ -46,7 +43,9 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
   }
 
   const insertRowBelow: PlanContextValue['insertRowBelow'] = (row) => {
-    const cells = Array.from({ length: 6 }, (_, i) => new TableCell(''))
+    const cells = Array.from({ length: 7 }, (_, i) =>
+      i === 0 ? new TableCell(nanoid(6)) : new TableCell(' ')
+    )
     const tableRow = new TableRow(cells, '', '')
     mte.insertRow(tableRow, row + 1)
     mte.setFocusState({ row: row + 1, col: ColumnKeysMap[ColumnKeys.Activity] })

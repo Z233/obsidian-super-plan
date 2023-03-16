@@ -186,7 +186,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow row={row}>
+            <TableRow key={row.original.id} row={row}>
               {row.getVisibleCells().map((cell) => {
                 const isFocused =
                   highlightedRow < 0 &&

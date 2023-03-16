@@ -44,6 +44,7 @@ export type UserData = {
 }
 
 export type Activity = {
+  id: string
   activity: string
   length: number
   start: number
@@ -54,6 +55,7 @@ export type Activity = {
 }
 
 export type ActivityData = {
+  id: string
   activity: string
   length: string
   start: string

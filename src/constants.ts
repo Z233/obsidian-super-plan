@@ -10,15 +10,17 @@ export const PlanLinesLiteral = {
 }
 
 export enum Columns {
-  F = 0,
-  Start = 1,
-  Activity = 2,
-  Length = 3,
-  R = 4,
-  ActLen = 5,
+  ID = 0,
+  F = 1,
+  Start = 2,
+  Activity = 3,
+  Length = 4,
+  R = 5,
+  ActLen = 6,
 }
 
 export enum ColumnKeys {
+  ID = 'id',
   F = 'f',
   Start = 'start',
   Activity = 'activity',
@@ -29,6 +31,7 @@ export enum ColumnKeys {
 
 export const ColumnKeysMap = {
   // key to index
+  [Columns.ID]: ColumnKeys.ID,
   [Columns.F]: ColumnKeys.F,
   [Columns.Start]: ColumnKeys.Start,
   [Columns.Activity]: ColumnKeys.Activity,
@@ -36,6 +39,7 @@ export const ColumnKeysMap = {
   [Columns.R]: ColumnKeys.R,
   [Columns.ActLen]: ColumnKeys.ActLen,
   // index to key
+  [ColumnKeys.ID]: Columns.ID,
   [ColumnKeys.F]: Columns.F,
   [ColumnKeys.Start]: Columns.Start,
   [ColumnKeys.Activity]: Columns.Activity,
