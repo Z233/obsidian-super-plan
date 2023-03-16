@@ -11,7 +11,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 
 export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
   const { row } = props
-  const { deleteRow, insertRowBelow } = usePlanContext()
+  const { deleteRow, insertRowBelow, moveRow } = usePlanContext()
 
   const [highlighted, setHighlighted] = useState(false)
   const [isHover, setIsHover] = useState(false)
@@ -26,7 +26,9 @@ export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
 
   const [{ isOver }, dropRef] = useDrop({
     accept: 'ROW',
-    drop: (draggedRow: Row<PlanDataItem>) => {},
+    drop: (draggedRow: Row<PlanDataItem>) => {
+      moveRow(draggedRow.index, row.index)
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),

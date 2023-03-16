@@ -4,16 +4,15 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
-import { Scheduler } from 'src/scheduler'
-import type { PlanData, PlanDataItem } from 'src/schemas'
+import type { PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
-import { useImmer } from 'use-immer'
 import type { FocusPosition } from './PlanTable'
 
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
   deleteRow: (row: number) => void
   insertRowBelow: (row: number) => void
+  moveRow: (from: number, to: number) => void
   setFocus: (pos: Maybe<FocusPosition>) => void
   getFocus: () => Maybe<FocusPosition>
   rerender: (...args: any) => void
@@ -28,25 +27,17 @@ const shallowCompare = (obj1: Record<any, any>, obj2: Record<any, any>) =>
 
 const IGNORED_CELLS: ColumnKeys[] = [ColumnKeys.Activity]
 
-export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) => {
-  const { mte, data: initialData } = props
-  const previousDataRef = useRef(initialData)
+export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
+  const { mte } = props
   const updatedCells = useRef(new Set<keyof PlanDataItem>())
-  const [data, setData] = useImmer(initialData)
 
   const [seed, rerender] = useReducer((v) => v + 1, 0)
 
   const updateCell: PlanContextValue['updateCell'] = (row, columnKey, value) => {
     updatedCells.current.add(columnKey)
 
-    if (IGNORED_CELLS.includes(columnKey)) {
-      mte.setCellAt(row, ColumnKeysMap[columnKey], value)
-    }
-
-    setData((draft) => {
-      previousDataRef.current = data
-      draft[row][columnKey] = value
-    })
+    mte.setCellAt(row, ColumnKeysMap[columnKey], value)
+    mte.applyChanges()
   }
 
   const deleteRow: PlanContextValue['deleteRow'] = (row) => {
@@ -55,10 +46,15 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
   }
 
   const insertRowBelow: PlanContextValue['insertRowBelow'] = (row) => {
-    const cells = Array.from({ length: Object.keys(data[0]).length }, (_, i) => new TableCell(''))
+    const cells = Array.from({ length: 6 }, (_, i) => new TableCell(''))
     const tableRow = new TableRow(cells, '', '')
     mte.insertRow(tableRow, row + 1)
     mte.setFocusState({ row: row + 1, col: ColumnKeysMap[ColumnKeys.Activity] })
+    mte.applyChanges()
+  }
+
+  const moveRow: PlanContextValue['moveRow'] = (from, to) => {
+    mte.moveRow(from, to)
     mte.applyChanges()
   }
 
@@ -77,50 +73,13 @@ export const PlanProvider: FC<{ mte: MdTableEditor; data: PlanData }> = (props) 
     return { rowIndex, columnKey: ColumnKeysMap[col as Columns] }
   }
 
-  useEffect(() => {
-    const updatedCellsArr = [...updatedCells.current]
-    const shouldSchedule = !(
-      updatedCellsArr.length && updatedCellsArr.every((key) => IGNORED_CELLS.includes(key))
-    )
-
-    if (!shouldSchedule) {
-      mte.applyChanges()
-      return
-    }
-
-    const scheduler = new Scheduler(data)
-    scheduler.schedule()
-
-    const scheduledData = scheduler.getData()
-
-    if (
-      scheduledData.length === previousDataRef.current.length &&
-      !scheduledData.every((d, i) => shallowCompare(d, previousDataRef.current[i]))
-    ) {
-      // Iterate over the scheduled data and compare it to the old data.
-      // If there are any changes, get the row and column of the change.
-      for (let row = 0; row < scheduledData.length; row++) {
-        const oldItem = previousDataRef.current[row]
-        const newItem = scheduledData[row]
-
-        Object.entries(newItem).forEach(([k, value], col) => {
-          const key = k as keyof PlanDataItem
-          if (oldItem[key] !== value) {
-            mte.setCellAt(row, col, value)
-          }
-        })
-      }
-
-      mte.applyChanges()
-    }
-  }, [data])
-
   return (
     <PlanContext.Provider
       value={{
         updateCell,
         deleteRow,
-        insertRowBelow: insertRowBelow,
+        insertRowBelow,
+        moveRow,
         setFocus,
         getFocus,
         rerender,

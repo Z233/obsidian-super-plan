@@ -1,20 +1,50 @@
 import { MdTableParser } from 'src/parser'
 import { planDataSchema, type PlanData } from 'src/schemas'
 import { render } from 'preact'
-import type { FC } from 'preact/compat'
+import { useSyncExternalStore, type FC } from 'preact/compat'
 import { PlanTable } from './PlanTable'
-import type { MdTableEditor } from 'src/editor/md-table-editor'
+import { MdTableEditor } from 'src/editor/md-table-editor'
 import type { Table } from '@tgrosinger/md-advanced-tables'
 import { PlanProvider } from './context'
-import { MarkdownRenderChild } from 'obsidian'
+import type { App, TFile } from 'obsidian'
 import 'uno.css'
+import type { CodeBlockSync } from 'src/editor/code-block-sync'
+import { Scheduler } from 'src/scheduler'
 
-const Plan: FC<{ data: PlanData; mte: MdTableEditor }> = (props) => {
-  const { data, mte } = props
+type MteLoader = ({
+  table,
+  startRow,
+  endRow,
+}: {
+  table: Table
+  startRow: number
+  endRow: number
+}) => MdTableEditor
+
+const Plan: FC<{
+  sync: CodeBlockSync
+  mteLoader: MteLoader
+}> = (props) => {
+  const { sync, mteLoader } = props
+
+  const { source, lineStart, lineEnd } = useSyncExternalStore(sync.subscribe.bind(sync), () => {
+    return sync.getInfo()
+  })
+
+  const parsed = MdTableParser.parse(source)
+  const records = parsed.toRecords()
+
+  const validData = planDataSchema.parse(records)
+
+  const scheduler = new Scheduler(validData)
+  scheduler.schedule()
+
+  const data = scheduler.getData()
+  const mte = mteLoader({ table: parsed.table, startRow: lineStart + 1, endRow: lineEnd - 1 })
 
   return (
-    <PlanProvider mte={mte} data={data}>
-      <PlanTable initialData={data} />
+    <PlanProvider mte={mte}>
+      <PlanTable data={data} />
     </PlanProvider>
   )
 }
@@ -28,29 +58,9 @@ const Error: FC<{ message: string }> = (props) => {
   )
 }
 
-export class MdPlan extends MarkdownRenderChild {
-  constructor(
-    private _container: HTMLElement,
-    private _source: string,
-    private _getMte: (table: Table) => MdTableEditor
-  ) {
-    super(_container)
-  }
+export const renderPlan = (container: HTMLElement, sync: CodeBlockSync, app: App, file: TFile) => {
+  const mteLoader: MteLoader = ({ table, startRow, endRow }) =>
+    new MdTableEditor({ app, file, table, startRow, endRow })
 
-  onload() {
-    try {
-      const parsed = MdTableParser.parse(this._source)
-      const records = parsed.toRecords()
-
-      const validPlanData = planDataSchema.parse(records)
-
-      const mte = this._getMte(parsed.table)
-
-      render(<Plan data={validPlanData} mte={mte} />, this._container)
-    } catch (e) {
-      render(<Error message={e.message} />, this._container)
-    }
-  }
-
-  onunload() {}
+  render(<Plan sync={sync} mteLoader={mteLoader} />, container)
 }

@@ -1,11 +1,11 @@
 import { Editor, MarkdownView, Plugin, Platform, type Command, TFile } from 'obsidian'
-import { MdTableParser, Parser } from './parser'
+import { Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { EditorExtension } from './editor/editor-extension'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
 import { SplitConfirmModal } from './ui/modals'
-import type { Maybe, UnsafeWorkspaceLeaf } from './types'
+import type { Maybe } from './types'
 import { ActivitySuggester } from './ui/suggest/activity-suggester'
 import { ActivityProvider } from './ui/suggest/activity-provider'
 import { MiniTracker } from './window'
@@ -14,11 +14,9 @@ import { loadIcons } from './ui/icons'
 import { desktopInit } from './platform/desktop'
 import { Timer } from './tracker/timer'
 import './style.css'
-import { MdTableEditor } from './editor/md-table-editor'
-import type { Table } from '@tgrosinger/md-advanced-tables'
-import { MdPlan } from './ui/plan/Plan'
-import { UpdateFlag } from './constants'
-import { debounceWithRAF } from './util/helper'
+import type { MdTableEditor } from './editor/md-table-editor'
+import { renderPlan } from './ui/plan/Plan'
+import { CodeBlockSync } from './editor/code-block-sync'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -202,66 +200,68 @@ export default class SuperPlan extends Plugin {
 
   private registerCodeBlockProcessor() {
     const queue: Set<() => void> = new Set()
-    let activeLeafId: Maybe<string> = null
+    let activeEditor: Maybe<Editor> = null
+
+    const plansMap = new WeakMap<
+      Editor,
+      {
+        container: HTMLElement
+        sync: CodeBlockSync
+      }
+    >()
 
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', (leaf) => {
-        const unsafeLeaf = leaf as Maybe<UnsafeWorkspaceLeaf>
-        if (!unsafeLeaf) return
-
-        activeLeafId = unsafeLeaf.id
+        activeEditor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
         if (queue.size) {
           queue.forEach((job) => job())
           queue.clear()
         }
-
-        const newLeafsMte = new Map<string, MdTableEditor>()
-
-        for (const leaf of unsafeLeaf.parent?.children ?? []) {
-          const mte = this.leafsMte.get(leaf.id)
-          if (mte) {
-            newLeafsMte.set(leaf.id, mte)
-          }
-        }
-
-        this.leafsMte = newLeafsMte
       })
     )
+
+    // this.registerEditorExtension(
+    //   EditorView.updateListener.of((update) => {
+    //     if (!update.docChanged) return
+    //     // Iterate through the changes using the iterChanges method
+    //     update.changes.iterChanges((fromA, toA, fromB, toB) => {
+    //       // Get the starting and ending line numbers for the changed lines
+    //       const startLine = update.view.state.doc.lineAt(fromB).number
+    //       const endLine = update.view.state.doc.lineAt(toB).number
+    //     })
+    //   })
+    // )
 
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
       el.parentElement?.setAttribute('style', 'contain: none !important;')
 
-      const job = debounceWithRAF(() => {
+      const job = () => {
         const selection = ctx.getSectionInfo(el)
+        const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
 
-        if (selection && activeLeafId) {
-          const { lineStart, lineEnd } = selection
-          const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
-
-          const getMte = (table: Table) => {
-            let mte: Maybe<MdTableEditor> = null
-            if (this.leafsMte.has(activeLeafId!)) {
-              mte = this.leafsMte.get(activeLeafId!)!
-              mte.setRange(lineStart + 1, lineEnd - 1)
-            } else {
-              mte = new MdTableEditor({
-                app: this.app,
-                file,
-                table,
-                startRow: lineStart + 1,
-                endRow: lineEnd - 1,
-              })
-              this.leafsMte.set(activeLeafId!, mte)
-            }
-
-            return mte
+        if (selection && activeEditor) {
+          let { sync, container } = plansMap.get(activeEditor) || {
+            sync: new CodeBlockSync(),
+            container: null,
           }
 
-          ctx.addChild(new MdPlan(el, source, getMte))
-        }
-      })
+          sync.notify({
+            source,
+            lineStart: selection.lineStart,
+            lineEnd: selection.lineEnd,
+          })
 
-      if (!activeLeafId) {
+          if (!container) {
+            const newContainer = (container = document.createElement('div'))
+            renderPlan(container, sync, this.app, file)
+            plansMap.set(activeEditor, { sync, container: newContainer })
+          }
+
+          el.insertBefore(container, null)
+        }
+      }
+
+      if (!activeEditor) {
         queue.add(job)
       } else {
         job()

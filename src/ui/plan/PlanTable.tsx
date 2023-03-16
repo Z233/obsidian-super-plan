@@ -56,8 +56,8 @@ export type FocusPosition = {
   columnKey: ColumnKeys
 }
 
-export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
-  const { initialData } = props
+export const PlanTable: FC<{ data: PlanData }> = (props) => {
+  const { data } = props
   const { deleteRow, insertRowBelow, setFocus, getFocus, rerender } = usePlanContext()
 
   const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
@@ -74,7 +74,7 @@ export const PlanTable: FC<{ initialData: PlanData }> = (props) => {
   }
 
   const table = useReactTable({
-    data: initialData,
+    data: data,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
   })
