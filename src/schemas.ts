@@ -2,6 +2,7 @@ import * as z from 'zod'
 import { ColumnKeys, ColumnKeysMap, Columns } from './constants'
 
 export const planRecordSchema = z.object({
+  ID: z.string(),
   F: z.string(),
   Start: z.string(),
   Activity: z.string(),

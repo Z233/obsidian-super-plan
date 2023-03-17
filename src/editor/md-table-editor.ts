@@ -60,9 +60,7 @@ export class MdTableEditor {
 
   deleteRow(row: number) {
     const lines = this._table.toLines()
-    console.log('deleteRow -> lines:', lines)
     const newLines = lines.slice(0, row + 2).concat(lines.slice(row + 3))
-    console.log('deleteRow -> newLines:', newLines)
     const newTable = readTable(newLines, defaultOptions)
     this._updateTable(newTable)
   }
@@ -77,6 +75,7 @@ export class MdTableEditor {
   }
 
   moveRow(from: number, to: number) {
+    console.log({ from, to })
     const lines = this._table.toLines().concat()
     const row = lines.splice(from + 2, 1)[0]
     lines.splice(to + 2, 0, row)

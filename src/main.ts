@@ -17,6 +17,7 @@ import './style.css'
 import type { MdTableEditor } from './editor/md-table-editor'
 import { renderPlan } from './ui/plan/Plan'
 import { CodeBlockSync } from './editor/code-block-sync'
+import { EditorView } from '@codemirror/view'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -220,17 +221,28 @@ export default class SuperPlan extends Plugin {
       })
     )
 
-    // this.registerEditorExtension(
-    //   EditorView.updateListener.of((update) => {
-    //     if (!update.docChanged) return
-    //     // Iterate through the changes using the iterChanges method
-    //     update.changes.iterChanges((fromA, toA, fromB, toB) => {
-    //       // Get the starting and ending line numbers for the changed lines
-    //       const startLine = update.view.state.doc.lineAt(fromB).number
-    //       const endLine = update.view.state.doc.lineAt(toB).number
-    //     })
-    //   })
-    // )
+    this.registerEditorExtension(
+      EditorView.updateListener.of((update) => {
+        if (!update.docChanged) return
+        update.changes.iterChanges((fromA, toA, fromB, toB) => {
+          // Get the starting and ending line numbers for the changed lines
+          const doc = update.view.state.doc
+          const changedLineStart = doc.lineAt(fromB).number - 1
+          const changedLineEnd = doc.lineAt(toB).number - 1
+
+          if (activeEditor && plansMap.has(activeEditor)) {
+            const { sync } = plansMap.get(activeEditor)!
+            const { lineStart, lineEnd } = sync.getInfo()
+
+            if (changedLineStart >= lineStart + 1 && changedLineEnd <= lineEnd - 1) {
+              sync.notify({
+                source: ((doc as any).text as string[]).slice(lineStart + 1, lineEnd).join('\n'),
+              })
+            }
+          }
+        })
+      })
+    )
 
     this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
       el.parentElement?.setAttribute('style', 'contain: none !important;')

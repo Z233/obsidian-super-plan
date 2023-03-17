@@ -27,7 +27,9 @@ export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
   const [{ isOver }, dropRef] = useDrop({
     accept: 'ROW',
     drop: (draggedRow: Row<PlanDataItem>) => {
-      moveRow(draggedRow.index, row.index)
+      const from = draggedRow.index
+      const to = row.index
+      from > to ? moveRow(from, to + 1) : moveRow(from, to)
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),

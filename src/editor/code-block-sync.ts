@@ -21,8 +21,8 @@ export class CodeBlockSync {
     }
   }
 
-  notify(info: CodeBlockSyncInfo) {
-    this._info = info
+  notify(info: Partial<CodeBlockSyncInfo>) {
+    this._info = { ...this._info, ...info }
     this._listeners.forEach((listener) => listener())
   }
 
