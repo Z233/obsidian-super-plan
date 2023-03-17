@@ -86,23 +86,22 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     if (key === 'Enter' && focusedPosition) {
       // Move to next column or create new row
       const column = ColumnKeysMap[columnKey]
+      const tableHeight = table.getRowModel().rows.length
 
-      let nextColumn = ((column + 1) % tableColumns.length) as Columns
+      let nextColumn = (column + 1) as Columns
       let nextRowIndex = rowIndex
 
       if (nextColumn > Columns.R) {
         nextColumn = Columns.Activity
         nextRowIndex += 1
         setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
-        insertRowBelow(rowIndex)
+        if (nextRowIndex === tableHeight - 1) {
+          insertRowBelow(rowIndex)
+        }
       } else {
         setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
       }
     }
-  }
-
-  const handlePlusClick = (rowIndex: number) => {
-    insertRowBelow(rowIndex)
   }
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {

@@ -8,7 +8,7 @@ import { DefaultInput } from './lib'
 import type { PlanTableColumnDef } from './PlanTable'
 
 export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell, setFocusedPosition } = usePlanContext()
   const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
 
   const prevValueRef = useRef(check(getValue() as string))
@@ -16,6 +16,7 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
 
   useEffect(() => {
     if (checked !== prevValueRef.current) {
+      setFocusedPosition({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
       updateCell(row.index, column.id as ColumnKeys, checked ? 'x' : '')
       prevValueRef.current = checked
     }

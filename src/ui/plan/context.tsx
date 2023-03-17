@@ -58,8 +58,8 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
     )
     const tableRow = new TableRow(cells, '', '')
     mte.insertRow(tableRow, row + 1)
-    mte.setFocusState({ row: row + 1, col: ColumnKeysMap[ColumnKeys.Activity] })
     mte.applyChanges()
+    setFocusedPosition({ rowIndex: row + 1, columnKey: ColumnKeys.Activity })
   }
 
   const moveRow: PlanContextValue['moveRow'] = (from, to) => {
