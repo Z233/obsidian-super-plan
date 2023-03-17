@@ -75,7 +75,6 @@ export class MdTableEditor {
   }
 
   moveRow(from: number, to: number) {
-    console.log({ from, to })
     const lines = this._table.toLines().concat()
     const row = lines.splice(from + 2, 1)[0]
     lines.splice(to + 2, 0, row)

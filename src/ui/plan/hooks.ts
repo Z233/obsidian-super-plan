@@ -3,16 +3,15 @@ import type { ColumnKeys } from 'src/constants'
 import { usePlanContext } from './context'
 
 export function useFocusOnMount(rowIndex: number, columnKey: ColumnKeys) {
-  const { getFocus, seed } = usePlanContext()
+  const { focusedPosition } = usePlanContext()
 
   const focusElRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const focus = getFocus()
-    if (focus?.rowIndex === rowIndex && focus?.columnKey === columnKey) {
+    if (focusedPosition?.rowIndex === rowIndex && focusedPosition?.columnKey === columnKey) {
       focusElRef.current?.focus()
     }
-  }, [seed])
+  }, [focusedPosition])
 
   return { focusElRef }
 }

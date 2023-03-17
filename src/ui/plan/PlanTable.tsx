@@ -3,7 +3,6 @@ import { useEffect, useState, type FC, createElement, useRef } from 'preact/comp
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
-import type { Maybe } from 'src/types'
 import {
   renderActivityCell,
   renderActLenCell,
@@ -58,20 +57,9 @@ export type FocusPosition = {
 
 export const PlanTable: FC<{ data: PlanData }> = (props) => {
   const { data } = props
-  const { deleteRow, insertRowBelow, setFocus, getFocus, rerender } = usePlanContext()
+  const { deleteRow, insertRowBelow, focusedPosition, setFocusedPosition } = usePlanContext()
 
-  const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
   const [highlightedRow, setHighlightedRow] = useState(-1)
-
-  const saveFocus = (focusPosition: Maybe<FocusPosition>) => {
-    if (focusPosition) {
-      setFocus(focusPosition)
-      setFocusedPosition(focusPosition)
-    } else {
-      setFocus(null)
-      setFocusedPosition(null)
-    }
-  }
 
   const table = useReactTable({
     data: data,
@@ -80,13 +68,13 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
   })
 
   const handleCellFocus = (rowIndex: number, columnKey: ColumnKeys) => {
-    saveFocus({ rowIndex, columnKey })
+    setFocusedPosition({ rowIndex, columnKey })
   }
 
   const handleCellMouseDown: JSXInternal.MouseEventHandler<HTMLTableCellElement> = (e) => {
     // Disable default behavior for right click
     if (e.button === 2) {
-      saveFocus(null)
+      setFocusedPosition(null)
       e.preventDefault()
       return false
     }
@@ -105,11 +93,10 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       if (nextColumn > Columns.R) {
         nextColumn = Columns.Activity
         nextRowIndex += 1
-        // saveFocus({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+        setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
         insertRowBelow(rowIndex)
       } else {
-        saveFocus({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
-        rerender()
+        setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
       }
     }
   }
@@ -135,16 +122,9 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
         }
       }
 
-      !isWithinTable && saveFocus(null)
+      !isWithinTable && setFocusedPosition(null)
     }
   }
-
-  useEffect(() => {
-    const focus = getFocus()
-    if (focus) {
-      setFocusedPosition(focus)
-    }
-  }, [])
 
   const tableWrapperRef = useRef<HTMLTableElement>(null)
   const [tableWrapperInfo, setTableWrapperInfo] = useState<{

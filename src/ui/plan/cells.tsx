@@ -53,8 +53,11 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
     if (input !== prevValueRef.current) {
-      updateCell(row.index, column.id as ColumnKeys, input)
       prevValueRef.current = input
+
+      setImmediate(() => {
+        updateCell(row.index, column.id as ColumnKeys, input)
+      })
     }
   }
 
@@ -83,9 +86,12 @@ export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, col
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
     if (input !== prevValueRef.current) {
-      updateCell(row.index, column.id as ColumnKeys, input)
-      updateCell(row.index, ColumnKeysMap[Columns.F], 'x')
       prevValueRef.current = input
+
+      setImmediate(() => {
+        updateCell(row.index, column.id as ColumnKeys, input)
+        updateCell(row.index, ColumnKeysMap[Columns.F], 'x')
+      })
     }
   }
 
@@ -115,8 +121,11 @@ export const renderLengthCell: PlanTableColumnDef['cell'] = ({ getValue, row, co
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
     if (input !== prevValueRef.current) {
-      updateCell(row.index, column.id as ColumnKeys, input)
       prevValueRef.current = input
+
+      setImmediate(() => {
+        updateCell(row.index, column.id as ColumnKeys, input)
+      })
     }
   }
 

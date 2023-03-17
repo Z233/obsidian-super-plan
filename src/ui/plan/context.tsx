@@ -1,34 +1,44 @@
 import { TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
 import { nanoid } from 'nanoid'
-import { createContext, useContext, useEffect, useReducer, useRef, type FC } from 'preact/compat'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  type FC,
+} from 'preact/compat'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
-import type { FocusPosition } from './PlanTable'
 
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
   deleteRow: (row: number) => void
   insertRowBelow: (row: number) => void
   moveRow: (from: number, to: number) => void
-  setFocus: (pos: Maybe<FocusPosition>) => void
-  getFocus: () => Maybe<FocusPosition>
-  rerender: (...args: any) => void
-  seed: number
+  focusedPosition: Maybe<FocusPosition>
+  setFocusedPosition: (pos: Maybe<FocusPosition>) => void
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
 
 const IGNORED_CELLS: ColumnKeys[] = [ColumnKeys.Activity]
 
+export type FocusPosition = {
+  rowIndex: number
+  columnKey: ColumnKeys
+}
+
 export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
   const { mte } = props
   const updatedCells = useRef(new Set<keyof PlanDataItem>())
 
-  const [seed, rerender] = useReducer((v) => v + 1, 0)
+  const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
 
   const updateCell: PlanContextValue['updateCell'] = (row, columnKey, value) => {
     updatedCells.current.add(columnKey)
@@ -57,21 +67,6 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
     mte.applyChanges()
   }
 
-  const setFocus: PlanContextValue['setFocus'] = (pos) => {
-    if (pos) {
-      mte.setFocusState({ row: pos.rowIndex, col: ColumnKeysMap[pos.columnKey] })
-    } else {
-      mte.setFocusState(null)
-    }
-  }
-
-  const getFocus: PlanContextValue['getFocus'] = () => {
-    const focusState = mte.getFocusState()
-    if (!focusState) return null
-    const { row: rowIndex, col } = focusState
-    return { rowIndex, columnKey: ColumnKeysMap[col as Columns] }
-  }
-
   return (
     <PlanContext.Provider
       value={{
@@ -79,10 +74,8 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
         deleteRow,
         insertRowBelow,
         moveRow,
-        setFocus,
-        getFocus,
-        rerender,
-        seed,
+        focusedPosition,
+        setFocusedPosition,
       }}
     >
       <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>
