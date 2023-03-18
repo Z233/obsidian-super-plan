@@ -46,7 +46,13 @@ const Plan: FC<{
   const parsed = MdTableParser.parse(source)
   const records = parsed.toRecords()
 
-  const validData = planDataSchema.parse(records)
+  const result = planDataSchema.safeParse(records)
+
+  if (!result.success) {
+    return <Error message={result.error.message} />
+  }
+
+  const validData = result.data
 
   const scheduler = new Scheduler(validData)
   scheduler.schedule()
