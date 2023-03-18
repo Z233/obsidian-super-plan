@@ -3,12 +3,14 @@ import { useEffect, useState, type FC, createElement, useRef } from 'preact/comp
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
+import type { Maybe } from 'src/types'
 import {
   renderActivityCell,
   renderActLenCell,
   renderCheckboxCell,
   renderLengthCell,
   renderStartCell,
+  type CellProps,
 } from './cells'
 import { usePlanContext } from './context'
 import { DragLayer } from './DragLayer'
@@ -50,14 +52,32 @@ export const tableColumns: PlanTableColumnDef[] = [
   },
 ]
 
-export type FocusPosition = {
+export type Position = {
   rowIndex: number
   columnKey: ColumnKeys
 }
 
 export const PlanTable: FC<{ data: PlanData }> = (props) => {
   const { data } = props
-  const { deleteRow, insertRowBelow, focusedPosition, setFocusedPosition } = usePlanContext()
+  const { insertRowBelow } = usePlanContext()
+
+  const [focusedPosition, setFocusedPosition] = useState<Maybe<Position>>()
+  const focusableElementsRef = useRef<Map<string, HTMLInputElement>>(new Map())
+
+  const updateFocusableElement = (position: Position, element: Maybe<HTMLInputElement>) => {
+    const { rowIndex, columnKey } = position
+    const key = `${rowIndex}-${columnKey}`
+    if (element) {
+      focusableElementsRef.current.set(key, element)
+    } else {
+      focusableElementsRef.current.delete(key)
+    }
+  }
+
+  if (focusedPosition) {
+    const { rowIndex, columnKey } = focusedPosition
+    focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)?.focus()
+  }
 
   const [highlightedRow, setHighlightedRow] = useState(-1)
 
@@ -181,7 +201,11 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
                     onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
                     className={isFocused ? focusStyle : ''}
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {flexRender<CellProps>(cell.column.columnDef.cell, {
+                      ...cell.getContext(),
+                      updateFocusableElement,
+                      focusedPosition,
+                    })}
                   </td>
                 )
               })}

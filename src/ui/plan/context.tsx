@@ -1,28 +1,17 @@
 import { TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
 import { nanoid } from 'nanoid'
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  type FC,
-} from 'preact/compat'
+import { createContext, useContext, useRef, type FC } from 'preact/compat'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
+import { ColumnKeys, ColumnKeysMap } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { PlanDataItem } from 'src/schemas'
-import type { Maybe } from 'src/types'
 
 type PlanContextValue = {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
   deleteRow: (row: number) => void
   insertRowBelow: (row: number) => void
   moveRow: (from: number, to: number) => void
-  focusedPosition: Maybe<FocusPosition>
-  setFocusedPosition: (pos: Maybe<FocusPosition>) => void
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
@@ -37,8 +26,6 @@ export type FocusPosition = {
 export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
   const { mte } = props
   const updatedCells = useRef(new Set<keyof PlanDataItem>())
-
-  const [focusedPosition, setFocusedPosition] = useState<Maybe<FocusPosition>>()
 
   const updateCell: PlanContextValue['updateCell'] = (row, columnKey, value) => {
     updatedCells.current.add(columnKey)
@@ -59,7 +46,6 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
     const tableRow = new TableRow(cells, '', '')
     mte.insertRow(tableRow, row + 1)
     mte.applyChanges()
-    setFocusedPosition({ rowIndex: row + 1, columnKey: ColumnKeys.Activity })
   }
 
   const moveRow: PlanContextValue['moveRow'] = (from, to) => {
@@ -74,8 +60,6 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
         deleteRow,
         insertRowBelow,
         moveRow,
-        focusedPosition,
-        setFocusedPosition,
       }}
     >
       <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>

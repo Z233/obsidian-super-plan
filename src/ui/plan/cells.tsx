@@ -1,22 +1,39 @@
-import { useEffect, useState, useRef, type ChangeEventHandler } from 'preact/compat'
+import type { CellContext } from '@tanstack/react-table'
+import {
+  useEffect,
+  useState,
+  useRef,
+  type ChangeEventHandler,
+  type FC,
+  type Ref,
+} from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeysMap, Columns, type ColumnKeys } from 'src/constants'
+import type { PlanDataItem } from 'src/schemas'
+import type { Maybe } from 'src/types'
 import { check } from 'src/util/helper'
 import { usePlanContext } from './context'
-import { useFocusOnMount } from './hooks'
 import { DefaultInput } from './lib'
-import type { PlanTableColumnDef } from './PlanTable'
+import type { Position } from './PlanTable'
 
-export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  const { updateCell, setFocusedPosition } = usePlanContext()
-  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
+export type CellProps = CellContext<PlanDataItem, unknown> & {
+  focusedPosition: Maybe<Position>
+  updateFocusableElement: (position: Position, element: Maybe<HTMLInputElement>) => void
+}
+
+export const renderCheckboxCell: FC<CellProps> = ({
+  getValue,
+  row,
+  column,
+  updateFocusableElement,
+}) => {
+  const { updateCell } = usePlanContext()
 
   const prevValueRef = useRef(check(getValue() as string))
   const [checked, setChecked] = useState(() => prevValueRef.current)
 
   useEffect(() => {
     if (checked !== prevValueRef.current) {
-      setFocusedPosition({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
       updateCell(row.index, column.id as ColumnKeys, checked ? 'x' : '')
       prevValueRef.current = checked
     }
@@ -31,7 +48,9 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
     <div className="flex">
       <input
         className="m-auto"
-        ref={focusElRef}
+        ref={(el) =>
+          updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
+        }
         type="checkbox"
         checked={checked}
         onChange={handleChange}
@@ -40,9 +59,13 @@ export const renderCheckboxCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
   )
 }
 
-export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
+export const renderActivityCell: FC<CellProps> = ({
+  getValue,
+  row,
+  column,
+  updateFocusableElement,
+}) => {
   const { updateCell } = usePlanContext()
-  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -64,7 +87,9 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
 
   return (
     <DefaultInput
-      ref={focusElRef}
+      ref={(el: HTMLInputElement) =>
+        updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
+      }
       type="text"
       value={input}
       onChange={handleChange}
@@ -73,8 +98,12 @@ export const renderActivityCell: PlanTableColumnDef['cell'] = ({ getValue, row, 
   )
 }
 
-export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
+export const renderStartCell: FC<CellProps> = ({
+  getValue,
+  row,
+  column,
+  updateFocusableElement,
+}) => {
   const { updateCell } = usePlanContext()
 
   const prevValueRef = useRef(getValue() as string)
@@ -98,7 +127,9 @@ export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, col
 
   return (
     <DefaultInput
-      ref={focusElRef}
+      ref={(el: HTMLInputElement) =>
+        updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
+      }
       type="text"
       className="!w-10"
       value={input}
@@ -108,8 +139,12 @@ export const renderStartCell: PlanTableColumnDef['cell'] = ({ getValue, row, col
   )
 }
 
-export const renderLengthCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  const { focusElRef } = useFocusOnMount(row.index, column.id as ColumnKeys)
+export const renderLengthCell: FC<CellProps> = ({
+  getValue,
+  row,
+  column,
+  updateFocusableElement,
+}) => {
   const { updateCell } = usePlanContext()
 
   const prevValueRef = useRef(getValue() as string)
@@ -132,7 +167,9 @@ export const renderLengthCell: PlanTableColumnDef['cell'] = ({ getValue, row, co
 
   return (
     <DefaultInput
-      ref={focusElRef}
+      ref={(el: HTMLInputElement) =>
+        updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
+      }
       type="number"
       className="!w-10"
       value={input}
@@ -142,6 +179,6 @@ export const renderLengthCell: PlanTableColumnDef['cell'] = ({ getValue, row, co
   )
 }
 
-export const renderActLenCell: PlanTableColumnDef['cell'] = ({ getValue, row, column }) => {
-  return getValue()
+export const renderActLenCell: FC<CellProps> = ({ getValue, row, column }) => {
+  return <>{getValue()}</>
 }
