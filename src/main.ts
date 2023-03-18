@@ -223,10 +223,10 @@ export default class SuperPlan extends Plugin {
 
     this.registerEditorExtension(
       EditorView.updateListener.of((update) => {
-        if (!update.docChanged) return
+        const doc = update.view.state.doc
+        if (!update.docChanged || !(doc as any).text) return
         update.changes.iterChanges((fromA, toA, fromB, toB) => {
           // Get the starting and ending line numbers for the changed lines
-          const doc = update.view.state.doc
           const changedLineStart = doc.lineAt(fromB).number - 1
           const changedLineEnd = doc.lineAt(toB).number - 1
 
@@ -262,6 +262,8 @@ export default class SuperPlan extends Plugin {
             lineStart: selection.lineStart,
             lineEnd: selection.lineEnd,
           })
+
+          console.log('let{sync,container}=plansMap.get -> sync:', sync.getInfo())
 
           if (!container) {
             const newContainer = (container = document.createElement('div'))

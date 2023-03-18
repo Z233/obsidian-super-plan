@@ -113,16 +113,23 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       let nextColumn = (column + 1) as Columns
       let nextRowIndex = rowIndex
 
-      if (nextColumn > Columns.R) {
+      const isLastColumn = nextColumn > Columns.R
+
+      if (isLastColumn) {
         nextColumn = Columns.Activity
         nextRowIndex += 1
-        setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
-        if (nextRowIndex === tableHeight - 1) {
-          insertRowBelow(rowIndex)
-        }
-      } else {
-        setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
       }
+
+      const isLastRow = nextRowIndex === tableHeight - 1
+      if (isLastColumn && isLastRow) {
+        insertRowBelow(rowIndex)
+        Promise.resolve().then(() => {
+          setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+        })
+        return
+      }
+
+      setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
     }
   }
 
