@@ -7,8 +7,8 @@ import {
   TableRow,
 } from '@tgrosinger/md-advanced-tables'
 import { MarkdownView, type App, type TFile } from 'obsidian'
-import { UpdateFlag } from 'src/constants'
 import type { Maybe } from 'src/types'
+import { debounceRAF } from 'src/util/helper'
 import { ObsidianTextEditor } from './obsidian-text-editor'
 
 type MdTableEditorOptions = {
@@ -34,18 +34,12 @@ export class MdTableEditor {
   private _startRow: number
   private _endRow: number
 
-  private _changeListener: Maybe<() => void>
-
   constructor({ app, file, table, startRow, endRow }: MdTableEditorOptions) {
     this._app = app
     this._file = file
     this._table = table
     this._startRow = startRow
     this._endRow = endRow
-  }
-
-  setChangeListener(listener: () => void) {
-    this._changeListener = listener
   }
 
   setRange(startRow: number, endRow: number) {
@@ -90,7 +84,9 @@ export class MdTableEditor {
     return this._focusState
   }
 
-  applyChanges() {
+  applyChanges = debounceRAF(this._applyChangesOrigin.bind(this))
+
+  private _applyChangesOrigin() {
     this._ensureEditorLoaded()
 
     if (!this._mte) throw new Error('No active editor')
@@ -99,8 +95,6 @@ export class MdTableEditor {
     const newLines = formatted.table.toLines()
 
     this._mte._updateLines(this._startRow, this._endRow + 1, newLines)
-
-    // this._mte._updateLines(this._startRow, this._startRow + 1, [newLines[0] + ' '])
   }
 
   private _ensureEditorLoaded() {

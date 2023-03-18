@@ -12,13 +12,14 @@ import { PlanMenu } from './menu'
 import type { Maybe } from 'src/types'
 import type { Position } from './PlanTable'
 import { ColumnKeys } from 'src/constants'
+import { getNowMins, parseMins2Time } from 'src/util/helper'
 
 export const TableRow: FC<{
   row: Row<PlanDataItem>
   setFocusedPosition: StateUpdater<Maybe<Position>>
 }> = (props) => {
   const { row, setFocusedPosition } = props
-  const { deleteRow, insertRowBelow, moveRow } = usePlan()
+  const { deleteRow, insertRowBelow, moveRow, updateCell } = usePlan()
 
   const [highlighted, setHighlighted] = useState(false)
   const [isHover, setIsHover] = useState(false)
@@ -60,7 +61,10 @@ export const TableRow: FC<{
     setHighlighted(true)
 
     const menu = new PlanMenu({
-      onBegin: () => {},
+      onBegin: () => {
+        updateCell(rowIndex, ColumnKeys.F, 'x')
+        updateCell(rowIndex, ColumnKeys.Start, parseMins2Time(getNowMins()))
+      },
       onDeleteRow: () => deleteRow(rowIndex),
     })
 

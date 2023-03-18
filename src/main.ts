@@ -263,8 +263,6 @@ export default class SuperPlan extends Plugin {
             lineEnd: selection.lineEnd,
           })
 
-          console.log('let{sync,container}=plansMap.get -> sync:', sync.getInfo())
-
           if (!container) {
             const newContainer = (container = document.createElement('div'))
             renderPlan(container, sync, this.app, file)

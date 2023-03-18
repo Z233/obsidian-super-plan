@@ -203,6 +203,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
 
                 return (
                   <td
+                    key={`${cell.column.id}-${row.original[cell.column.id as ColumnKeys]}`}
                     data-row={row.index}
                     data-column={cell.column.id}
                     onMouseDown={handleCellMouseDown}

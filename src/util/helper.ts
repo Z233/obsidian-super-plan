@@ -52,17 +52,6 @@ export function formatNumberCell(content: number) {
     : content
 }
 
-export function generateActivityData(activity: Activity): ActivityData {
-  return {
-    activity: activity.activity,
-    length: formatNumberCell(activity.length),
-    start: Number.isNaN(activity.start) ? INVAlID_NUMBER_LITERAL : parseMins2Time(activity.start),
-    f: activity.isFixed ? 'x' : '',
-    r: activity.isRigid ? 'x' : '',
-    actLen: formatNumberCell(activity.actLen),
-  }
-}
-
 export function check(value: string) {
   return value === 'x' ? true : false
 }
@@ -119,17 +108,18 @@ export function transformTable(table: Table): ActivitiesData {
 
 export const checkIsDataviewEnabled = () => !!getAPI()
 
-export function debounceWithRAF(cb: (...args: any) => any) {
-  let scheduled = false
+export function debounceRAF(cb: (...args: any[]) => any) {
+  let rAFId: number | null = null
 
-  return function debounced(...args: any) {
-    if (!scheduled) {
-      scheduled = true
+  return (...args: any[]) => {
+    const context = this
 
-      requestAnimationFrame(() => {
-        cb(...args)
-        scheduled = false
-      })
+    if (rAFId) {
+      cancelAnimationFrame(rAFId)
     }
+
+    rAFId = requestAnimationFrame(() => {
+      cb.apply(context, args)
+    })
   }
 }
