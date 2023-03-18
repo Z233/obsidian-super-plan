@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
-import { useEffect, useState, type FC, createElement, useRef } from 'preact/compat'
+import { useEffect, useState, type FC, createElement, useRef, useLayoutEffect } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { PlanData, PlanDataItem } from 'src/schemas'
@@ -74,10 +74,12 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     }
   }
 
-  if (focusedPosition) {
-    const { rowIndex, columnKey } = focusedPosition
-    focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)?.focus()
-  }
+  useEffect(() => {
+    if (focusedPosition) {
+      const { rowIndex, columnKey } = focusedPosition
+      focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)?.focus()
+    }
+  }, [focusedPosition])
 
   const [highlightedRow, setHighlightedRow] = useState(-1)
 
@@ -185,7 +187,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.original.id} row={row}>
+            <TableRow key={row.original.id} row={row} setFocusedPosition={setFocusedPosition}>
               {row.getVisibleCells().map((cell) => {
                 const isFocused =
                   highlightedRow < 0 &&

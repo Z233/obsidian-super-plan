@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'preact/compat'
+import { useEffect, useState, type FC, type StateUpdater } from 'preact/compat'
 import type { Row } from '@tanstack/react-table'
 import type { PlanDataItem } from 'src/schemas'
 import clsx from 'clsx'
@@ -8,9 +8,16 @@ import { usePlan } from './context'
 import { useDrag, useDrop } from 'react-dnd'
 import { Icon } from './lib'
 import { getEmptyImage } from 'react-dnd-html5-backend'
+import { PlanMenu } from './menu'
+import type { Maybe } from 'src/types'
+import type { Position } from './PlanTable'
+import { ColumnKeys } from 'src/constants'
 
-export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
-  const { row } = props
+export const TableRow: FC<{
+  row: Row<PlanDataItem>
+  setFocusedPosition: StateUpdater<Maybe<Position>>
+}> = (props) => {
+  const { row, setFocusedPosition } = props
   const { deleteRow, insertRowBelow, moveRow } = usePlan()
 
   const [highlighted, setHighlighted] = useState(false)
@@ -42,6 +49,9 @@ export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
 
   const handlePlusClick = (rowIndex: number) => {
     insertRowBelow(rowIndex)
+    Promise.resolve().then(() => {
+      setFocusedPosition({ rowIndex: rowIndex + 1, columnKey: ColumnKeys.Activity })
+    })
   }
 
   const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
@@ -49,16 +59,10 @@ export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
 
     setHighlighted(true)
 
-    const menu = new Menu()
-
-    menu.addItem((item) =>
-      item
-        .setTitle('Delete')
-        .setIcon('trash')
-        .onClick(() => {
-          deleteRow(rowIndex)
-        })
-    )
+    const menu = new PlanMenu({
+      onBegin: () => {},
+      onDeleteRow: () => deleteRow(rowIndex),
+    })
 
     menu.onHide(() => {
       setHighlighted(false)
