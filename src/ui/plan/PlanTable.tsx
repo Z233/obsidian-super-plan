@@ -12,7 +12,7 @@ import {
   renderStartCell,
   type CellProps,
 } from './cells'
-import { usePlanContext } from './context'
+import { usePlan } from './context'
 import { DragLayer } from './DragLayer'
 import { focusStyle, indexCellStyle } from './styles'
 import { TableRow } from './TableRow'
@@ -59,7 +59,7 @@ export type Position = {
 
 export const PlanTable: FC<{ data: PlanData }> = (props) => {
   const { data } = props
-  const { insertRowBelow } = usePlanContext()
+  const { insertRowBelow } = usePlan()
 
   const [focusedPosition, setFocusedPosition] = useState<Maybe<Position>>()
   const focusableElementsRef = useRef<Map<string, HTMLInputElement>>(new Map())

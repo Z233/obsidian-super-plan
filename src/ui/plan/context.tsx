@@ -8,10 +8,7 @@ import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { PlanDataItem } from 'src/schemas'
 
 type PlanContextValue = {
-  updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
-  deleteRow: (row: number) => void
-  insertRowBelow: (row: number) => void
-  moveRow: (from: number, to: number) => void
+  mte: MdTableEditor
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
@@ -25,21 +22,47 @@ export type FocusPosition = {
 
 export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
   const { mte } = props
-  const updatedCells = useRef(new Set<keyof PlanDataItem>())
 
-  const updateCell: PlanContextValue['updateCell'] = (row, columnKey, value) => {
-    updatedCells.current.add(columnKey)
+  return (
+    <PlanContext.Provider
+      value={{
+        mte,
+      }}
+    >
+      <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>
+    </PlanContext.Provider>
+  )
+}
 
+function usePlanContext() {
+  const context = useContext(PlanContext)
+  if (!context) {
+    throw new Error('usePlanContext must be used within <PlanProvider />')
+  }
+  return context
+}
+
+type PlanActions = {
+  updateCell: (row: number, columnKey: ColumnKeys, value: string) => void
+  deleteRow: (row: number) => void
+  insertRowBelow: (row: number) => void
+  moveRow: (from: number, to: number) => void
+}
+
+export function usePlan() {
+  const { mte } = usePlanContext()
+
+  const updateCell: PlanActions['updateCell'] = (row, columnKey, value) => {
     mte.setCellAt(row, ColumnKeysMap[columnKey], value)
     mte.applyChanges()
   }
 
-  const deleteRow: PlanContextValue['deleteRow'] = (row) => {
+  const deleteRow: PlanActions['deleteRow'] = (row) => {
     mte.deleteRow(row)
     mte.applyChanges()
   }
 
-  const insertRowBelow: PlanContextValue['insertRowBelow'] = (row) => {
+  const insertRowBelow: PlanActions['insertRowBelow'] = (row) => {
     const cells = Array.from({ length: 7 }, (_, i) =>
       i === 0 ? new TableCell(nanoid(6)) : new TableCell(' ')
     )
@@ -48,29 +71,15 @@ export const PlanProvider: FC<{ mte: MdTableEditor }> = (props) => {
     mte.applyChanges()
   }
 
-  const moveRow: PlanContextValue['moveRow'] = (from, to) => {
+  const moveRow: PlanActions['moveRow'] = (from, to) => {
     mte.moveRow(from, to)
     mte.applyChanges()
   }
 
-  return (
-    <PlanContext.Provider
-      value={{
-        updateCell,
-        deleteRow,
-        insertRowBelow,
-        moveRow,
-      }}
-    >
-      <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>
-    </PlanContext.Provider>
-  )
-}
-
-export function usePlanContext() {
-  const context = useContext(PlanContext)
-  if (!context) {
-    throw new Error('useMteContext must be used within <MteProvider />')
+  return {
+    updateCell,
+    deleteRow,
+    insertRowBelow,
+    moveRow,
   }
-  return context
 }

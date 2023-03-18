@@ -1,18 +1,11 @@
 import type { CellContext } from '@tanstack/react-table'
-import {
-  useEffect,
-  useState,
-  useRef,
-  type ChangeEventHandler,
-  type FC,
-  type Ref,
-} from 'preact/compat'
+import { useEffect, useState, useRef, type ChangeEventHandler, type FC } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeysMap, Columns, type ColumnKeys } from 'src/constants'
 import type { PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
 import { check } from 'src/util/helper'
-import { usePlanContext } from './context'
+import { usePlan } from './context'
 import { DefaultInput } from './lib'
 import type { Position } from './PlanTable'
 
@@ -27,7 +20,7 @@ export const renderCheckboxCell: FC<CellProps> = ({
   column,
   updateFocusableElement,
 }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell } = usePlan()
 
   const prevValueRef = useRef(check(getValue() as string))
   const [checked, setChecked] = useState(() => prevValueRef.current)
@@ -65,7 +58,7 @@ export const renderActivityCell: FC<CellProps> = ({
   column,
   updateFocusableElement,
 }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell } = usePlan()
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -104,7 +97,7 @@ export const renderStartCell: FC<CellProps> = ({
   column,
   updateFocusableElement,
 }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell } = usePlan()
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -145,7 +138,7 @@ export const renderLengthCell: FC<CellProps> = ({
   column,
   updateFocusableElement,
 }) => {
-  const { updateCell } = usePlanContext()
+  const { updateCell } = usePlan()
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)

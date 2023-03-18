@@ -4,14 +4,14 @@ import type { PlanDataItem } from 'src/schemas'
 import clsx from 'clsx'
 import { dropOverStyle, focusStyle, indexCellStyle } from './styles'
 import { getIcon, Menu } from 'obsidian'
-import { usePlanContext } from './context'
+import { usePlan } from './context'
 import { useDrag, useDrop } from 'react-dnd'
 import { Icon } from './lib'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 
 export const TableRow: FC<{ row: Row<PlanDataItem> }> = (props) => {
   const { row } = props
-  const { deleteRow, insertRowBelow, moveRow } = usePlanContext()
+  const { deleteRow, insertRowBelow, moveRow } = usePlan()
 
   const [highlighted, setHighlighted] = useState(false)
   const [isHover, setIsHover] = useState(false)
