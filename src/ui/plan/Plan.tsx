@@ -18,6 +18,7 @@ import 'uno.css'
 import type { CodeBlockSync } from 'src/editor/code-block-sync'
 import { Scheduler } from 'src/scheduler'
 import type { ColumnKeys } from 'src/constants'
+import { shallowCompare } from 'src/util/helper'
 
 type MteLoader = ({
   table,
@@ -28,10 +29,6 @@ type MteLoader = ({
   startRow: number
   endRow: number
 }) => MdTableEditor
-
-const shallowCompare = (obj1: Record<any, any>, obj2: Record<any, any>) =>
-  Object.keys(obj1).length === Object.keys(obj2).length &&
-  Object.keys(obj1).every((key) => obj2.hasOwnProperty(key) && obj1[key] === obj2[key])
 
 const Plan: FC<{
   sync: CodeBlockSync

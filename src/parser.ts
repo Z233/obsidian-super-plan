@@ -15,9 +15,16 @@ import {
   _createIsTableFormulaRegex,
   _createIsTableRowRegex,
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
-import { ActivityDataColumn, PlanLinesLiteral } from './constants'
+import {
+  ActivityDataColumn,
+  ColumnKeys,
+  ColumnKeysMap,
+  Columns,
+  PlanLinesLiteral,
+} from './constants'
 import { getActivityDataKey } from './util/helper'
 import { isArray, isNumber } from 'lodash-es'
+import type { Column } from '@tanstack/react-table'
 
 export class MdTableParser {
   static parse(markupOrLines: string | string[]) {
@@ -67,6 +74,25 @@ export class Parser {
 
   checkIsTemplate() {}
 
+  findPlanTableV2(content: string): Maybe<PlanTableInfo> {
+    const RE = /(?<=^```super-plan\n)[\s\S]*(?=```$)/gm
+    const match = RE.exec(content)
+    if (!match) return null
+
+    const lines = match[0].split('\n')
+
+    const posStart = match.index
+    const lineStart = content.slice(0, posStart - 1).split('\n').length
+    const lineEnd = lineStart + lines.length - 2
+
+    const table = readTable(lines, defaultOptions)
+    return {
+      range: new Range(new Point(lineStart, 0), new Point(lineEnd, 0)),
+      lines,
+      table,
+    }
+  }
+
   findPlanTable(contentOrLines: string | string[]): Maybe<PlanTableInfo> {
     const rows = isArray(contentOrLines) ? contentOrLines : contentOrLines.split('\n')
     const re = _createIsTableRowRegex(this.settings.asOptions().leftMarginChars)
@@ -114,7 +140,7 @@ export class Parser {
       row.reduce(
         (data, v, i) => ({
           ...data,
-          [ActivityDataColumn[i]]: v,
+          [ColumnKeysMap[i as Columns]]: v,
         }),
         {} as ActivityData
       )

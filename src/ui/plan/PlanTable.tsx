@@ -2,6 +2,7 @@ import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tan
 import { useEffect, useState, type FC, createElement, useRef, useLayoutEffect } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
+import { Events, GlobalMediator } from 'src/mediator'
 import type { PlanData, PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
 import {
@@ -81,7 +82,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     }
   }, [focusedPosition])
 
-  const [highlightedRow, setHighlightedRow] = useState(-1)
+  const [highlightedId, setHighlightedId] = useState('')
 
   const table = useReactTable({
     data: data,
@@ -134,6 +135,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
   }
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
+    highlightedId && setHighlightedId('')
     const relatedTarget = e.relatedTarget
 
     if (relatedTarget) {
@@ -172,6 +174,21 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     }
   }, [])
 
+  useEffect(() => {
+    const mediator = GlobalMediator.getInstance()
+    const unsubscribe = mediator.subscribe(Events.JUMP_TO_ACTIVITY, ({ activityId }) => {
+      setHighlightedId(activityId)
+      setFocusedPosition({
+        rowIndex: data.findIndex((act) => act.id === activityId),
+        columnKey: ColumnKeys.Activity,
+      })
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [])
+
   return (
     <div className="relative">
       <DragLayer
@@ -194,10 +211,16 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.original.id} row={row} setFocusedPosition={setFocusedPosition}>
+            <TableRow
+              key={row.original.id}
+              row={row}
+              highlighted={highlightedId === row.original.id}
+              highlightRow={setHighlightedId}
+              setFocusedPosition={setFocusedPosition}
+            >
               {row.getVisibleCells().map((cell) => {
                 const isFocused =
-                  highlightedRow < 0 &&
+                  highlightedId.length <= 0 &&
                   focusedPosition?.rowIndex === row.index &&
                   focusedPosition?.columnKey === cell.column.id
 

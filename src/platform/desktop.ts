@@ -6,6 +6,7 @@ import type { DataStore } from 'src/store'
 import { PlanTracker } from 'src/tracker/plan-tracker'
 import { Timer } from 'src/tracker/timer'
 import type { Maybe, ActivitiesData } from 'src/types'
+import { shallowCompare } from 'src/util/helper'
 import { MiniTracker } from 'src/window'
 
 function desktopInit(
@@ -25,11 +26,10 @@ function desktopInit(
   const tick = async () => {
     const content = await file.getTodayPlanFileContent()
     if (content) {
-      const tableInfo = parser.findPlanTable(content)
+      const tableInfo = parser.findPlanTableV2(content)
       if (tableInfo) {
-        const { table } = tableInfo
-        const activitiesData = parser.transformTable(table)
-        if (!Object.is(activitiesData, lastActivitiesData)) {
+        const activitiesData = parser.transformTable(tableInfo.table)
+        if (!lastActivitiesData || !shallowCompare(activitiesData, lastActivitiesData)) {
           lastActivitiesData = activitiesData
           tracker.setData(activitiesData, tableInfo)
         }

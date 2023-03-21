@@ -10,6 +10,7 @@ import StatusBar from './status-bar/StatusBar.svelte'
 import { Scheduler } from 'src/scheduler'
 import { TableEditor } from 'src/editor/table-editor'
 import { Timer } from './timer'
+import { Events, GlobalMediator } from 'src/mediator'
 
 type StatusBarProps = StatusBar['$$prop_def']
 
@@ -119,50 +120,25 @@ export class PlanTracker {
     }
 
     const editor = workspace.activeEditor!.editor! as UnsafeEditor
-
-    const { range } = this.tableInfo
-
-    const activityIndex = this.scheduler.activities.findIndex((a) => isEqual(a, activity))
-    const rowIndex = activityIndex + 2
-
-    const targetLine = range.start.row + rowIndex
-
     editor.focus()
-    editor.setCursor(targetLine, CURSOR_CH_AFTER_FOCUS)
 
-    setImmediate(() => {
-      editor.scrollIntoView(
-        {
-          from: {
-            line: targetLine,
-            ch: CURSOR_CH_AFTER_FOCUS,
-          },
-          to: {
-            line: targetLine,
-            ch: CURSOR_CH_AFTER_FOCUS,
-          },
-        },
-        true
-      )
+    GlobalMediator.getInstance().send(Events.JUMP_TO_ACTIVITY, { activityId: activity.id })
 
-      editor.addHighlights(
-        [
-          {
-            from: {
-              line: targetLine,
-              ch: 0,
-            },
-            to: {
-              line: targetLine + 1,
-              ch: 0,
-            },
-          },
-        ],
-        HIGHLIGHT_CLASS_NAME,
-        true,
-        true
-      )
-    })
+    // setImmediate(() => {
+    //   editor.scrollIntoView(
+    //     {
+    //       from: {
+    //         line: targetLine,
+    //         ch: CURSOR_CH_AFTER_FOCUS,
+    //       },
+    //       to: {
+    //         line: targetLine,
+    //         ch: CURSOR_CH_AFTER_FOCUS,
+    //       },
+    //     },
+    //     true
+    //   )
+    // })
   }
 
   private computeProgress() {

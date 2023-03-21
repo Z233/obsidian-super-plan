@@ -7,7 +7,7 @@ import { SuperPlanSettingsTab } from './setting/settings-tab'
 import { SplitConfirmModal } from './ui/modals'
 import type { Maybe } from './types'
 import { ActivitySuggester } from './ui/suggest/activity-suggester'
-import { ActivityProvider } from './ui/suggest/activity-provider'
+import type { ActivityProvider } from './ui/suggest/activity-provider'
 import { MiniTracker } from './window'
 import { DataStore, SettingsDataKey } from './store'
 import { loadIcons } from './ui/icons'
@@ -43,15 +43,11 @@ export default class SuperPlan extends Plugin {
       desktopInit(this.app, this.manifest, this.settings, this.store, this.addStatusBarItem())
     }
 
-    const editorExtension = new EditorExtension(this, this.parser)
-    this.registerEditorExtension(editorExtension.makeEditorRemappingExtension())
-    this.registerEditorExtension(editorExtension.makeEditorUpdateListenerExtension())
-
-    if (this.settings.enableActivityAutoCompletion) {
-      const provider = (this.activityProvider = new ActivityProvider(this.settings))
-      editorExtension.setProvider(provider)
-      this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
-    }
+    // if (this.settings.enableActivityAutoCompletion) {
+    //   const provider = (this.activityProvider = new ActivityProvider(this.settings))
+    //   editorExtension.setProvider(provider)
+    //   this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
+    // }
 
     this.registerCodeBlockProcessor()
 
@@ -201,10 +197,10 @@ export default class SuperPlan extends Plugin {
 
   private registerCodeBlockProcessor() {
     const queue: Set<() => void> = new Set()
-    let activeEditor: Maybe<Editor> = null
+    let activeFile: Maybe<TFile> = null
 
     const plansMap = new WeakMap<
-      Editor,
+      TFile,
       {
         container: HTMLElement
         sync: CodeBlockSync
@@ -213,7 +209,8 @@ export default class SuperPlan extends Plugin {
 
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', (leaf) => {
-        activeEditor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
+        activeFile = this.app.workspace.getActiveFile()
+        // activeEditor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
         if (queue.size) {
           queue.forEach((job) => job())
           queue.clear()
@@ -230,8 +227,8 @@ export default class SuperPlan extends Plugin {
           const changedLineStart = doc.lineAt(fromB).number - 1
           const changedLineEnd = doc.lineAt(toB).number - 1
 
-          if (activeEditor && plansMap.has(activeEditor)) {
-            const { sync } = plansMap.get(activeEditor)!
+          if (activeFile && plansMap.has(activeFile)) {
+            const { sync } = plansMap.get(activeFile)!
             const { lineStart, lineEnd } = sync.getInfo()
 
             if (changedLineStart >= lineStart + 1 && changedLineEnd <= lineEnd - 1) {
@@ -251,8 +248,8 @@ export default class SuperPlan extends Plugin {
         const selection = ctx.getSectionInfo(el)
         const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
 
-        if (selection && activeEditor) {
-          let { sync, container } = plansMap.get(activeEditor) || {
+        if (selection && activeFile) {
+          let { sync, container } = plansMap.get(activeFile) || {
             sync: new CodeBlockSync(),
             container: null,
           }
@@ -266,14 +263,14 @@ export default class SuperPlan extends Plugin {
           if (!container) {
             const newContainer = (container = document.createElement('div'))
             renderPlan(container, sync, this.app, file)
-            plansMap.set(activeEditor, { sync, container: newContainer })
+            plansMap.set(activeFile, { sync, container: newContainer })
           }
 
           el.insertBefore(container, null)
         }
       }
 
-      if (!activeEditor) {
+      if (!activeFile) {
         queue.add(job)
       } else {
         job()

@@ -17,11 +17,14 @@ import { getNowMins, parseMins2Time } from 'src/util/helper'
 export const TableRow: FC<{
   row: Row<PlanDataItem>
   setFocusedPosition: StateUpdater<Maybe<Position>>
+  highlighted: boolean
+  highlightRow: (activityId: string) => void
 }> = (props) => {
-  const { row, setFocusedPosition } = props
+  const { row, setFocusedPosition, highlighted, highlightRow } = props
+  const activityId = row.original.id
+
   const { deleteRow, insertRowBelow, moveRow, updateCell } = usePlan()
 
-  const [highlighted, setHighlighted] = useState(false)
   const [isHover, setIsHover] = useState(false)
 
   const [{ isDragging }, dragRef, dragPreview] = useDrag({
@@ -58,7 +61,7 @@ export const TableRow: FC<{
   const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
     e.preventDefault()
 
-    setHighlighted(true)
+    highlightRow(activityId)
 
     const menu = new PlanMenu({
       onBegin: () => {
@@ -69,7 +72,7 @@ export const TableRow: FC<{
     })
 
     menu.onHide(() => {
-      setHighlighted(false)
+      highlightRow(activityId)
     })
 
     menu.showAtMouseEvent(e)
