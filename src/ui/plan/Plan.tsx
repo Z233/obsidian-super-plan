@@ -31,10 +31,11 @@ type MteLoader = ({
 }) => MdTableEditor
 
 const Plan: FC<{
+  app: App
   sync: CodeBlockSync
   mteLoader: MteLoader
 }> = (props) => {
-  const { sync, mteLoader } = props
+  const { app, sync, mteLoader } = props
 
   const { source, lineStart, lineEnd } = useSyncExternalStore(sync.subscribe.bind(sync), () => {
     return sync.getInfo()
@@ -84,7 +85,7 @@ const Plan: FC<{
   }
 
   return (
-    <PlanProvider mte={mte}>
+    <PlanProvider mte={mte} app={app}>
       <PlanTable data={scheduledData} />
     </PlanProvider>
   )
@@ -103,5 +104,5 @@ export const renderPlan = (container: HTMLElement, sync: CodeBlockSync, app: App
   const mteLoader: MteLoader = ({ table, startRow, endRow }) =>
     new MdTableEditor({ app, file, table, startRow, endRow })
 
-  render(<Plan sync={sync} mteLoader={mteLoader} />, container)
+  render(<Plan app={app} sync={sync} mteLoader={mteLoader} />, container)
 }

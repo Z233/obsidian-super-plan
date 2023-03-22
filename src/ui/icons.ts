@@ -109,7 +109,9 @@ export function loadIcons() {
 `
   )
 
-  addIcon('clipboard-plus', `<svg
+  addIcon(
+    'clipboard-plus',
+    `<svg
   width="100"
   height="100"
   viewBox="0 0 100 100"
@@ -144,9 +146,12 @@ export function loadIcons() {
     </clipPath>
   </defs>
 </svg>
-`)
+`
+  )
 
-addIcon('cut', `<svg
+  addIcon(
+    'cut',
+    `<svg
   width="100"
   height="100"
   viewBox="0 0 100 100"
@@ -189,5 +194,6 @@ addIcon('cut', `<svg
     </clipPath>
   </defs>
 </svg>
-`)
+`
+  )
 }

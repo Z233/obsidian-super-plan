@@ -42,6 +42,14 @@ export class MdTableEditor {
     this._endRow = endRow
   }
 
+  getHeaderWidth() {
+    return this._table.getHeaderWidth()
+  }
+
+  getRow(row: number) {
+    return this._table.getRows()[row]
+  }
+
   setRange(startRow: number, endRow: number) {
     this._startRow = startRow
     this._endRow = endRow
