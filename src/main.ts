@@ -1,12 +1,8 @@
 import { Editor, MarkdownView, Plugin, Platform, type Command, TFile } from 'obsidian'
-import { Parser } from './parser'
 import { TableEditor } from './editor/table-editor'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
-import { EditorExtension } from './editor/editor-extension'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
-import { SplitConfirmModal } from './ui/modals'
 import type { Maybe } from './types'
-import { ActivitySuggester } from './ui/suggest/activity-suggester'
 import type { ActivityProvider } from './ui/suggest/activity-provider'
 import { MiniTracker } from './window'
 import { DataStore, SettingsDataKey } from './store'
@@ -14,7 +10,6 @@ import { loadIcons } from './ui/icons'
 import { desktopInit } from './platform/desktop'
 import { Timer } from './tracker/timer'
 import './style.css'
-import type { MdTableEditor } from './editor/md-table-editor'
 import { renderPlan } from './ui/plan/Plan'
 import { CodeBlockSync } from './editor/code-block-sync'
 import { EditorView } from '@codemirror/view'
@@ -24,16 +19,12 @@ export default class SuperPlan extends Plugin {
   activityProvider: Maybe<ActivityProvider> = null
 
   private store: DataStore
-  private parser: Parser
-  private leafsMte: Map<string, MdTableEditor> = new Map()
 
   async onload() {
     this.store = new DataStore(this)
 
     await this.loadSettings()
     this.addSettingTab(new SuperPlanSettingsTab(this.app, this))
-
-    this.parser = new Parser(this.settings)
 
     if (Platform.isDesktopApp) {
       const timer = Timer.new()
@@ -62,42 +53,6 @@ export default class SuperPlan extends Plugin {
           pe.insertPlanTable()
         })(false, editor, view)
       },
-    })
-
-    this.addCommand({
-      id: 'insert-activity-below-current',
-      name: 'Insert activity below current',
-      icon: 'row-insert-bottom',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.insertActivityBelow()
-      }),
-    })
-
-    this.addCommand({
-      id: 'insert-activity-above-current',
-      name: 'Insert activity above current',
-      icon: 'row-insert-top',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.insertActivityAbove()
-      }),
-    })
-
-    this.addCommand({
-      id: 'begin-activity',
-      name: 'Begin activity',
-      icon: 'play',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.beginCursorActivity()
-      }),
-    })
-
-    this.addCommand({
-      id: 'split-activity',
-      name: 'Split activity',
-      icon: 'separator-horizontal',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        new SplitConfirmModal(this.app, pe).open()
-      }),
     })
 
     this.addCommand({

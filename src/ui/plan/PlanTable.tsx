@@ -75,14 +75,15 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     }
   }
 
-  useLayoutEffect(() => {
-    if (focusedPosition) {
-      const { rowIndex, columnKey } = focusedPosition
-      setImmediate(() => {
-        focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)?.focus()
-      })
-    }
-  }, [focusedPosition])
+  if (focusedPosition) {
+    const { rowIndex, columnKey } = focusedPosition
+    setImmediate(() => {
+      const el = focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)
+      if (el) {
+        el.focus()
+      }
+    })
+  }
 
   const [highlightedId, setHighlightedId] = useState('')
 

@@ -72,9 +72,7 @@ export const renderActivityCell: FC<CellProps> = ({
     if (input !== prevValueRef.current) {
       prevValueRef.current = input
 
-      setImmediate(() => {
-        updateCell(row.index, column.id as ColumnKeys, input)
-      })
+      updateCell(row.index, column.id as ColumnKeys, input)
     }
   }
 
@@ -111,10 +109,8 @@ export const renderStartCell: FC<CellProps> = ({
     if (input !== prevValueRef.current) {
       prevValueRef.current = input
 
-      setImmediate(() => {
-        updateCell(row.index, column.id as ColumnKeys, input)
-        updateCell(row.index, ColumnKeysMap[Columns.F], 'x')
-      })
+      updateCell(row.index, column.id as ColumnKeys, input)
+      updateCell(row.index, ColumnKeysMap[Columns.F], 'x')
     }
   }
 
@@ -152,9 +148,7 @@ export const renderLengthCell: FC<CellProps> = ({
     if (input !== prevValueRef.current) {
       prevValueRef.current = input
 
-      setImmediate(() => {
-        updateCell(row.index, column.id as ColumnKeys, input)
-      })
+      updateCell(row.index, column.id as ColumnKeys, input)
     }
   }
 

@@ -19,11 +19,11 @@ export const DragLayer: FC<{
     })
   )
 
-  if (!isDragging) {
+  if (!isDragging || !currentOffset) {
     return null
   }
 
-  const { x, y: currentY } = currentOffset!
+  const { x, y: currentY } = currentOffset
 
   let y = currentY - parentOffsetY
   y = y < 0 ? 0 : y
