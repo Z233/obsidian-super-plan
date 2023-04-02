@@ -1,19 +1,63 @@
-import { useEffect, useState, type FC, type StateUpdater } from 'preact/compat'
+import { useEffect, useState, useCallback, type FC, type StateUpdater } from 'preact/compat'
 import type { Row } from '@tanstack/react-table'
 import type { PlanDataItem } from 'src/schemas'
 import clsx from 'clsx'
 import { dropOverStyle, focusStyle, indexCellStyle } from './styles'
-import { getIcon, Menu } from 'obsidian'
-import { usePlan, usePlanContext } from './context'
+import { getIcon } from 'obsidian'
+import { usePlan } from './context'
 import { useDrag, useDrop } from 'react-dnd'
 import { Icon } from './lib'
 import { getEmptyImage } from 'react-dnd-html5-backend'
-import { PlanMenu } from './menu'
+import { PlanMenu, type PlanMenuItem } from './menu'
 import type { Maybe } from 'src/types'
 import type { Position } from './PlanTable'
 import { ColumnKeys } from 'src/constants'
 import { check, getNowMins, parseMins2Time } from 'src/util/helper'
 import { SplitConfirmModalV2 } from '../modals'
+
+function useTableRowActions(row: Row<PlanDataItem>) {
+  const { deleteRow, updateCell, duplicateRow } = usePlan()
+
+  const handleBegin = useCallback(() => {
+    updateCell(row.index, ColumnKeys.F, 'x')
+    updateCell(row.index, ColumnKeys.Start, parseMins2Time(getNowMins()))
+  }, [row])
+
+  const handleCancel = useCallback(() => {
+    updateCell(row.index, ColumnKeys.F, '')
+    updateCell(row.index, ColumnKeys.Start, '')
+  }, [row])
+
+  const handleSplit = useCallback(async () => {
+    const activity = row.original
+    const modal = new SplitConfirmModalV2(app, activity)
+    const result = await modal.open()
+    if (result.ok && result.data) {
+      const { firstLength, secondLength } = result.data
+      duplicateRow(row.index)
+      updateCell(row.index, ColumnKeys.Length, firstLength.toString())
+      updateCell(row.index + 1, ColumnKeys.Length, secondLength.toString())
+    }
+  }, [row])
+
+  const handleIgnore = useCallback(() => {
+    updateCell(row.index, ColumnKeys.F, '')
+    updateCell(row.index, ColumnKeys.Length, '0')
+    updateCell(row.index, ColumnKeys.R, '')
+  }, [row])
+
+  const handleDelete = useCallback(() => {
+    deleteRow(row.index)
+  }, [row])
+
+  return {
+    handleBegin,
+    handleCancel,
+    handleSplit,
+    handleIgnore,
+    handleDelete,
+  }
+}
 
 export const TableRow: FC<{
   row: Row<PlanDataItem>
@@ -23,9 +67,7 @@ export const TableRow: FC<{
 }> = (props) => {
   const { row, setFocusedPosition, highlighted, highlightRow } = props
   const activityId = row.original.id
-
-  const { app } = usePlanContext()
-  const { deleteRow, insertRowBelow, moveRow, updateCell, duplicateRow } = usePlan()
+  const { insertRowBelow, moveRow } = usePlan()
 
   const [isHover, setIsHover] = useState(false)
 
@@ -60,39 +102,43 @@ export const TableRow: FC<{
     })
   }
 
-  const handleBegin = () => {
-    updateCell(row.index, ColumnKeys.F, 'x')
-    updateCell(row.index, ColumnKeys.Start, parseMins2Time(getNowMins()))
-  }
+  const { handleBegin, handleCancel, handleSplit, handleIgnore, handleDelete } =
+    useTableRowActions(row)
 
-  const handleCancel = () => {
-    updateCell(row.index, ColumnKeys.F, '')
-    updateCell(row.index, ColumnKeys.Start, '')
-  }
-
-  const handleSplit = async () => {
-    const activity = row.original
-    const modal = new SplitConfirmModalV2(app, activity)
-    const result = await modal.open()
-    if (result.ok && result.data) {
-      const { firstLength, secondLength } = result.data
-      duplicateRow(row.index)
-      updateCell(row.index, ColumnKeys.Length, firstLength.toString())
-      updateCell(row.index + 1, ColumnKeys.Length, secondLength.toString())
-    }
-  }
+  const menuItems: PlanMenuItem[] = [
+    {
+      title: 'Begin',
+      icon: 'play',
+      callback: check(row.original.f) ? undefined : handleBegin,
+    },
+    {
+      title: 'Cancel',
+      icon: 'x',
+      callback: check(row.original.f) ? handleCancel : undefined,
+    },
+    {
+      title: 'Ignore',
+      icon: 'slash',
+      callback: handleIgnore,
+    },
+    {
+      title: 'Split',
+      icon: 'divide',
+      callback: handleSplit,
+    },
+    {
+      title: 'Delete',
+      icon: 'trash',
+      callback: handleDelete,
+    },
+  ].filter((item) => item.callback !== undefined)
 
   const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
     e.preventDefault()
 
     highlightRow(activityId)
 
-    const menu = new PlanMenu({
-      onBegin: check(row.original.f) ? undefined : handleBegin,
-      onCancel: check(row.original.f) ? handleCancel : undefined,
-      onSplit: handleSplit,
-      onDeleteRow: () => deleteRow(rowIndex),
-    })
+    const menu = new PlanMenu(menuItems)
 
     menu.onHide(() => {
       highlightRow(activityId)

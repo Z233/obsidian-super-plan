@@ -56,24 +56,6 @@ export default class SuperPlan extends Plugin {
     })
 
     this.addCommand({
-      id: 'ignore-activity',
-      name: 'Ignore activity',
-      icon: 'slash',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.ignoreActivity()
-      }),
-    })
-
-    this.addCommand({
-      id: 'toggle-fix-activity',
-      name: 'Toggle fix to activity',
-      icon: 'toggle-left',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.toggleFixCursorActivity()
-      }),
-    })
-
-    this.addCommand({
       id: 'unfix-all-activities',
       name: 'Unfix all activities',
       icon: 'clear-all',

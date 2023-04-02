@@ -1,30 +1,26 @@
 import { Menu } from 'obsidian'
 
+export type PlanMenuItem = {
+  title: string
+  icon: string
+  callback?: PlanMenuCallback
+}
 type PlanMenuCallback = () => void
 
 export class PlanMenu extends Menu {
-  constructor(
-    options: Partial<{
-      onBegin: PlanMenuCallback
-      onCancel: PlanMenuCallback
-      onSplit: PlanMenuCallback
-      onDeleteRow: PlanMenuCallback
-    }>
-  ) {
+  constructor(menuItems: PlanMenuItem[]) {
     super()
-
-    options.onBegin && this.addMenuItem('Begin', 'play', options.onBegin)
-    options.onCancel && this.addMenuItem('Cancel', 'x', options.onCancel)
-    options.onSplit && this.addMenuItem('Split', 'divide', options.onSplit)
-    options.onDeleteRow && this.addMenuItem('Delete', 'trash', options.onDeleteRow)
+    this.addMenuItems(menuItems)
   }
 
-  private addMenuItem(title: string, icon: string, callback: PlanMenuCallback) {
-    this.addItem((item) => {
-      item
-        .setTitle(title)
-        .setIcon(icon)
-        .onClick(() => callback())
+  private addMenuItems(menuItems: PlanMenuItem[]) {
+    menuItems.forEach((item) => {
+      this.addItem((i) => {
+        i.setTitle(item.title)
+          .setIcon(item.icon)
+          .onClick(() => item.callback?.())
+      })
     })
   }
+
 }
