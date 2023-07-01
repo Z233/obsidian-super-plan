@@ -139,24 +139,13 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
     highlightedId && setHighlightedId('')
-    const relatedTarget = e.relatedTarget
 
-    if (relatedTarget) {
-      const path = (e as any).path as HTMLElement[]
-      const startIndex = path.indexOf(relatedTarget as HTMLElement)
+    const relatedTarget = e.relatedTarget as Maybe<HTMLElement>
+    const isWithinTable = Boolean(
+      relatedTarget && relatedTarget.matchParent('[data-row][data-column]')
+    )
 
-      let isWithinTable = false
-
-      for (let i = startIndex; i < path.length; i++) {
-        const el = path[i]
-        if (el && el.dataset?.row && el.dataset?.column) {
-          isWithinTable = true
-          break
-        }
-      }
-
-      !isWithinTable && setFocusedPosition(null)
-    }
+    !isWithinTable && setFocusedPosition(null)
   }
 
   const tableWrapperRef = useRef<HTMLTableElement>(null)
