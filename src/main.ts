@@ -17,8 +17,7 @@ import { EditorView } from '@codemirror/view'
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
   activityProvider: Maybe<ActivityProvider> = null
-
-  private store: DataStore
+  store: DataStore
 
   async onload() {
     this.store = new DataStore(this)
@@ -31,7 +30,8 @@ export default class SuperPlan extends Plugin {
 
       this.registerInterval(timer.intervalId)
 
-      desktopInit(this.app, this.manifest, this.settings, this.store, this.addStatusBarItem())
+      // desktopInit(this.app, this.manifest, this.settings, this.store, this.addStatusBarItem())
+      desktopInit(this)
     }
 
     // if (this.settings.enableActivityAutoCompletion) {

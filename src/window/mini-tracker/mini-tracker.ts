@@ -1,7 +1,7 @@
 import type { BrowserWindow } from 'electron'
 import { debounce, normalizePath } from 'obsidian'
 import { UserDataKey, type DataStore, type MiniTrackerData, type Position } from 'src/store'
-import type { PlanTracker } from 'src/tracker/plan-tracker'
+import type { Observer, PlanTracker } from 'src/tracker/plan-tracker'
 import type { Maybe } from 'src/types'
 import { getElectronAPI } from 'src/window/utils'
 
@@ -12,6 +12,8 @@ const defaultMiniTrackerData: MiniTrackerData = {
 export class MiniTracker {
   private win: Maybe<BrowserWindow> = null
   private static instance: Maybe<MiniTracker> = null
+
+  private onCloseCallbacks: (() => void)[] = []
 
   private constructor(private store: DataStore, private tracker: PlanTracker) {}
 
@@ -27,8 +29,18 @@ export class MiniTracker {
     MiniTracker.instance = null
   }
 
+  onClose(callback: () => void) {
+    this.onCloseCallbacks.push(callback)
+  }
+
   close() {
-    if (this.isOpen) this.win?.close()
+    if (this.isOpen) {
+      this.onCloseCallbacks.forEach((cb) => cb())
+      this.win?.close()
+    }
+
+    this.tracker.removeObserver(this.trackerObserver)
+
     this.win?.removeAllListeners()
   }
 
@@ -71,17 +83,19 @@ export class MiniTracker {
       this.win.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(content)}`)
     }
 
-    this.tracker.addObserver({
-      update: (ongoing) => {
-        this.win!.webContents.send('update', ongoing)
-      },
-    })
+    this.tracker.addObserver(this.trackerObserver)
 
     this.win.on('move', debounce(this.handleWindowMove, 500).bind(this))
 
     window.addEventListener('pagehide', (e) => {
       MiniTracker.clean()
     })
+  }
+
+  private trackerObserver: Observer = {
+    update: (ongoing) => {
+      this.win!.webContents.send('update', ongoing)
+    },
   }
 
   private handleWindowMove() {
