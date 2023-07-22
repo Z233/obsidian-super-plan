@@ -1,5 +1,5 @@
 import { Modal, Notice, type App } from 'obsidian'
-import type { Activity, ActivityData } from 'src/types'
+import type { ScheduledActivity, Activity } from 'src/types'
 import type { TableEditor } from '../editor/table-editor'
 import { getNowMins, parseTime2Mins } from '../util/helper'
 
@@ -14,12 +14,12 @@ type Result<T = unknown> = {
 }
 
 export class SplitConfirmModalV2 extends Modal {
-  private activity: ActivityData
+  private activity: Activity
   private closeResolve: (value: Result<SplitData>) => void
   private modalPromise = () =>
     new Promise<Result<SplitData>>((resolve) => (this.closeResolve = resolve))
 
-  constructor(app: App, activity: ActivityData) {
+  constructor(app: App, activity: Activity) {
     super(app)
     this.activity = activity
   }

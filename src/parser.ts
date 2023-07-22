@@ -1,5 +1,5 @@
 import type { SuperPlanSettings } from './setting/settings'
-import type { ActivitiesData, ActivityData, Maybe, PlanTableInfo } from './types'
+import type { Activity, Maybe, PlanTableInfo } from './types'
 import {
   readTable,
   Table,
@@ -130,26 +130,26 @@ export class Parser {
     }
   }
 
-  transformTable(table: Table): ActivitiesData {
+  transformTable(table: Table): Activity[] {
     const activitiesRows = table
       .getRows()
       .slice(2)
       .map((row) => row.getCells().map((cell) => cell.content))
 
-    const activitiesData: ActivitiesData = activitiesRows.map((row) =>
+    const activitiesData: Activity[] = activitiesRows.map((row) =>
       row.reduce(
         (data, v, i) => ({
           ...data,
           [ColumnKeysMap[i as Columns]]: v,
         }),
-        {} as ActivityData
+        {} as Activity
       )
     )
 
     return activitiesData
   }
 
-  transformActivitiesData(activitiesData: ActivitiesData): Table {
+  transformActivitiesData(activitiesData: Activity[]): Table {
     const emptyTable = readTable(
       [PlanLinesLiteral.header, PlanLinesLiteral.divider],
       this.settings.asOptions()

@@ -4,7 +4,7 @@ import type SuperPlan from 'src/main'
 import { Parser } from 'src/parser'
 import { PlanTracker } from 'src/tracker/plan-tracker'
 import { Timer } from 'src/tracker/timer'
-import type { Maybe, ActivitiesData } from 'src/types'
+import type { Maybe, Activity } from 'src/types'
 import { shallowCompare } from 'src/util/helper'
 import { MiniTracker } from 'src/window'
 
@@ -21,7 +21,7 @@ function desktopInit(plugin: SuperPlan) {
 
   const tracker = new PlanTracker(app, parser, file, settings, statusBar)
 
-  let lastActivitiesData: Maybe<ActivitiesData> = null
+  let lastActivitiesData: Maybe<Activity[]> = null
   const tick = async () => {
     const content = await file.getTodayPlanFileContent()
     if (content) {

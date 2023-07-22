@@ -16,9 +16,8 @@ import { PlanLinesLiteral, TriggerScheduleColumn } from '../constants'
 import { ObsidianTextEditor } from './obsidian-text-editor'
 import type { SuperPlanSettings } from '../setting/settings'
 import type {
-  ActivitiesData,
   PlanTableState,
-  ActivityData,
+  Activity,
   Maybe,
   PlanCellType,
   PlanTableInfo,
@@ -47,7 +46,7 @@ export class TableEditor {
     this.mte = new MdTableEditor(this.ote)
   }
 
-  private getActivitiesData(): ActivitiesData {
+  private getActivitiesData(): Activity[] {
     if (!this.tableInfo) return []
     return transformTable(this.tableInfo.table)
   }
@@ -56,14 +55,14 @@ export class TableEditor {
     return this.mte._findTable(this.settings.asOptions())
   }
 
-  private createActivityCells(activityData: Partial<ActivityData>, table: Table) {
+  private createActivityCells(activityData: Partial<Activity>, table: Table) {
     return Array.from(
       { length: table.getHeaderWidth() },
       (v, i) => new TableCell(activityData[getActivityDataKey(i)] ?? '')
     )
   }
 
-  private createActivityRow(activityData: Partial<ActivityData>, table: Table) {
+  private createActivityRow(activityData: Partial<Activity>, table: Table) {
     return new TableRow(this.createActivityCells(activityData, table), '', '')
   }
 
@@ -71,7 +70,7 @@ export class TableEditor {
     return TriggerScheduleColumn.contains(type)
   }
 
-  private schedule(activitiesData: ActivitiesData) {
+  private schedule(activitiesData: Activity[]) {
     if (!this.tableInfo || activitiesData.length < 2) return
 
     const scheduler = new Scheduler(activitiesData)
@@ -164,7 +163,7 @@ export class TableEditor {
       }
     }
 
-    const newActivityData: ActivityData = {
+    const newActivityData: Activity = {
       f: isLast ? 'x' : '',
       activity: '',
       start: next ? next.start : current.start,
@@ -212,7 +211,7 @@ export class TableEditor {
       }
     }
 
-    const newActivityData: ActivityData = {
+    const newActivityData: Activity = {
       f: isFirst ? 'x' : '',
       activity: '',
       start: current.start,
@@ -236,7 +235,7 @@ export class TableEditor {
 
   getCursorActivityData(): Maybe<{
     index: number
-    data: ActivityData
+    data: Activity
   }> {
     const focus = this.tableInfo?.focus
     if (!focus) return null
@@ -256,7 +255,7 @@ export class TableEditor {
     const { data: cursorActivityData, index } = cursor
     const activitiesData = this.getActivitiesData()
 
-    const updatedActivityData: ActivityData = {
+    const updatedActivityData: Activity = {
       ...cursorActivityData,
       start: parseMins2Time(getNowMins()),
       f: 'x',
@@ -272,7 +271,7 @@ export class TableEditor {
     const { data: cursorActivityData, index } = cursor
     const activitiesData = this.getActivitiesData()
 
-    const updatedActivityData: ActivityData = {
+    const updatedActivityData: Activity = {
       ...cursorActivityData,
       f: check(cursorActivityData.f) ? '' : 'x',
     }
@@ -288,7 +287,7 @@ export class TableEditor {
     const { data: cursorActivityData, index } = cursor
     const activitiesData = this.getActivitiesData()
 
-    const updatedActivityData: ActivityData = {
+    const updatedActivityData: Activity = {
       ...cursorActivityData,
       length: '0',
       f: '',
@@ -303,13 +302,13 @@ export class TableEditor {
     if (!cursor) return
     const { data, index: rowIndex } = cursor
 
-    const firstActivityData: ActivityData = {
+    const firstActivityData: Activity = {
       ...data,
       activity: `${data.activity} (#1)`,
       length: firstLength.toString(),
     }
 
-    const secondActivityData: ActivityData = {
+    const secondActivityData: Activity = {
       ...data,
       activity: `${data.activity} (#2)`,
       length: secondLength.toString(),

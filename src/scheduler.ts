@@ -1,28 +1,28 @@
 import { nanoid } from 'nanoid'
 import { INVAlID_NUMBER_LITERAL } from './constants'
 import type { PlanData } from './schemas'
-import type { ActivitiesData, Activity } from './types'
+import type { Activity, ScheduledActivity } from './types'
 import { check, formatNumberCell, getNowMins, parseMins2Time, parseTime2Mins } from './util/helper'
 
 type SchedulerPart = {
   duration: number
-  activities: Activity[]
+  activities: ScheduledActivity[]
 }
 
 export class Scheduler {
-  activities: Activity[]
+  activities: ScheduledActivity[]
   private startMins: number
   private endMins: number
   startUnix: number
   endUnix: number
 
-  constructor(data: ActivitiesData) {
+  constructor(data: Activity[]) {
     this.init(data)
   }
 
-  private init(data: ActivitiesData) {
+  private init(data: Activity[]) {
     // Init activities
-    const activities: Activity[] = data.map((act) => {
+    const activities: ScheduledActivity[] = data.map((act) => {
       const isFixed = check(act.f)
 
       return {
@@ -71,14 +71,14 @@ export class Scheduler {
       activities: this.schedulePart(p.duration, p.activities),
     }))
 
-    const scheduledActivities: Activity[] = this.mergeParts(parts)
+    const scheduledActivities: ScheduledActivity[] = this.mergeParts(parts)
     this.activities = scheduledActivities
   }
 
   private mergeParts(parts: SchedulerPart[]) {
     const partsToMerge = parts.concat()
 
-    const mergedActivities: Activity[] = [...partsToMerge[0].activities]
+    const mergedActivities: ScheduledActivity[] = [...partsToMerge[0].activities]
     for (let i = 1; i < partsToMerge.length; i++) {
       const activities = partsToMerge[i].activities
       const prevPart = partsToMerge[i - 1]
@@ -91,7 +91,7 @@ export class Scheduler {
     return mergedActivities
   }
 
-  private divideParts(activities: Activity[]) {
+  private divideParts(activities: ScheduledActivity[]) {
     const parts: SchedulerPart[] = [
       {
         duration: 0,
@@ -127,7 +127,7 @@ export class Scheduler {
     return parts
   }
 
-  private schedulePart(duration: number, activities: Activity[]): Activity[] {
+  private schedulePart(duration: number, activities: ScheduledActivity[]): ScheduledActivity[] {
     if (activities.length === 1) {
       const activity = activities[0]
       return [
@@ -180,7 +180,7 @@ export class Scheduler {
       })
 
       return arr
-    }, [] as Activity[])
+    }, [] as ScheduledActivity[])
 
     return ret
   }

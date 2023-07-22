@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { TrackerState } from 'src/tracker/plan-tracker'
-  import type { Activity, Maybe } from 'src/types'
+  import type { ScheduledActivity, Maybe } from 'src/types'
   import MiniClock from './MiniClock.svelte'
 
-  let now: Maybe<Activity> = null
-  let next: Maybe<Activity> = null
+  let now: Maybe<ScheduledActivity> = null
+  let next: Maybe<ScheduledActivity> = null
   let progress = 0
 
   const ipcRenderer = require('electron').ipcRenderer

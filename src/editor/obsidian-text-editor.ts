@@ -1,5 +1,5 @@
 import type { SuperPlanSettings } from '../setting/settings'
-import type { ActivityData } from '../types'
+import type { Activity } from '../types'
 import type { App, TFile, Editor } from 'obsidian'
 import {
   Point,

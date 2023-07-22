@@ -1,11 +1,10 @@
-import type { ActivitiesData, Activity, Maybe, PlanTableInfo, UnsafeEditor } from '../types'
+import type { ScheduledActivity, Maybe, PlanTableInfo, UnsafeEditor, Activity } from '../types'
 import { getNowMins } from '../util/helper'
 import type { Parser } from '../parser'
 import type { PlanFile } from '../file'
 import type { SuperPlanSettings } from '../setting/settings'
 import { find, findLastIndex, isEqual } from 'lodash-es'
 import { MarkdownView, type App } from 'obsidian'
-import { CURSOR_CH_AFTER_FOCUS, HIGHLIGHT_CLASS_NAME } from '../constants'
 import StatusBar from './status-bar/StatusBar.svelte'
 import { Scheduler } from 'src/scheduler'
 import { TableEditor } from 'src/editor/table-editor'
@@ -19,8 +18,8 @@ export type TrackerState = {
   upcoming: Upcoming | null
 }
 
-type Ongoing = { activity: Activity; leftSecs: number; progress: number }
-type Upcoming = { activity: Activity }
+type Ongoing = { activity: ScheduledActivity; leftSecs: number; progress: number }
+type Upcoming = { activity: ScheduledActivity }
 
 export type Observer = {
   update: (state: TrackerState) => void
@@ -34,11 +33,11 @@ export class PlanTracker {
 
   private statusBarComp: StatusBar
 
-  now: Maybe<Activity>
-  private prev: Maybe<Activity>
-  private next: Maybe<Activity>
+  now: Maybe<ScheduledActivity>
+  private prev: Maybe<ScheduledActivity>
+  private next: Maybe<ScheduledActivity>
 
-  private lastSendNotificationActivity: Maybe<Activity>
+  private lastSendNotificationActivity: Maybe<ScheduledActivity>
 
   addObserver(observer: Observer): void {
     this.observers.push(observer)
@@ -91,7 +90,7 @@ export class PlanTracker {
     this.statusBarComp.$set(props)
   }
 
-  private async beginActivity(activity: Activity) {
+  private async beginActivity(activity: ScheduledActivity) {
     if (!this.tableInfo || !this.scheduler || !this.file.todayFile) return
     await this.jump2ActivityRow(activity)
 
@@ -103,7 +102,7 @@ export class PlanTracker {
     te.beginCursorActivity()
   }
 
-  private async jump2ActivityRow(activity: Activity) {
+  private async jump2ActivityRow(activity: ScheduledActivity) {
     if (!this.tableInfo || !this.scheduler) return
     const { workspace } = this.app
 
@@ -248,7 +247,7 @@ export class PlanTracker {
     }
   }
 
-  setData(activitiesData: Maybe<ActivitiesData>, tableInfo: Maybe<PlanTableInfo>) {
+  setData(activitiesData: Maybe<Activity[]>, tableInfo: Maybe<PlanTableInfo>) {
     this.scheduler = activitiesData ? new Scheduler(activitiesData) : null
     this.tableInfo = tableInfo
     this.updateStatusBar(this.computeProgress())

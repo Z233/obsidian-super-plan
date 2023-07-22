@@ -1,16 +1,16 @@
 <script lang="ts">
   import { Menu } from 'obsidian'
   import { NO_ACTIVITY_NAME_PLACEHOLDER, ProgressType } from 'src/constants'
-  import type { Activity, Maybe } from 'src/types'
+  import type { ScheduledActivity, Maybe } from 'src/types'
   import { parseMins2Time } from 'src/util/helper'
   import ProgressBar from './ProgressBar.svelte'
   import ProgressCircle from './ProgressCircle.svelte'
 
-  export let jump2ActivityRow: (activity: Activity) => void = () => {}
-  export let beginActivity: (activity: Activity) => void = () => {}
+  export let jump2ActivityRow: (activity: ScheduledActivity) => void = () => {}
+  export let beginActivity: (activity: ScheduledActivity) => void = () => {}
 
-  export let now: Maybe<Activity>
-  export let next: Maybe<Activity>
+  export let now: Maybe<ScheduledActivity>
+  export let next: Maybe<ScheduledActivity>
   export let progress = 0
   export let leftMins = 0
   export let isAllDone = false
@@ -20,7 +20,7 @@
   const formatActivityName = (name: string) =>
     name.trim().length > 0 ? name : NO_ACTIVITY_NAME_PLACEHOLDER
 
-  function handleContextMenu(e: MouseEvent, act: Activity) {
+  function handleContextMenu(e: MouseEvent, act: ScheduledActivity) {
     const menu = new Menu()
     menu.addItem((item) =>
       item

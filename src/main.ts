@@ -43,6 +43,14 @@ export default class SuperPlan extends Plugin {
     this.registerCodeBlockProcessor()
 
     loadIcons()
+    
+    this.addCommand({
+      id: 'insert-new-plan',
+      name: 'Insert new plan',
+      icon: 'list-plus',
+      editorCallback: (editor: Editor, view: MarkdownView) => {
+      }
+    })
 
     this.addCommand({
       id: 'insert-plan-table',

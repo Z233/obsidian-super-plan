@@ -43,7 +43,7 @@ export type UserData = {
   }
 }
 
-export type Activity = {
+export type ScheduledActivity = {
   id: string
   activity: string
   length: number
@@ -54,7 +54,7 @@ export type Activity = {
   actLen: number
 }
 
-export type ActivityData = {
+export type Activity = {
   id: string
   activity: string
   length: string
@@ -64,9 +64,7 @@ export type ActivityData = {
   actLen: string
 }
 
-export type ActivitiesData = ActivityData[]
-
-export type PlanCellType = keyof ActivityData
+export type PlanCellType = keyof Activity
 export type PlanTableState = {
   type: PlanCellType
   cell: TableCell
