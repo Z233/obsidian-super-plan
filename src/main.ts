@@ -1,5 +1,4 @@
 import { Editor, MarkdownView, Plugin, Platform, type Command, TFile } from 'obsidian'
-import { TableEditor } from './editor/table-editor'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
 import type { Maybe } from './types'
@@ -108,88 +107,6 @@ export default class SuperPlan extends Plugin {
         sentinel.on(actCellSelector, focusOnActInput)
       },
     })
-
-    this.addCommand({
-      id: 'insert-plan-table',
-      name: 'Insert plan table',
-      icon: 'list-plus',
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.newPerformTableAction((pe) => {
-          pe.insertPlanTable()
-        })(false, editor, view)
-      },
-    })
-
-    this.addCommand({
-      id: 'unfix-all-activities',
-      name: 'Unfix all activities',
-      icon: 'clear-all',
-      editorCheckCallback: this.newPerformTableAction((pe) => {
-        pe.unfixAllActivities()
-      }),
-    })
-
-    // Mobile only
-
-    const addMobileCommand = (command: Omit<Command, 'mobileOnly'>) =>
-      this.addCommand({
-        mobileOnly: true,
-        ...command,
-      })
-
-    addMobileCommand({
-      id: 'move-left',
-      name: 'Move left',
-      icon: 'arrow-left',
-      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
-        te.moveLeft()
-      }),
-    })
-
-    addMobileCommand({
-      id: 'move-up',
-      name: 'Move up',
-      icon: 'arrow-up',
-      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
-        te.moveUp()
-      }),
-    })
-
-    addMobileCommand({
-      id: 'move-right',
-      name: 'Move right',
-      icon: 'arrow-right',
-      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
-        te.moveRight()
-      }),
-    })
-
-    addMobileCommand({
-      id: 'move-down',
-      name: 'Move down',
-      icon: 'arrow-down',
-      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
-        te.moveDown()
-      }),
-    })
-
-    addMobileCommand({
-      id: 'cut-activity',
-      name: 'Cut activity',
-      icon: 'cut',
-      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
-        te.cutActivity()
-      }),
-    })
-
-    addMobileCommand({
-      id: 'paste-activity',
-      name: 'Paste activity',
-      icon: 'clipboard-plus',
-      editorCheckCallback: this.newPerformPlanActionCM6((te) => {
-        te.pasteActivity()
-      }),
-    })
   }
 
   onunload() {
@@ -279,34 +196,6 @@ export default class SuperPlan extends Plugin {
       }
     })
   }
-
-  readonly newPerformPlanActionCM6 =
-    (fn: (te: TableEditor) => void, force = false): (() => boolean) =>
-    (): boolean => {
-      const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-      if (view) {
-        const te = new TableEditor(view.file, view.editor, this.settings)
-
-        if (force || te.cursorIsInPlan()) {
-          fn(te)
-          return true
-        }
-      }
-
-      return false
-    }
-
-  private readonly newPerformTableAction =
-    (fn: (te: TableEditor) => void, alertOnNoTable = true) =>
-    (checking: boolean, editor: Editor, view: MarkdownView): boolean | void => {
-      const pe = new TableEditor(view.file, editor, this.settings)
-
-      if (checking) {
-        return pe.cursorIsInPlan()
-      }
-
-      fn(pe)
-    }
 
   async loadSettings() {
     const data = await this.store.get(SettingsDataKey)

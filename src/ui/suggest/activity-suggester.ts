@@ -9,9 +9,7 @@ import {
   type EditorSuggestTriggerInfo,
   type KeymapEventHandler,
 } from 'obsidian'
-import { TableEditor } from '../../editor/table-editor'
 import type { SuperPlanSettings } from '../../setting/settings'
-import { checkIsDataviewEnabled } from '../../util/helper'
 import type { ActivityProvider } from './activity-provider'
 
 type ActivitySuggestValue = {
@@ -77,28 +75,30 @@ export class ActivitySuggester
   }
 
   onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
-    if (!checkIsDataviewEnabled()) return null
+    throw new Error('Need to be reimplemented.')
 
-    const pe = new TableEditor(file, editor, this.settings)
-    const state = pe.getState()
-    if (!state || state.type !== 'activity') return null
+    // if (!checkIsDataviewEnabled()) return null
 
-    const cellContent = state.cell.content
+    // const pe = new TableEditor(file, editor, this.settings)
+    // const state = pe.getState()
+    // if (!state || state.type !== 'activity') return null
 
-    if (cellContent.trim().length === 0) return null
-    if (cellContent === this.lastCellContent) return null
+    // const cellContent = state.cell.content
 
-    this.lastCellContent = cellContent
+    // if (cellContent.trim().length === 0) return null
+    // if (cellContent === this.lastCellContent) return null
 
-    const line = editor.getLine(cursor.line)
-    return {
-      start: { line: cursor.line, ch: cursor.ch },
-      end: {
-        line: cursor.line,
-        ch: line.length,
-      },
-      query: cellContent,
-    }
+    // this.lastCellContent = cellContent
+
+    // const line = editor.getLine(cursor.line)
+    // return {
+    //   start: { line: cursor.line, ch: cursor.ch },
+    //   end: {
+    //     line: cursor.line,
+    //     ch: line.length,
+    //   },
+    //   query: cellContent,
+    // }
   }
 
   private mark(value: string) {

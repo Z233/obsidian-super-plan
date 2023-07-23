@@ -1,6 +1,5 @@
 import { Modal, Notice, type App } from 'obsidian'
 import type { ScheduledActivity, Activity } from 'src/types'
-import type { TableEditor } from '../editor/table-editor'
 import { getNowMins, parseTime2Mins } from '../util/helper'
 
 type SplitData = {
@@ -13,6 +12,7 @@ type Result<T = unknown> = {
   data?: T
 }
 
+// TODO: Reimplement this modal with new table editor
 export class SplitConfirmModalV2 extends Modal {
   private activity: Activity
   private closeResolve: (value: Result<SplitData>) => void
@@ -104,69 +104,70 @@ export class SplitConfirmModalV2 extends Modal {
 }
 
 export class SplitConfirmModal extends Modal {
-  private readonly pe: TableEditor
+  // private readonly pe: TableEditor
 
-  constructor(app: App, pe: TableEditor) {
+  constructor(app: App) {
     super(app)
-    this.pe = pe
   }
 
   onOpen() {
-    const cursor = this.pe.getCursorActivityData()
-    if (!cursor) {
-      new Notice('No activity under cursor.')
-      this.close()
-      return
-    }
+    throw new Error('Not implemented')
 
-    const { data } = cursor
+    // const cursor = this.pe.getCursorActivityData()
+    // if (!cursor) {
+    //   new Notice('No activity under cursor.')
+    //   this.close()
+    //   return
+    // }
 
-    const nowMins = getNowMins()
-    const minsPassed = nowMins - parseTime2Mins(data.start)
-    const isOngoing = minsPassed > 0 && minsPassed <= +data.actLen
+    // const { data } = cursor
 
-    const maxLength = Math.max(+data.length, +data.actLen) - 1
+    // const nowMins = getNowMins()
+    // const minsPassed = nowMins - parseTime2Mins(data.start)
+    // const isOngoing = minsPassed > 0 && minsPassed <= +data.actLen
 
-    this.titleEl.textContent = 'Split activity'
+    // const maxLength = Math.max(+data.length, +data.actLen) - 1
 
-    this.contentEl.createEl('label', undefined, (el) => {
-      el.textContent = 'Length of first sub-slot: '
-      el.setAttribute('for', 'length')
-    })
+    // this.titleEl.textContent = 'Split activity'
 
-    const inputEl = this.contentEl.createEl('input', undefined, (el) => {
-      el.value = isOngoing ? minsPassed.toString() : Math.floor(maxLength / 2).toString()
-      el.setAttribute('style', 'margin: 0 var(--size-4-2)')
-      el.setAttribute('id', 'length')
-      el.setAttribute('type', 'number')
-      el.setAttribute('min', '1')
-      el.setAttribute('max', maxLength.toString())
-    })
+    // this.contentEl.createEl('label', undefined, (el) => {
+    //   el.textContent = 'Length of first sub-slot: '
+    //   el.setAttribute('for', 'length')
+    // })
 
-    this.contentEl.createEl('label', undefined, (el) => {
-      el.textContent = `(range: 1..${maxLength})`
-      el.setAttribute('for', 'length')
-    })
+    // const inputEl = this.contentEl.createEl('input', undefined, (el) => {
+    //   el.value = isOngoing ? minsPassed.toString() : Math.floor(maxLength / 2).toString()
+    //   el.setAttribute('style', 'margin: 0 var(--size-4-2)')
+    //   el.setAttribute('id', 'length')
+    //   el.setAttribute('type', 'number')
+    //   el.setAttribute('min', '1')
+    //   el.setAttribute('max', maxLength.toString())
+    // })
 
-    const buttonContainerEl = this.contentEl.createDiv()
-    buttonContainerEl.addClass('modal-button-container')
-    buttonContainerEl.createEl('button', undefined, (el) => {
-      el.textContent = 'Confirm'
-      el.addClass('mod-cta')
-      el.onclick = () => {
-        const inputLength = +inputEl.value
-        if (inputLength > maxLength) {
-          new Notice(`Input length can't max than ${maxLength}.`)
-          return
-        }
-        this.pe.splitActivity(inputLength, maxLength - inputLength + 1)
-        this.close()
-      }
-    })
-    buttonContainerEl.createEl('button', undefined, (el) => {
-      el.textContent = 'Cancel'
-      el.onclick = () => this.close()
-    })
+    // this.contentEl.createEl('label', undefined, (el) => {
+    //   el.textContent = `(range: 1..${maxLength})`
+    //   el.setAttribute('for', 'length')
+    // })
+
+    // const buttonContainerEl = this.contentEl.createDiv()
+    // buttonContainerEl.addClass('modal-button-container')
+    // buttonContainerEl.createEl('button', undefined, (el) => {
+    //   el.textContent = 'Confirm'
+    //   el.addClass('mod-cta')
+    //   el.onclick = () => {
+    //     const inputLength = +inputEl.value
+    //     if (inputLength > maxLength) {
+    //       new Notice(`Input length can't max than ${maxLength}.`)
+    //       return
+    //     }
+    //     this.pe.splitActivity(inputLength, maxLength - inputLength + 1)
+    //     this.close()
+    //   }
+    // })
+    // buttonContainerEl.createEl('button', undefined, (el) => {
+    //   el.textContent = 'Cancel'
+    //   el.onclick = () => this.close()
+    // })
   }
 
   onClose() {

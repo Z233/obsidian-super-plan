@@ -7,7 +7,6 @@ import { find, findLastIndex, isEqual } from 'lodash-es'
 import { MarkdownView, type App } from 'obsidian'
 import StatusBar from './status-bar/StatusBar.svelte'
 import { Scheduler } from 'src/scheduler'
-import { TableEditor } from 'src/editor/table-editor'
 import { Timer } from './timer'
 import { Events, GlobalMediator } from 'src/mediator'
 
@@ -91,15 +90,7 @@ export class PlanTracker {
   }
 
   private async beginActivity(activity: ScheduledActivity) {
-    if (!this.tableInfo || !this.scheduler || !this.file.todayFile) return
-    await this.jump2ActivityRow(activity)
-
-    const { workspace } = this.app
-    const editor = workspace.activeEditor!.editor!
-
-    const te = new TableEditor(this.file.todayFile, editor, this.settings)
-
-    te.beginCursorActivity()
+    throw new Error('Method not implemented.')
   }
 
   private async jump2ActivityRow(activity: ScheduledActivity) {
