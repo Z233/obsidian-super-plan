@@ -17,6 +17,7 @@ import {
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
 import {
   ActivityDataColumn,
+  CODE_BLOCK_LANG,
   ColumnKeys,
   ColumnKeysMap,
   Columns,
@@ -75,8 +76,9 @@ export class Parser {
   checkIsTemplate() {}
 
   findPlanTableV2(content: string): Maybe<PlanTableInfo> {
-    const RE = /(?<=^```super-plan\n)[\s\S]*(?=```$)/gm
-    const match = RE.exec(content)
+    // const re = /(?<=^```super-plan\n)[\s\S]*(?=```$)/gm
+    const re = new RegExp('(?<=^```' + CODE_BLOCK_LANG + '\\n)[\\s\\S]*(?=```$)', 'gm')
+    const match = re.exec(content)
     if (!match) return null
 
     const lines = match[0].split('\n')

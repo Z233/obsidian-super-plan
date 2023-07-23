@@ -4,6 +4,7 @@ import { getAPI } from 'obsidian-dataview'
 import { ActivityDataColumn, INVAlID_NUMBER_LITERAL } from 'src/constants'
 import type { Activity, PlanCellType } from 'src/types'
 import { TemplaterError } from './error'
+import { nanoid } from 'nanoid'
 
 export const removeSpacing = (value: string) => value.replace(/\s+/gm, '')
 
@@ -125,3 +126,5 @@ export function debounceRAF(cb: (...args: any[]) => any) {
 export const shallowCompare = (obj1: Record<any, any>, obj2: Record<any, any>) =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
   Object.keys(obj1).every((key) => obj2.hasOwnProperty(key) && obj1[key] === obj2[key])
+
+export const generateId = () => nanoid(6)

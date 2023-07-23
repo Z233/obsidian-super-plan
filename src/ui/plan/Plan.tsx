@@ -20,6 +20,9 @@ import { Scheduler } from 'src/scheduler'
 import type { ColumnKeys } from 'src/constants'
 import { shallowCompare } from 'src/util/helper'
 
+/**
+ * Markdown Table Editor Loader
+ */
 type MteLoader = ({
   table,
   startRow,

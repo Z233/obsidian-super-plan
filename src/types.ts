@@ -1,6 +1,7 @@
 import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
 import type { Editor, EditorRange, WorkspaceLeaf } from 'obsidian'
 import type { UpdateFlag } from './constants'
+import type { UnionToIntersection } from 'type-fest'
 
 // Extend global
 declare global {
@@ -89,6 +90,7 @@ export type PlanTableInfo = {
    */
   table: Table
 }
+
 // https://stackoverflow.com/a/52490977
 export type Tuple<T, N extends number> = N extends N
   ? number extends N
@@ -98,6 +100,14 @@ export type Tuple<T, N extends number> = N extends N
 type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N
   ? R
   : _TupleOf<T, N, [T, ...R]>
+
+type UnionLast<T> = UnionToIntersection<T extends T ? () => T : never> extends () => infer R
+  ? R
+  : never
+
+export type UnionToTuple<T> = [T] extends [never]
+  ? []
+  : [...UnionToTuple<Exclude<T, UnionLast<T>>>, UnionLast<T>]
 
 export type Maybe<T> = T | null | undefined
 

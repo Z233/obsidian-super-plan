@@ -1,5 +1,9 @@
 import type { PlanCellType } from './types'
 
+export const CODE_BLOCK_LANG = 'super-plan'
+
+export const ACTIVITY_TR_ID_PREFIX = 'activity-tr-'
+
 export const UpdateFlag: unique symbol = Symbol('super-plan-update-flag')
 
 export const PlanLinesLiteral = {

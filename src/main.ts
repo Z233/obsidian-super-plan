@@ -13,6 +13,10 @@ import './style.css'
 import { renderPlan } from './ui/plan/Plan'
 import { CodeBlockSync } from './editor/code-block-sync'
 import { EditorView } from '@codemirror/view'
+import { PlanBuilder } from './editor/plan-builder'
+import { generateId, getNowMins, parseMins2Time } from './util/helper'
+import sentinel from 'sentinel-js'
+import { ACTIVITY_TR_ID_PREFIX, CODE_BLOCK_LANG } from './constants'
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -43,13 +47,66 @@ export default class SuperPlan extends Plugin {
     this.registerCodeBlockProcessor()
 
     loadIcons()
-    
+
     this.addCommand({
       id: 'insert-new-plan',
       name: 'Insert new plan',
       icon: 'list-plus',
       editorCallback: (editor: Editor, view: MarkdownView) => {
-      }
+        const builder = new PlanBuilder()
+
+        const firstId = generateId()
+
+        const plan = builder
+          .addActivity({
+            id: firstId,
+            activity: '',
+            length: '0',
+            start: parseMins2Time(getNowMins()),
+            f: 'x',
+            r: '',
+            actLen: '0',
+          })
+          .addActivity({
+            id: generateId(),
+            activity: 'END',
+            length: '0',
+            start: '',
+            f: 'x',
+            r: '',
+            actLen: '',
+          })
+          .build()
+
+        const lines = plan.getLines()
+        const codeLines = ['```' + CODE_BLOCK_LANG, ...lines, '```']
+
+        const cursor = editor.getCursor()
+
+        const isEmptyLine = editor.getLine(cursor.line).trim() === ''
+
+        editor.replaceRange(codeLines.join('\n') + '\n', {
+          line: isEmptyLine ? cursor.line : cursor.line + 1,
+          ch: 0,
+        })
+
+        isEmptyLine && editor.setCursor(cursor.line + codeLines.length + 1, 0)
+
+        /**
+         * We can't use css selector to select input
+         * because the input element use "all: unset"
+         * to reset all styles set by obsidian.
+         */
+        const actCellSelector = `tr#${ACTIVITY_TR_ID_PREFIX}${firstId} > td[data-column="activity"]`
+
+        const focusOnActInput = (td: HTMLTableCellElement) => {
+          const input = td.firstChild as HTMLInputElement
+          input.focus()
+          sentinel.off(actCellSelector, focusOnActInput)
+        }
+
+        sentinel.on(actCellSelector, focusOnActInput)
+      },
     })
 
     this.addCommand({

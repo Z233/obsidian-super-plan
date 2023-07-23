@@ -689,7 +689,12 @@
   dependencies:
     "@types/tern" "*"
 
-"@types/estree@*", "@types/estree@^1.0.0":
+"@types/estree@*":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.1.tgz#aa22750962f3bf0e79d753d3cc067f010c95f194"
+  integrity sha512-LG4opVs2ANWZ1TJoKc937iMmNstM/d0ae1vNbnBvBhqCSezgVUOzcLCqbI5elV8Vy6WKwKjaqR+zO9VKirBBCA==
+
+"@types/estree@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.0.tgz#5fb2e536c1ae9bf35366eed879e827fa59ca41c2"
   integrity sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==
@@ -2795,10 +2800,10 @@ obsidian-dataview@^0.5.55:
     parsimmon "^1.18.0"
     preact "^10.6.5"
 
-obsidian@latest:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/obsidian/-/obsidian-1.1.1.tgz#7cce6f19a6dd1cc5ec7e9f7dff8ea3ceacf2e2c3"
-  integrity sha512-GcxhsHNkPEkwHEjeyitfYNBcQuYGeAHFs1pEpZIv0CnzSfui8p8bPLm2YKLgcg20B764770B1sYGtxCvk9ptxg==
+obsidian@^1.2.8:
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/obsidian/-/obsidian-1.2.8.tgz#294e76d9021cbf341ffd5d49e2bcfa15432da7d7"
+  integrity sha512-HrC+feA8o0tXspj4lEAqxb1btwLwHD2oHXSwbbN+CdRHURqbCkuIDLld+nkuyJ1w1c9uvVDRVk8BoeOnWheOrQ==
   dependencies:
     "@types/codemirror" "0.0.108"
     moment "2.29.4"
@@ -3208,6 +3213,11 @@ semver@^7.3.2, semver@^7.3.7:
   dependencies:
     lru-cache "^6.0.0"
 
+sentinel-js@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/sentinel-js/-/sentinel-js-0.0.5.tgz#0c2d3db2abecd337fc962933b608c494bde1d082"
+  integrity sha512-Pk27UCVN4ub6fwFNgoMLMKG8vb6E9odXhMMG+WV3tGJLLv8fIwqzyrYgEoW3KtpgAQ1qn2MgZdJ0GOSpDfn8OQ==
+
 serialize-error@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-7.0.1.tgz#f1360b0447f61ffb483ec4157c737fab7d778e18"
@@ -3523,6 +3533,11 @@ type-fest@^0.13.1:
   version "0.13.1"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.13.1.tgz#0172cb5bce80b0bd542ea348db50c7e21834d934"
   integrity sha512-34R7HTnG0XIJcBSn5XhDd7nNFPRcXYRZrBB2O2jdKqYODldSzBAqzsWoZYYvduky73toYS/ESqxPvkDf/F0XMg==
+
+type-fest@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.0.0.tgz#1c87b05c3f0304a2f911b5a47bb45fa4d62031db"
+  integrity sha512-d/oYtUnPM9zar2fqqGLYPzgcY0qUlYK0evgNVti93xpzfjGkMgZHu9Lvgrkn0rqGXTgsFRxFamzjGoD9Uo+dgw==
 
 typed-array-length@^1.0.4:
   version "1.0.4"

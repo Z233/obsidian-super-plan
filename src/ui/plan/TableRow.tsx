@@ -11,7 +11,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { PlanMenu, type PlanMenuItem } from './menu'
 import type { Maybe } from 'src/types'
 import type { Position } from './PlanTable'
-import { ColumnKeys } from 'src/constants'
+import { ACTIVITY_TR_ID_PREFIX, ColumnKeys } from 'src/constants'
 import { check, getNowMins, parseMins2Time } from 'src/util/helper'
 import { SplitConfirmModalV2 } from '../modals'
 
@@ -152,7 +152,8 @@ export const TableRow: FC<{
   return (
     <tr
       ref={dropRef}
-      key={row.id}
+      id={`${ACTIVITY_TR_ID_PREFIX}${row.original.id}`}
+      key={row.original.id}
       className={clsx({
         '![&>*:nth-child(2)]:border-l-0 relative': true,
         [focusStyle]: highlighted,

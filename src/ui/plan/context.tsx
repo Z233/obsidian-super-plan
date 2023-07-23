@@ -7,6 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { PlanDataItem } from 'src/schemas'
+import { generateId } from 'src/util/helper'
 
 type PlanContextValue = {
   mte: MdTableEditor
@@ -68,7 +69,7 @@ export function usePlan() {
 
   const insertRowBelow: PlanActions['insertRowBelow'] = (row) => {
     const cells = Array.from({ length: mte.getHeaderWidth() }, (_, i) =>
-      i === 0 ? new TableCell(nanoid(6)) : new TableCell(' ')
+      i === 0 ? new TableCell(generateId()) : new TableCell(' ')
     )
     const tableRow = new TableRow(cells, '', '')
     mte.insertRow(tableRow, row + 1)
