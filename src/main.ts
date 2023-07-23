@@ -1,4 +1,12 @@
-import { Editor, MarkdownView, Plugin, Platform, type Command, TFile } from 'obsidian'
+import {
+  Editor,
+  MarkdownView,
+  Plugin,
+  Platform,
+  type Command,
+  TFile,
+  type MarkdownPostProcessorContext,
+} from 'obsidian'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
 import type { Maybe } from './types'
@@ -16,6 +24,15 @@ import { PlanBuilder } from './editor/plan-builder'
 import { generateId, getNowMins, parseMins2Time } from './util/helper'
 import sentinel from 'sentinel-js'
 import { ACTIVITY_TR_ID_PREFIX, CODE_BLOCK_LANG } from './constants'
+import { Events, GlobalMediator } from './mediator'
+
+type FilesMap = WeakMap<
+  TFile,
+  {
+    container: HTMLElement
+    sync: CodeBlockSync
+  }
+>
 
 export default class SuperPlan extends Plugin {
   settings: SuperPlanSettings
@@ -116,22 +133,21 @@ export default class SuperPlan extends Plugin {
 
   private registerCodeBlockProcessor() {
     const queue: Set<() => void> = new Set()
-    let activeFile: Maybe<TFile> = null
+    const filesMap: FilesMap = new WeakMap()
 
-    const plansMap = new WeakMap<
-      TFile,
-      {
-        container: HTMLElement
-        sync: CodeBlockSync
-      }
-    >()
+    let activeFile: Maybe<TFile> = null
+    // When first open the app, the plan have not been rendered.
+    let isApplyingChanges = true
+
+    GlobalMediator.getInstance().subscribe(Events.SET_IS_APPLYING_CHANGES, (data) => {
+      isApplyingChanges = data.isApplyingChanges
+    })
 
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', (leaf) => {
         activeFile = this.app.workspace.getActiveFile()
-        // activeEditor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor
         if (queue.size) {
-          queue.forEach((job) => job())
+          queue.forEach((fn) => fn())
           queue.clear()
         }
       })
@@ -146,8 +162,9 @@ export default class SuperPlan extends Plugin {
           const changedLineStart = doc.lineAt(fromB).number - 1
           const changedLineEnd = doc.lineAt(toB).number - 1
 
-          if (activeFile && plansMap.has(activeFile)) {
-            const { sync } = plansMap.get(activeFile)!
+          // Notify the change to the sync.
+          if (activeFile && filesMap.has(activeFile)) {
+            const { sync } = filesMap.get(activeFile)!
             const { lineStart, lineEnd } = sync.getInfo()
 
             if (changedLineStart >= lineStart + 1 && changedLineEnd <= lineEnd - 1) {
@@ -160,41 +177,90 @@ export default class SuperPlan extends Plugin {
       })
     )
 
-    this.registerMarkdownCodeBlockProcessor('super-plan', (source, el, ctx) => {
-      el.parentElement?.setAttribute('style', 'contain: none !important;')
+    /**
+     * Every time the content within the code block changes,
+     * the code block will be re-process.
+     */
+    this.registerMarkdownCodeBlockProcessor(CODE_BLOCK_LANG, (source, el, ctx) => {
+      const fn = () => this._processCodeBlock({ source, el, ctx, filesMap, isApplyingChanges })
 
-      const job = () => {
-        const selection = ctx.getSectionInfo(el)
-        const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
-
-        if (selection && activeFile) {
-          let { sync, container } = plansMap.get(activeFile) || {
-            sync: new CodeBlockSync(),
-            container: null,
-          }
-
-          sync.notify({
-            source,
-            lineStart: selection.lineStart,
-            lineEnd: selection.lineEnd,
-          })
-
-          if (!container) {
-            const newContainer = (container = document.createElement('div'))
-            renderPlan(container, sync, this.app, file)
-            plansMap.set(activeFile, { sync, container: newContainer })
-          }
-
-          el.insertBefore(container, null)
-        }
-      }
-
-      if (!activeFile) {
-        queue.add(job)
-      } else {
-        job()
-      }
+      if (activeFile) fn()
+      else queue.add(fn)
     })
+  }
+
+  private _processCodeBlock({
+    source,
+    el,
+    ctx,
+    filesMap,
+    isApplyingChanges,
+  }: {
+    source: string
+    el: HTMLElement
+    ctx: MarkdownPostProcessorContext
+    filesMap: FilesMap
+    isApplyingChanges: boolean
+  }) {
+    const cmPreviewCodeBlockSelector = '.cm-preview-code-block.cm-embed-block.markdown-rendered'
+
+    el.parentElement?.setAttribute('style', 'contain: none !important;')
+
+    const selection = ctx.getSectionInfo(el)
+    const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
+
+    if (!selection) return
+
+    let { sync, container } = filesMap.get(file) || {
+      sync: new CodeBlockSync(),
+      container: null,
+    }
+
+    let parent: Maybe<HTMLElement> = null
+
+    if (!container) {
+      const newContainer = (container = document.createElement('div'))
+      renderPlan(container, sync, this.app, file)
+      filesMap.set(file, { sync, container: newContainer })
+    } else {
+      parent = container.closest<HTMLElement>(cmPreviewCodeBlockSelector)
+    }
+
+    if (
+      !isApplyingChanges &&
+      parent &&
+      parent !== el.closest(cmPreviewCodeBlockSelector) &&
+      parent.offsetWidth > 0 &&
+      parent.offsetHeight > 0
+    ) {
+      const div = this._createErrorDiv('A file can only have one plan.')
+      el.insertBefore(div, null)
+      return
+    }
+
+    sync.notify({
+      source,
+      lineStart: selection.lineStart,
+      lineEnd: selection.lineEnd,
+    })
+
+    el.insertBefore(container!, null)
+
+    GlobalMediator.getInstance().send(Events.SET_IS_APPLYING_CHANGES, { isApplyingChanges: false })
+  }
+
+  private _createErrorDiv(msg: string) {
+    const div = document.createElement('div')
+    const h1 = document.createElement('h1')
+    const p = document.createElement('p')
+
+    h1.textContent = 'Error'
+    p.textContent = msg
+
+    div.appendChild(h1)
+    div.appendChild(p)
+
+    return div
   }
 
   async loadSettings() {

@@ -19,6 +19,7 @@ import type { CodeBlockSync } from 'src/editor/code-block-sync'
 import { Scheduler } from 'src/scheduler'
 import type { ColumnKeys } from 'src/constants'
 import { shallowCompare } from 'src/util/helper'
+import { Events, GlobalMediator } from 'src/mediator'
 
 /**
  * Markdown Table Editor Loader
