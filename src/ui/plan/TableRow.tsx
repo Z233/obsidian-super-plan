@@ -140,6 +140,14 @@ export const TableRow: FC<{
     highlightRow(activityId)
 
     const menu = new PlanMenu(menuItems)
+    
+    menu.onHide = () => {
+      highlightRow('')
+    }
+    
+    menu.onunload = () => {
+      highlightRow('')
+    }
 
     menu.showAtMouseEvent(e)
 
