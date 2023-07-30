@@ -47,7 +47,7 @@
     "typed-event-emitter": "^3.0.0",
     "typescript": "5.1.6",
     "unocss": "^0.50.4",
-    "vite": "^4.0.4",
+    "vite": "^4.4.7",
     "vite-plugin-singlefile": "^0.13.3",
     "vite-plugin-windicss": "^1.8.10",
     "windicss": "^3.5.6"
