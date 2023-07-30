@@ -3,7 +3,6 @@ import {
   MarkdownView,
   Plugin,
   Platform,
-  type Command,
   TFile,
   type MarkdownPostProcessorContext,
 } from 'obsidian'
@@ -24,7 +23,6 @@ import { PlanBuilder } from './editor/plan-builder'
 import { generateId, getNowMins, parseMins2Time } from './util/helper'
 import sentinel from 'sentinel-js'
 import { ACTIVITY_TR_ID_PREFIX, CODE_BLOCK_LANG } from './constants'
-import { Events, GlobalMediator } from './mediator'
 
 type FilesMap = WeakMap<
   TFile,
@@ -136,12 +134,6 @@ export default class SuperPlan extends Plugin {
     const filesMap: FilesMap = new WeakMap()
 
     let activeFile: Maybe<TFile> = null
-    // When first open the app, the plan have not been rendered.
-    let isApplyingChanges = true
-
-    GlobalMediator.getInstance().subscribe(Events.SET_IS_APPLYING_CHANGES, (data) => {
-      isApplyingChanges = data.isApplyingChanges
-    })
 
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', (leaf) => {
@@ -182,9 +174,11 @@ export default class SuperPlan extends Plugin {
      * the code block will be re-process.
      */
     this.registerMarkdownCodeBlockProcessor(CODE_BLOCK_LANG, (source, el, ctx) => {
-      const fn = () => this._processCodeBlock({ source, el, ctx, filesMap, isApplyingChanges })
+      const fn = () => this._processCodeBlock({ source, el, ctx, filesMap })
 
-      if (activeFile) fn()
+      if (activeFile) {
+        Promise.resolve().then(() => fn())
+      }
       else queue.add(fn)
     })
   }
@@ -194,13 +188,11 @@ export default class SuperPlan extends Plugin {
     el,
     ctx,
     filesMap,
-    isApplyingChanges,
   }: {
     source: string
     el: HTMLElement
     ctx: MarkdownPostProcessorContext
     filesMap: FilesMap
-    isApplyingChanges: boolean
   }) {
     const cmPreviewCodeBlockSelector = '.cm-preview-code-block.cm-embed-block.markdown-rendered'
 
@@ -225,9 +217,8 @@ export default class SuperPlan extends Plugin {
     } else {
       parent = container.closest<HTMLElement>(cmPreviewCodeBlockSelector)
     }
-
+    
     if (
-      !isApplyingChanges &&
       parent &&
       parent !== el.closest(cmPreviewCodeBlockSelector) &&
       parent.offsetWidth > 0 &&
@@ -245,8 +236,6 @@ export default class SuperPlan extends Plugin {
     })
 
     el.insertBefore(container!, null)
-
-    GlobalMediator.getInstance().send(Events.SET_IS_APPLYING_CHANGES, { isApplyingChanges: false })
   }
 
   private _createErrorDiv(msg: string) {

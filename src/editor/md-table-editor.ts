@@ -10,7 +10,6 @@ import { MarkdownView, type App, type TFile } from 'obsidian'
 import type { Maybe } from 'src/types'
 import { debounceRAF } from 'src/util/helper'
 import { ObsidianTextEditor } from './obsidian-text-editor'
-import { Events, GlobalMediator } from 'src/mediator'
 
 type MdTableEditorOptions = {
   app: App
@@ -103,7 +102,6 @@ export class MdTableEditor {
     const formatted = formatTable(this._table, defaultOptions)
     const newLines = formatted.table.toLines()
 
-    GlobalMediator.getInstance().send(Events.SET_IS_APPLYING_CHANGES, { isApplyingChanges: true })
     this._mte._updateLines(this._startRow, this._endRow + 1, newLines)
   }
 

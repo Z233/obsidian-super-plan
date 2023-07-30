@@ -1,14 +1,10 @@
 export enum Events {
   JUMP_TO_ACTIVITY = 'JUMP_TO_ACTIVITY',
-  SET_IS_APPLYING_CHANGES = 'SET_IS_APPLYING_CHANGES',
 }
 
 type EventsMap = {
   [Events.JUMP_TO_ACTIVITY]: {
     activityId: string
-  }
-  [Events.SET_IS_APPLYING_CHANGES]: {
-    isApplyingChanges: boolean
   }
 }
 

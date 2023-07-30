@@ -82,7 +82,7 @@ const Plan: FC<{
         }
       })
     }
-
+    
     isFlushing.current = true
     mte.applyChanges()
     isFlushing.current = false
