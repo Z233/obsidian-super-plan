@@ -10,10 +10,10 @@ import { Icon } from './lib'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { PlanMenu, type PlanMenuItem } from './menu'
 import type { Maybe } from 'src/types'
-import type { Position } from './PlanTable'
 import { ACTIVITY_TR_ID_PREFIX, ColumnKeys } from 'src/constants'
 import { check, getNowMins, parseMins2Time } from 'src/util/helper'
 import { SplitConfirmModalV2 } from '../modals'
+import type { CellPosition } from './types'
 
 function useTableRowActions(row: Row<PlanDataItem>) {
   const { deleteRow, updateCell, duplicateRow } = usePlan()
@@ -61,11 +61,11 @@ function useTableRowActions(row: Row<PlanDataItem>) {
 
 export const TableRow: FC<{
   row: Row<PlanDataItem>
-  setFocusedPosition: StateUpdater<Maybe<Position>>
+  setHighlightedCell: StateUpdater<Maybe<CellPosition>>
   highlighted: boolean
   highlightRow: (activityId: string) => void
 }> = (props) => {
-  const { row, setFocusedPosition, highlighted, highlightRow } = props
+  const { row, setHighlightedCell, highlighted, highlightRow } = props
   const activityId = row.original.id
   const { insertRowBelow, moveRow } = usePlan()
 
@@ -98,7 +98,7 @@ export const TableRow: FC<{
   const handlePlusClick = (rowIndex: number) => {
     insertRowBelow(rowIndex)
     Promise.resolve().then(() => {
-      setFocusedPosition({ rowIndex: rowIndex + 1, columnKey: ColumnKeys.Activity })
+      setHighlightedCell({ rowIndex: rowIndex + 1, columnKey: ColumnKeys.Activity })
     })
   }
 

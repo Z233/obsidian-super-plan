@@ -17,8 +17,8 @@ import { usePlan } from './context'
 import { DragLayer } from './DragLayer'
 import { focusStyle, indexCellStyle } from './styles'
 import { TableRow } from './TableRow'
+import type { CellPosition, PlanTableColumnDef } from './types'
 
-export type PlanTableColumnDef = ColumnDef<PlanDataItem>
 
 export const tableColumns: PlanTableColumnDef[] = [
   {
@@ -53,19 +53,14 @@ export const tableColumns: PlanTableColumnDef[] = [
   },
 ]
 
-export type Position = {
-  rowIndex: number
-  columnKey: ColumnKeys
-}
-
 export const PlanTable: FC<{ data: PlanData }> = (props) => {
   const { data } = props
   const { insertRowBelow } = usePlan()
 
-  const [focusedPosition, setFocusedPosition] = useState<Maybe<Position>>()
+  const [highlightedCell, setHighlightedCell] = useState<Maybe<CellPosition>>()
   const focusableElementsRef = useRef<Map<string, HTMLInputElement>>(new Map())
 
-  const updateFocusableElement = (position: Position, element: Maybe<HTMLInputElement>) => {
+  const updateFocusableElement = (position: CellPosition, element: Maybe<HTMLInputElement>) => {
     const { rowIndex, columnKey } = position
     const key = `${rowIndex}-${columnKey}`
     if (element) {
@@ -75,8 +70,8 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     }
   }
 
-  if (focusedPosition) {
-    const { rowIndex, columnKey } = focusedPosition
+  if (highlightedCell) {
+    const { rowIndex, columnKey } = highlightedCell
     setImmediate(() => {
       const el = focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)
       if (el) {
@@ -94,13 +89,13 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
   })
 
   const handleCellFocus = (rowIndex: number, columnKey: ColumnKeys) => {
-    setFocusedPosition({ rowIndex, columnKey })
+    setHighlightedCell({ rowIndex, columnKey })
   }
 
   const handleCellMouseDown: JSXInternal.MouseEventHandler<HTMLTableCellElement> = (e) => {
     // Disable default behavior for right click
     if (e.button === 2) {
-      setFocusedPosition(null)
+      setHighlightedCell(null)
       e.preventDefault()
       return false
     }
@@ -109,7 +104,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
   const handleCellKeyDown = (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
     const { key } = e
     // Binding Enter
-    if (key === 'Enter' && focusedPosition) {
+    if (key === 'Enter' && highlightedCell) {
       // Move to next column or create new row
       const column = ColumnKeysMap[columnKey]
       const tableHeight = table.getRowModel().rows.length
@@ -128,12 +123,12 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       if (isLastColumn && isLastRow) {
         insertRowBelow(rowIndex)
         Promise.resolve().then(() => {
-          setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+          setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
         })
         return
       }
 
-      setFocusedPosition({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+      setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
     }
   }
 
@@ -145,7 +140,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       relatedTarget && relatedTarget.matchParent('[data-row][data-column]')
     )
 
-    !isWithinTable && setFocusedPosition(null)
+    !isWithinTable && setHighlightedCell(null)
   }
 
   const tableWrapperRef = useRef<HTMLTableElement>(null)
@@ -170,7 +165,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     const mediator = GlobalMediator.getInstance()
     const unsubscribe = mediator.subscribe(Events.JUMP_TO_ACTIVITY, ({ activityId }) => {
       setHighlightedId(activityId)
-      setFocusedPosition({
+      setHighlightedCell({
         rowIndex: data.findIndex((act) => act.id === activityId),
         columnKey: ColumnKeys.Activity,
       })
@@ -208,13 +203,13 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
               row={row}
               highlighted={highlightedId === row.original.id}
               highlightRow={setHighlightedId}
-              setFocusedPosition={setFocusedPosition}
+              setHighlightedCell={setHighlightedCell}
             >
               {row.getVisibleCells().map((cell) => {
                 const isFocused =
                   highlightedId.length <= 0 &&
-                  focusedPosition?.rowIndex === row.index &&
-                  focusedPosition?.columnKey === cell.column.id
+                  highlightedCell?.rowIndex === row.index &&
+                  highlightedCell?.columnKey === cell.column.id
 
                 return (
                   <td
@@ -229,7 +224,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
                     {flexRender<CellProps>(cell.column.columnDef.cell, {
                       ...cell.getContext(),
                       updateFocusableElement,
-                      focusedPosition,
+                      highlightedCell: highlightedCell,
                     })}
                   </td>
                 )

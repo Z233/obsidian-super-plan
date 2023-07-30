@@ -7,11 +7,11 @@ import type { Maybe } from 'src/types'
 import { check } from 'src/util/helper'
 import { usePlan } from './context'
 import { DefaultInput } from './lib'
-import type { Position } from './PlanTable'
+import type { CellPosition } from './types'
 
 export type CellProps = CellContext<PlanDataItem, unknown> & {
-  focusedPosition: Maybe<Position>
-  updateFocusableElement: (position: Position, element: Maybe<HTMLInputElement>) => void
+  highlightedCell: Maybe<CellPosition>
+  updateFocusableElement: (position: CellPosition, element: Maybe<HTMLInputElement>) => void
 }
 
 export const renderCheckboxCell: FC<CellProps> = ({
