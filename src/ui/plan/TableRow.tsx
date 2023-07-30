@@ -102,7 +102,7 @@ export const TableRow: FC<{
     })
   }
 
-  const { handleBegin, handleCancel, handleSplit, handleIgnore, handleDelete } =
+  const { handleBegin, handleSplit, handleIgnore, handleDelete } =
     useTableRowActions(row)
 
   const menuItems: PlanMenuItem[] = [
@@ -111,14 +111,14 @@ export const TableRow: FC<{
       icon: 'play',
       callback: check(row.original.f) ? undefined : handleBegin,
     },
-    {
-      title: 'Cancel',
-      icon: 'x',
-      callback: check(row.original.f) ? handleCancel : undefined,
-    },
+    // {
+    //   title: 'Cancel',
+    //   icon: 'x',
+    //   callback: check(row.original.f) ? handleCancel : undefined,
+    // },
     {
       title: 'Ignore',
-      icon: 'slash',
+      icon: 'ban',
       callback: handleIgnore,
     },
     {
@@ -134,15 +134,12 @@ export const TableRow: FC<{
   ].filter((item) => item.callback !== undefined)
 
   const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
+    
     e.preventDefault()
 
     highlightRow(activityId)
 
     const menu = new PlanMenu(menuItems)
-
-    menu.onHide(() => {
-      highlightRow(activityId)
-    })
 
     menu.showAtMouseEvent(e)
 

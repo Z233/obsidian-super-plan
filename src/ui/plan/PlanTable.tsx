@@ -80,7 +80,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     })
   }
 
-  const [highlightedId, setHighlightedId] = useState('')
+  const [highlightedRowId, setHighlightedRowId] = useState('')
 
   const table = useReactTable({
     data: data,
@@ -131,9 +131,9 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
     }
   }
-
+  
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
-    highlightedId && setHighlightedId('')
+    highlightedRowId && setHighlightedRowId('')
 
     const relatedTarget = e.relatedTarget as Maybe<HTMLElement>
     const isWithinTable = Boolean(
@@ -164,7 +164,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
   useEffect(() => {
     const mediator = GlobalMediator.getInstance()
     const unsubscribe = mediator.subscribe(Events.JUMP_TO_ACTIVITY, ({ activityId }) => {
-      setHighlightedId(activityId)
+      setHighlightedRowId(activityId)
       setHighlightedCell({
         rowIndex: data.findIndex((act) => act.id === activityId),
         columnKey: ColumnKeys.Activity,
@@ -201,13 +201,13 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
             <TableRow
               key={row.original.id}
               row={row}
-              highlighted={highlightedId === row.original.id}
-              highlightRow={setHighlightedId}
+              highlighted={highlightedRowId === row.original.id}
+              highlightRow={setHighlightedRowId}
               setHighlightedCell={setHighlightedCell}
             >
               {row.getVisibleCells().map((cell) => {
                 const isFocused =
-                  highlightedId.length <= 0 &&
+                  highlightedRowId.length <= 0 &&
                   highlightedCell?.rowIndex === row.index &&
                   highlightedCell?.columnKey === cell.column.id
 
