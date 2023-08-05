@@ -48,7 +48,6 @@ export default class SuperPlan extends Plugin {
 
       this.registerInterval(timer.intervalId)
 
-      // desktopInit(this.app, this.manifest, this.settings, this.store, this.addStatusBarItem())
       desktopInit(this)
     }
 
@@ -133,17 +132,19 @@ export default class SuperPlan extends Plugin {
     const queue: Set<() => void> = new Set()
     const filesMap: FilesMap = new WeakMap()
 
-    let activeFile: Maybe<TFile> = null
+    let activeFile: Maybe<TFile> = this.app.workspace.getActiveFile()
 
-    this.registerEvent(
-      this.app.workspace.on('active-leaf-change', (leaf) => {
-        activeFile = this.app.workspace.getActiveFile()
-        if (queue.size) {
-          queue.forEach((fn) => fn())
-          queue.clear()
-        }
-      })
-    )
+    if (!activeFile) {
+      this.registerEvent(
+        this.app.workspace.on('active-leaf-change', (leaf) => {
+          activeFile = this.app.workspace.getActiveFile()
+          if (queue.size) {
+            queue.forEach((fn) => fn())
+            queue.clear()
+          }
+        })
+      )
+    }
 
     this.registerEditorExtension(
       EditorView.updateListener.of((update) => {
@@ -178,8 +179,7 @@ export default class SuperPlan extends Plugin {
 
       if (activeFile) {
         Promise.resolve().then(() => fn())
-      }
-      else queue.add(fn)
+      } else queue.add(fn)
     })
   }
 
@@ -217,7 +217,7 @@ export default class SuperPlan extends Plugin {
     } else {
       parent = container.closest<HTMLElement>(cmPreviewCodeBlockSelector)
     }
-    
+
     if (
       parent &&
       parent !== el.closest(cmPreviewCodeBlockSelector) &&
