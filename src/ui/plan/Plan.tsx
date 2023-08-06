@@ -20,6 +20,7 @@ import { Scheduler } from 'src/scheduler'
 import type { ColumnKeys } from 'src/constants'
 import { shallowCompare } from 'src/util/helper'
 import { Events, GlobalMediator } from 'src/mediator'
+import type { SuperPlanSettings } from 'src/setting/settings'
 
 /**
  * Markdown Table Editor Loader
@@ -36,10 +37,11 @@ type MteLoader = ({
 
 const Plan: FC<{
   app: App
+  settings: SuperPlanSettings
   sync: CodeBlockSync
   mteLoader: MteLoader
 }> = (props) => {
-  const { app, sync, mteLoader } = props
+  const { app, sync, mteLoader, settings } = props
 
   const { source, lineStart, lineEnd } = useSyncExternalStore(sync.subscribe.bind(sync), () => {
     return sync.getInfo()
@@ -82,14 +84,14 @@ const Plan: FC<{
         }
       })
     }
-    
+
     isFlushing.current = true
     mte.applyChanges()
     isFlushing.current = false
   }
 
   return (
-    <PlanProvider mte={mte} app={app}>
+    <PlanProvider mte={mte} app={app} settings={settings}>
       <PlanTable data={scheduledData} />
     </PlanProvider>
   )
@@ -104,9 +106,24 @@ const Error: FC<{ message: string }> = (props) => {
   )
 }
 
-export const renderPlan = (container: HTMLElement, sync: CodeBlockSync, app: App, file: TFile) => {
+export const renderPlan = ({
+  container,
+  sync,
+  app,
+  file,
+  settings,
+}: {
+  container: HTMLElement
+  sync: CodeBlockSync
+  app: App
+  file: TFile
+  settings: SuperPlanSettings
+}) => {
   const mteLoader: MteLoader = ({ table, startRow, endRow }) =>
     new MdTableEditor({ app, file, table, startRow, endRow })
 
-  render(<Plan app={app} sync={sync} mteLoader={mteLoader} />, container)
+  render(
+    <Plan app={app} sync={sync} mteLoader={mteLoader} settings={settings} />,
+    container
+  )
 }

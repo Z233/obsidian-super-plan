@@ -9,7 +9,6 @@ import {
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
 import type { Maybe } from './types'
-import type { ActivityProvider } from './ui/suggest/activity-provider'
 import { MiniTracker } from './window'
 import { DataStore, SettingsDataKey } from './store'
 import { loadIcons } from './ui/icons'
@@ -23,6 +22,7 @@ import { PlanBuilder } from './editor/plan-builder'
 import { generateId, getNowMins, parseMins2Time } from './util/helper'
 import sentinel from 'sentinel-js'
 import { ACTIVITY_TR_ID_PREFIX, CODE_BLOCK_LANG } from './constants'
+import { ActivityProvider, ActivitySuggester } from './ui/suggest'
 
 type FilesMap = WeakMap<
   TFile,
@@ -51,11 +51,10 @@ export default class SuperPlan extends Plugin {
       desktopInit(this)
     }
 
-    // if (this.settings.enableActivityAutoCompletion) {
-    //   const provider = (this.activityProvider = new ActivityProvider(this.settings))
-    //   editorExtension.setProvider(provider)
-    //   this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
-    // }
+    if (this.settings.enableActivityAutoCompletion) {
+      const provider = (this.activityProvider = new ActivityProvider(this.settings))
+      this.registerEditorSuggest(new ActivitySuggester(this.app, provider, this.settings))
+    }
 
     this.registerCodeBlockProcessor()
 
@@ -212,7 +211,7 @@ export default class SuperPlan extends Plugin {
 
     if (!container) {
       const newContainer = (container = document.createElement('div'))
-      renderPlan(container, sync, this.app, file)
+      renderPlan({ container, sync, app: this.app, file, settings: this.settings })
       filesMap.set(file, { sync, container: newContainer })
     } else {
       parent = container.closest<HTMLElement>(cmPreviewCodeBlockSelector)

@@ -6,12 +6,13 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
-import type { PlanDataItem } from 'src/schemas'
+import type { SuperPlanSettings } from 'src/setting/settings'
 import { generateId } from 'src/util/helper'
 
 type PlanContextValue = {
   mte: MdTableEditor
   app: App
+  settings: SuperPlanSettings
 }
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
@@ -23,14 +24,17 @@ export type FocusPosition = {
   columnKey: ColumnKeys
 }
 
-export const PlanProvider: FC<{ mte: MdTableEditor; app: App }> = (props) => {
-  const { mte } = props
+export const PlanProvider: FC<{ mte: MdTableEditor; app: App; settings: SuperPlanSettings }> = (
+  props
+) => {
+  const { mte, app, settings } = props
 
   return (
     <PlanContext.Provider
       value={{
         mte,
         app,
+        settings,
       }}
     >
       <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>

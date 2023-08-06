@@ -8,6 +8,7 @@ import { check } from 'src/util/helper'
 import { usePlan } from './context'
 import { DefaultInput } from './lib'
 import type { CellPosition } from './types'
+import { ActivityInput } from './ActivityInput'
 
 export type CellProps = CellContext<PlanDataItem, unknown> & {
   highlightedCell: Maybe<CellPosition>
@@ -63,27 +64,21 @@ export const renderActivityCell: FC<CellProps> = ({
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
 
-  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    const value = (e.target as any).value
-    setInput(value)
-  }
+  const handleBlur = (value: string) => {
+    if (value !== prevValueRef.current) {
+      prevValueRef.current = value
 
-  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
-    if (input !== prevValueRef.current) {
-      prevValueRef.current = input
-
-      updateCell(row.index, column.id as ColumnKeys, input)
+      updateCell(row.index, column.id as ColumnKeys, value)
     }
   }
 
   return (
-    <DefaultInput
-      ref={(el: HTMLInputElement) =>
+    <ActivityInput
+      ref={(el: HTMLInputElement) => {
         updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
-      }
-      type="text"
+      }}
       value={input}
-      onChange={handleChange}
+      onChange={setInput}
       onBlur={handleBlur}
     />
   )
