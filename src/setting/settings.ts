@@ -18,6 +18,7 @@ interface PlanTrackerSettings {
 
   progressType: ProgressType
   enableMiniTracker: boolean
+  showMiniTracker: boolean
 }
 
 export type ISettings = PlanEditorSettings & PlanTrackerSettings
@@ -34,6 +35,7 @@ export const defaultSettings: ISettings = {
   progressType: ProgressType.BAR,
   minsLeftToSendNotice: 0,
   enableMiniTracker: false,
+  showMiniTracker: true,
 }
 
 type SettingsUpdateCallback = (options: Partial<ISettings>) => void
@@ -51,6 +53,7 @@ export class SuperPlanSettings implements ISettings {
   progressType: ProgressType
   minsLeftToSendNotice: number
   enableMiniTracker: boolean
+  showMiniTracker: boolean
 
   constructor(plugin: SuperPlan, loadedData: ISettings) {
     this.plugin = plugin
