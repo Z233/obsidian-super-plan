@@ -107,19 +107,39 @@ export function transformTable(table: Table): Activity[] {
 
 export const checkIsDataviewEnabled = () => !!getAPI()
 
-export function debounceRAF(cb: (...args: any[]) => any) {
+export function debounceRAFPromise<T extends (...args: unknown[]) => unknown, TArgs extends unknown[] = Parameters<T>, TReturn = ReturnType<T>>(fn: T) {
   let rAFId: number | null = null
+  let deferred: {
+    promise: Promise<TReturn>
+    resolve: (value: unknown) => void
+    reject: (reason?: unknown) => void
+  } | null = null
 
-  return (...args: any[]) => {
+  return (...args: TArgs) => {
     const context = this
 
     if (rAFId) {
       cancelAnimationFrame(rAFId)
     }
+    
+    if (!deferred) {
+      deferred = {
+        promise: null as unknown as Promise<TReturn>,
+        resolve: null as unknown as (value: unknown) => void,
+        reject: null as unknown as (reason?: unknown) => void,
+      }
+      deferred.promise = new Promise((resolve, reject) => {
+        deferred!.resolve = resolve
+        deferred!.reject = reject
+      })
+    }
 
     rAFId = requestAnimationFrame(() => {
-      cb.apply(context, args)
+      Promise.resolve(fn.apply(context, args)).then(deferred?.resolve, deferred?.reject)
+      deferred = null
     })
+    
+    return deferred.promise
   }
 }
 

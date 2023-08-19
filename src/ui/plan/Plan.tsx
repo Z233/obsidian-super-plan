@@ -8,6 +8,7 @@ import {
   useState,
   useSyncExternalStore,
   type FC,
+  memo,
 } from 'preact/compat'
 import { PlanTable } from './PlanTable'
 import { MdTableEditor } from 'src/editor/md-table-editor'
@@ -34,6 +35,11 @@ type MteLoader = ({
   startRow: number
   endRow: number
 }) => MdTableEditor
+
+const MemorizedPlanTable = memo(
+  PlanTable,
+  (prev, next) => prev.data.every((d, i) => shallowCompare(d, next.data[i]))
+)
 
 const Plan: FC<{
   app: App
@@ -92,7 +98,7 @@ const Plan: FC<{
 
   return (
     <PlanProvider mte={mte} app={app} settings={settings}>
-      <PlanTable data={scheduledData} />
+      <MemorizedPlanTable data={scheduledData} />
     </PlanProvider>
   )
 }
@@ -122,8 +128,5 @@ export const renderPlan = ({
   const mteLoader: MteLoader = ({ table, startRow, endRow }) =>
     new MdTableEditor({ app, file, table, startRow, endRow })
 
-  render(
-    <Plan app={app} sync={sync} mteLoader={mteLoader} settings={settings} />,
-    container
-  )
+  render(<Plan app={app} sync={sync} mteLoader={mteLoader} settings={settings} />, container)
 }

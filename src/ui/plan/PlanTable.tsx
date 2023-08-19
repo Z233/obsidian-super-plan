@@ -1,5 +1,13 @@
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
-import { useEffect, useState, type FC, createElement, useRef, useLayoutEffect } from 'preact/compat'
+import {
+  useEffect,
+  useState,
+  type FC,
+  createElement,
+  useRef,
+  useLayoutEffect,
+  useCallback,
+} from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
 import { Events, GlobalMediator } from 'src/mediator'
@@ -18,7 +26,6 @@ import { DragLayer } from './DragLayer'
 import { focusStyle, indexCellStyle } from './styles'
 import { TableRow } from './TableRow'
 import type { CellPosition, PlanTableColumnDef } from './types'
-
 
 export const tableColumns: PlanTableColumnDef[] = [
   {
@@ -53,12 +60,15 @@ export const tableColumns: PlanTableColumnDef[] = [
   },
 ]
 
-export const PlanTable: FC<{ data: PlanData }> = (props) => {
+type PlanTableProps = { data: PlanData }
+
+export const PlanTable: FC<PlanTableProps> = (props) => {
   const { data } = props
   const { insertRowBelow } = usePlan()
 
   const [highlightedCell, setHighlightedCell] = useState<Maybe<CellPosition>>()
   const focusableElementsRef = useRef<Map<string, HTMLInputElement>>(new Map())
+  const isPatchingRef = useRef(false)
 
   const updateFocusableElement = (position: CellPosition, element: Maybe<HTMLInputElement>) => {
     const { rowIndex, columnKey } = position
@@ -70,15 +80,28 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
     }
   }
 
-  if (highlightedCell) {
-    const { rowIndex, columnKey } = highlightedCell
-    setImmediate(() => {
+  const focusStartTimeStampRef = useRef(0)
+
+  const focusOnHighlightedCell = useCallback(() => {
+    if (highlightedCell) {
+      const { rowIndex, columnKey } = highlightedCell
       const el = focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)
       if (el) {
-        el.focus()
+        setImmediate(() => {
+          el.focus()
+          focusStartTimeStampRef.current = performance.now()
+        })
       }
-    })
-  }
+    }
+  }, [highlightedCell])
+
+  useLayoutEffect(() => {
+    if (highlightedCell) focusOnHighlightedCell()
+
+    return () => {
+      focusStartTimeStampRef.current = 0
+    }
+  }, [highlightedCell])
 
   const [highlightedRowId, setHighlightedRowId] = useState('')
 
@@ -89,7 +112,9 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
   })
 
   const handleCellFocus = (rowIndex: number, columnKey: ColumnKeys) => {
-    setHighlightedCell({ rowIndex, columnKey })
+    if (highlightedCell?.rowIndex !== rowIndex || highlightedCell?.columnKey !== columnKey) {
+      setHighlightedCell({ rowIndex, columnKey })
+    }
   }
 
   const handleCellMouseDown: JSXInternal.MouseEventHandler<HTMLTableCellElement> = (e) => {
@@ -121,8 +146,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
 
       const isLastRow = nextRowIndex === tableHeight - 1
       if (isLastColumn && isLastRow) {
-        insertRowBelow(rowIndex)
-        Promise.resolve().then(() => {
+        insertRowBelow(rowIndex).then(() => {
           setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
         })
         return
@@ -131,8 +155,15 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
     }
   }
-  
+
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
+    e.stopPropagation()
+
+    if (e.timeStamp - focusStartTimeStampRef.current < 100 && highlightedCell) {
+      focusOnHighlightedCell()
+      return false
+    }
+
     highlightedRowId && setHighlightedRowId('')
 
     const relatedTarget = e.relatedTarget as Maybe<HTMLElement>
@@ -140,7 +171,9 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
       relatedTarget && relatedTarget.matchParent('[data-row][data-column]')
     )
 
-    !isWithinTable && setHighlightedCell(null)
+    !isWithinTable && !isPatchingRef.current && setHighlightedCell(null)
+
+    return false
   }
 
   const tableWrapperRef = useRef<HTMLTableElement>(null)
@@ -183,7 +216,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
         parentHeight={tableWrapperInfo?.height ?? 0}
         width={tableWrapperInfo?.width ?? 0}
       />
-      <table ref={tableWrapperRef} className="relative" onBlur={handleBlur}>
+      <table ref={tableWrapperRef} className="relative">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
@@ -218,6 +251,7 @@ export const PlanTable: FC<{ data: PlanData }> = (props) => {
                     data-column={cell.column.id}
                     onMouseDown={handleCellMouseDown}
                     onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
+                    onBlur={handleBlur}
                     onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
                     className={isFocused ? focusStyle : ''}
                   >
