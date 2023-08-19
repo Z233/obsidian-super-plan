@@ -102,8 +102,7 @@ export const TableRow: FC<{
     })
   }
 
-  const { handleBegin, handleSplit, handleIgnore, handleDelete } =
-    useTableRowActions(row)
+  const { handleBegin, handleSplit, handleIgnore, handleDelete } = useTableRowActions(row)
 
   const menuItems: PlanMenuItem[] = [
     {
@@ -134,20 +133,15 @@ export const TableRow: FC<{
   ].filter((item) => item.callback !== undefined)
 
   const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
-    
     e.preventDefault()
 
     highlightRow(activityId)
 
     const menu = new PlanMenu(menuItems)
-    
-    menu.onHide = () => {
+
+    menu.onHide(() => {
       highlightRow('')
-    }
-    
-    menu.onunload = () => {
-      highlightRow('')
-    }
+    })
 
     menu.showAtMouseEvent(e)
 
