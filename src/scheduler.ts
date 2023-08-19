@@ -160,7 +160,8 @@ export class Scheduler {
       if (act.isRigid && !isAllRigid) {
         actLen = act.length
       } else {
-        const floatLen = (duration - offsetValue) * (act.length / (total - offsetValue))
+        let floatLen = (duration - offsetValue) * (act.length / (total - offsetValue)) 
+        floatLen = Number.isNaN(floatLen) ? 0 : floatLen
         actLen = Math.round(floatLen)
         floatOffsetValue += floatLen - actLen
       }
