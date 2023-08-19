@@ -14,7 +14,8 @@ interface PlanTrackerSettings {
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
 
-  minsLeftToSendNotice: number
+  enableNotification: boolean
+  minsLeftToSendNotification: number
 
   progressType: ProgressType
   enableMiniTracker: boolean
@@ -33,7 +34,10 @@ export const defaultSettings: ISettings = {
   dailyPlanNoteFolder: '/',
   dailyPlanNoteFormat: DEFAULT_NOTE_FORMAT,
   progressType: ProgressType.BAR,
-  minsLeftToSendNotice: 0,
+
+  enableNotification: true,
+  minsLeftToSendNotification: 0,
+
   enableMiniTracker: false,
   showMiniTracker: true,
 }
@@ -51,7 +55,10 @@ export class SuperPlanSettings implements ISettings {
   dailyPlanNoteFolder: string
   dailyPlanNoteFormat: string
   progressType: ProgressType
-  minsLeftToSendNotice: number
+
+  enableNotification: boolean
+  minsLeftToSendNotification: number
+
   enableMiniTracker: boolean
   showMiniTracker: boolean
 

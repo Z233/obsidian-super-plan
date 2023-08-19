@@ -141,14 +141,25 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
             })
           })
       })
+    
+    createSetting()
+      .setName('Enable Notification')
+      .setDesc('Send a notification when the current activity ends.')
+      .addToggle((comp) => {
+        comp.setValue(this.plugin.settings.enableNotification).onChange((value) => {
+          this.plugin.settings.update({
+            enableNotification: value,
+          })
+        })
+      })
 
     createSetting()
       .setName('Minutes Left To Send Notice')
       .setDesc('The minutes before the current activity ends to send a notification.')
       .addText((comp) =>
-        comp.setValue(this.plugin.settings.minsLeftToSendNotice.toString()).onChange((value) =>
+        comp.setValue(this.plugin.settings.minsLeftToSendNotification.toString()).onChange((value) =>
           this.plugin.settings.update({
-            minsLeftToSendNotice: +value,
+            minsLeftToSendNotification: +value,
           })
         )
       )

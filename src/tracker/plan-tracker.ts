@@ -206,35 +206,37 @@ export class PlanTracker {
 
     this.notifyObservers({ ongoing, upcoming })
 
-    // Notification
+    // ================== Notification ==================
 
-    const nowMins = getNowMins()
-    const nowMinsSecs = new Date().getSeconds()
+    if (this.settings.enableNotification) {
+      const nowMins = getNowMins()
+      const nowMinsSecs = new Date().getSeconds()
 
-    // a fixed activity will begin
-    const isNextWillStart = Boolean(
-      next &&
-        next.isFixed &&
-        nowMinsSecs === 59 &&
-        nowMins + 1 >= next.start - this.settings.minsLeftToSendNotice
-    )
-    const isNowWillStop = Boolean(
-      this.now && nowMins >= this.now.stop - this.settings.minsLeftToSendNotice
-    )
+      // a fixed activity will begin
+      const isNextWillStart = Boolean(
+        next &&
+          next.isFixed &&
+          nowMinsSecs === 59 &&
+          nowMins + 1 >= next.start - this.settings.minsLeftToSendNotification
+      )
+      const isNowWillStop = Boolean(
+        this.now && nowMins >= this.now.stop - this.settings.minsLeftToSendNotification
+      )
 
-    // check this.prev: prevent sending a notification at the start
-    if (
-      ((this.prev && isNowWillStop) || isNextWillStart) &&
-      this.lastSendNotificationActivity !== this.now
-    ) {
-      const content = isNextWillStart
-        ? `A fixed activity will start soon, time to move on.`
-        : `It's time to begin the next activity!`
-      new Notification(content)
-      this.lastSendNotificationActivity = this.now
+      // check this.prev: prevent sending a notification at the start
+      if (
+        ((this.prev && isNowWillStop) || isNextWillStart) &&
+        this.lastSendNotificationActivity !== this.now
+      ) {
+        const content = isNextWillStart
+          ? `A fixed activity will start soon, time to move on.`
+          : `It's time to begin the next activity!`
+        new Notification(content)
+        this.lastSendNotificationActivity = this.now
 
-      // TODO: Jump to next activity row
-      // notification.addEventListener("click", () => {});
+        // TODO: Jump to next activity row
+        // notification.addEventListener("click", () => {});
+      }
     }
   }
 
