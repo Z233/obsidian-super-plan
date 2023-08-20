@@ -1,5 +1,12 @@
 import type { CellContext } from '@tanstack/react-table'
-import { useEffect, useState, useRef, type ChangeEventHandler, type FC } from 'preact/compat'
+import {
+  useEffect,
+  useState,
+  useRef,
+  type ChangeEventHandler,
+  type FC,
+  useLayoutEffect,
+} from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeysMap, Columns, type ColumnKeys } from 'src/constants'
 import type { PlanDataItem } from 'src/schemas'
@@ -9,19 +16,40 @@ import { usePlan } from './context'
 import { DefaultInput } from './lib'
 import type { CellPosition } from './types'
 import { ActivityInput } from './ActivityInput'
+import { focusCellAtom } from './atoms'
+import { useAtom } from 'jotai'
 
-export type CellProps = CellContext<PlanDataItem, unknown> & {
-  highlightedCell: Maybe<CellPosition>
-  updateFocusableElement: (position: CellPosition, element: Maybe<HTMLInputElement>) => void
+export type CellProps = CellContext<PlanDataItem, unknown>
+
+const useAutoFocus = (position: CellPosition) => {
+  const [elRef, setElRef] = useState<HTMLElement | null>(null)
+  const [focusCell] = useAtom(focusCellAtom)
+
+  useLayoutEffect(() => {
+    if (
+      elRef !== null &&
+      focusCell !== null &&
+      focusCell.rowIndex === position.rowIndex &&
+      focusCell.columnKey === position.columnKey
+    ) {
+      requestAnimationFrame(() => {
+        elRef.focus()
+      })
+    }
+  }, [focusCell, elRef])
+
+  return {
+    setElRef,
+  }
 }
 
 export const renderCheckboxCell: FC<CellProps> = ({
   getValue,
   row,
   column,
-  updateFocusableElement,
 }) => {
   const { updateCell } = usePlan()
+  const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
   const prevValueRef = useRef(check(getValue() as string))
   const [checked, setChecked] = useState(() => prevValueRef.current)
@@ -42,9 +70,7 @@ export const renderCheckboxCell: FC<CellProps> = ({
     <div className="flex">
       <input
         className="m-auto"
-        ref={(el) =>
-          updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
-        }
+        ref={setElRef}
         type="checkbox"
         checked={checked}
         onChange={handleChange}
@@ -57,9 +83,9 @@ export const renderActivityCell: FC<CellProps> = ({
   getValue,
   row,
   column,
-  updateFocusableElement,
 }) => {
   const { updateCell } = usePlan()
+  const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -72,25 +98,16 @@ export const renderActivityCell: FC<CellProps> = ({
     }
   }
 
-  return (
-    <ActivityInput
-      ref={(el: HTMLInputElement) => {
-        updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
-      }}
-      value={input}
-      onChange={setInput}
-      onBlur={handleBlur}
-    />
-  )
+  return <ActivityInput ref={setElRef} value={input} onChange={setInput} onBlur={handleBlur} />
 }
 
 export const renderStartCell: FC<CellProps> = ({
   getValue,
   row,
   column,
-  updateFocusableElement,
 }) => {
   const { updateCell } = usePlan()
+  const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -111,9 +128,7 @@ export const renderStartCell: FC<CellProps> = ({
 
   return (
     <DefaultInput
-      ref={(el: HTMLInputElement) =>
-        updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
-      }
+      ref={setElRef}
       type="text"
       className="!w-10"
       value={input}
@@ -127,9 +142,9 @@ export const renderLengthCell: FC<CellProps> = ({
   getValue,
   row,
   column,
-  updateFocusableElement,
 }) => {
   const { updateCell } = usePlan()
+  const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
   const prevValueRef = useRef(getValue() as string)
   const [input, setInput] = useState(() => prevValueRef.current)
@@ -149,9 +164,7 @@ export const renderLengthCell: FC<CellProps> = ({
 
   return (
     <DefaultInput
-      ref={(el: HTMLInputElement) =>
-        updateFocusableElement({ rowIndex: row.index, columnKey: column.id as ColumnKeys }, el)
-      }
+      ref={setElRef}
       type="number"
       className="!w-10"
       value={input}

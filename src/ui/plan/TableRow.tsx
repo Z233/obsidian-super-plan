@@ -1,19 +1,19 @@
-import { useEffect, useState, useCallback, type FC, type StateUpdater } from 'preact/compat'
+import { useEffect, useState, useCallback, type FC } from 'preact/compat'
 import type { Row } from '@tanstack/react-table'
 import type { PlanDataItem } from 'src/schemas'
 import clsx from 'clsx'
-import { dropOverStyle, focusStyle, indexCellStyle } from './styles'
+import { dropOverStyle, highlightStyle, indexCellStyle } from './styles'
 import { getIcon } from 'obsidian'
 import { usePlan } from './context'
 import { useDrag, useDrop } from 'react-dnd'
 import { Icon } from './lib'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { PlanMenu, type PlanMenuItem } from './menu'
-import type { Maybe } from 'src/types'
 import { ACTIVITY_TR_ID_PREFIX, ColumnKeys } from 'src/constants'
 import { check, getNowMins, parseMins2Time } from 'src/util/helper'
 import { SplitConfirmModalV2 } from '../modals'
-import type { CellPosition } from './types'
+import { focusCellAtom, highlightingRowIdAtom } from './atoms'
+import { useAtom } from 'jotai'
 
 function useTableRowActions(row: Row<PlanDataItem>) {
   const { deleteRow, updateCell, duplicateRow } = usePlan()
@@ -61,13 +61,12 @@ function useTableRowActions(row: Row<PlanDataItem>) {
 
 export const TableRow: FC<{
   row: Row<PlanDataItem>
-  setHighlightedCell: StateUpdater<Maybe<CellPosition>>
-  highlighted: boolean
   highlightRow: (activityId: string) => void
 }> = (props) => {
-  const { row, setHighlightedCell, highlighted, highlightRow } = props
+  const { row, highlightRow } = props
   const activityId = row.original.id
   const { insertRowBelow, moveRow } = usePlan()
+  const [highlightingRowId, setHighlightingRowId] = useAtom(highlightingRowIdAtom)
 
   const [isHover, setIsHover] = useState(false)
 
@@ -95,10 +94,11 @@ export const TableRow: FC<{
     dragPreview(getEmptyImage(), { captureDraggingState: true })
   }, [])
 
+  const [, setFocusCell] = useAtom(focusCellAtom)
+
   const handlePlusClick = (rowIndex: number) => {
-    insertRowBelow(rowIndex)
-    Promise.resolve().then(() => {
-      setHighlightedCell({ rowIndex: rowIndex + 1, columnKey: ColumnKeys.Activity })
+    insertRowBelow(rowIndex).then(() => {
+      setFocusCell({ rowIndex: rowIndex + 1, columnKey: ColumnKeys.Activity })
     })
   }
 
@@ -155,7 +155,7 @@ export const TableRow: FC<{
       key={row.original.id}
       className={clsx({
         '![&>*:nth-child(2)]:border-l-0 relative': true,
-        [focusStyle]: highlighted,
+        [highlightStyle]: highlightingRowId === row.original.id,
         [dropOverStyle]: true,
         '!after:visible': isOver,
       })}

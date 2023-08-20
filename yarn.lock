@@ -252,9 +252,9 @@
     "@babel/helper-validator-identifier" "^7.22.5"
     to-fast-properties "^2.0.0"
 
-"@codemirror/language@git+https://github.com/lishid/cm-language.git":
+"@codemirror/language@https://github.com/lishid/cm-language":
   version "6.6.0"
-  resolved "git+https://github.com/lishid/cm-language.git#1aadcc247f20ccfda76424a9f853dbb4ee203fdc"
+  resolved "https://github.com/lishid/cm-language#1aadcc247f20ccfda76424a9f853dbb4ee203fdc"
   dependencies:
     "@codemirror/state" "^6.0.0"
     "@codemirror/view" "^6.0.0"
@@ -2424,6 +2424,11 @@ jiti@^1.12.9, jiti@^1.18.2, jiti@^1.19.1:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.19.1.tgz#fa99e4b76a23053e0e7cde098efe1704a14c16f1"
   integrity sha512-oVhqoRDaBXf7sjkll95LHVS6Myyyb1zaunVwk4Z0+WPSW4gjS0pl01zYKHScTuyEhQsFxV5L4DR5r+YqSyqyyg==
 
+jotai@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.3.1.tgz#0bd43f4c89cf557cfea5414bf3c8b6792202c354"
+  integrity sha512-pXhx8/MeRUAHbzayerEUf9NHvP+Ba3q9WAvIMjaSwwuSCKEFhb8UW4XuZPC+Bv4u2ufvlyrxIZ+vy5UJ3f8JsQ==
+
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -2885,7 +2890,7 @@ obsidian@^1.2.8:
     "@types/codemirror" "5.60.8"
     moment "2.29.4"
 
-"obsidian@github:obsidianmd/obsidian-api#master":
+obsidian@obsidianmd/obsidian-api#master:
   version "1.4.0"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/90517f4fa762838008a638069d8e151f071a8ef7"
   dependencies:

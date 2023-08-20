@@ -23,9 +23,11 @@ import {
 } from './cells'
 import { usePlan } from './context'
 import { DragLayer } from './DragLayer'
-import { focusStyle, indexCellStyle } from './styles'
+import { highlightStyle as highlightingStyle, indexCellStyle } from './styles'
 import { TableRow } from './TableRow'
 import type { CellPosition, PlanTableColumnDef } from './types'
+import { focusCellAtom, highlightingRowIdAtom } from './atoms'
+import { useAtom } from 'jotai'
 
 export const tableColumns: PlanTableColumnDef[] = [
   {
@@ -66,44 +68,9 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   const { data } = props
   const { insertRowBelow } = usePlan()
 
-  const [highlightedCell, setHighlightedCell] = useState<Maybe<CellPosition>>()
-  const focusableElementsRef = useRef<Map<string, HTMLInputElement>>(new Map())
-  const isPatchingRef = useRef(false)
+  const [focusCell, setFocusCell] = useAtom(focusCellAtom)
 
-  const updateFocusableElement = (position: CellPosition, element: Maybe<HTMLInputElement>) => {
-    const { rowIndex, columnKey } = position
-    const key = `${rowIndex}-${columnKey}`
-    if (element) {
-      focusableElementsRef.current.set(key, element)
-    } else {
-      focusableElementsRef.current.delete(key)
-    }
-  }
-
-  const focusStartTimeStampRef = useRef(0)
-
-  const focusOnHighlightedCell = useCallback(() => {
-    if (highlightedCell) {
-      const { rowIndex, columnKey } = highlightedCell
-      const el = focusableElementsRef.current.get(`${rowIndex}-${columnKey}`)
-      if (el) {
-        setImmediate(() => {
-          el.focus()
-          focusStartTimeStampRef.current = performance.now()
-        })
-      }
-    }
-  }, [highlightedCell])
-
-  useLayoutEffect(() => {
-    if (highlightedCell) focusOnHighlightedCell()
-
-    return () => {
-      focusStartTimeStampRef.current = 0
-    }
-  }, [highlightedCell])
-
-  const [highlightedRowId, setHighlightedRowId] = useState('')
+  const [highlightingRowId, setHighlightingRowId] = useAtom(highlightingRowIdAtom)
 
   const table = useReactTable({
     data: data,
@@ -112,15 +79,12 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   })
 
   const handleCellFocus = (rowIndex: number, columnKey: ColumnKeys) => {
-    if (highlightedCell?.rowIndex !== rowIndex || highlightedCell?.columnKey !== columnKey) {
-      setHighlightedCell({ rowIndex, columnKey })
-    }
+    setFocusCell({ rowIndex, columnKey })
   }
 
   const handleCellMouseDown: JSXInternal.MouseEventHandler<HTMLTableCellElement> = (e) => {
     // Disable default behavior for right click
     if (e.button === 2) {
-      setHighlightedCell(null)
       e.preventDefault()
       return false
     }
@@ -129,7 +93,8 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   const handleCellKeyDown = (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
     const { key } = e
     // Binding Enter
-    if (key === 'Enter' && highlightedCell) {
+    // TODO: change highlighted to focus
+    if (key === 'Enter') {
       // Move to next column or create new row
       const column = ColumnKeysMap[columnKey]
       const tableHeight = table.getRowModel().rows.length
@@ -147,33 +112,24 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
       const isLastRow = nextRowIndex === tableHeight - 1
       if (isLastColumn && isLastRow) {
         insertRowBelow(rowIndex).then(() => {
-          setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+          setFocusCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
         })
         return
       }
 
-      setHighlightedCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+      setFocusCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
     }
   }
 
   const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
-    e.stopPropagation()
-
-    if (e.timeStamp - focusStartTimeStampRef.current < 100 && highlightedCell) {
-      focusOnHighlightedCell()
-      return false
-    }
-
-    highlightedRowId && setHighlightedRowId('')
+    highlightingRowId && setHighlightingRowId('')
 
     const relatedTarget = e.relatedTarget as Maybe<HTMLElement>
     const isWithinTable = Boolean(
       relatedTarget && relatedTarget.matchParent('[data-row][data-column]')
     )
 
-    !isWithinTable && !isPatchingRef.current && setHighlightedCell(null)
-
-    return false
+    !isWithinTable && setFocusCell(null)
   }
 
   const tableWrapperRef = useRef<HTMLTableElement>(null)
@@ -197,11 +153,7 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   useEffect(() => {
     const mediator = GlobalMediator.getInstance()
     const unsubscribe = mediator.subscribe(Events.JUMP_TO_ACTIVITY, ({ activityId }) => {
-      setHighlightedRowId(activityId)
-      setHighlightedCell({
-        rowIndex: data.findIndex((act) => act.id === activityId),
-        columnKey: ColumnKeys.Activity,
-      })
+      setHighlightingRowId(activityId)
     })
 
     return () => {
@@ -231,18 +183,12 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.original.id}
-              row={row}
-              highlighted={highlightedRowId === row.original.id}
-              highlightRow={setHighlightedRowId}
-              setHighlightedCell={setHighlightedCell}
-            >
+            <TableRow key={row.original.id} row={row} highlightRow={setHighlightingRowId}>
               {row.getVisibleCells().map((cell) => {
-                const isFocused =
-                  highlightedRowId.length <= 0 &&
-                  highlightedCell?.rowIndex === row.index &&
-                  highlightedCell?.columnKey === cell.column.id
+                const isFocus =
+                  highlightingRowId === '' &&
+                  focusCell?.rowIndex === row.index &&
+                  focusCell?.columnKey === cell.column.id
 
                 return (
                   <td
@@ -253,13 +199,9 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
                     onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
                     onBlur={handleBlur}
                     onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
-                    className={isFocused ? focusStyle : ''}
+                    className={isFocus ? highlightingStyle : ''}
                   >
-                    {flexRender<CellProps>(cell.column.columnDef.cell, {
-                      ...cell.getContext(),
-                      updateFocusableElement,
-                      highlightedCell: highlightedCell,
-                    })}
+                    {flexRender<CellProps>(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 )
               })}
