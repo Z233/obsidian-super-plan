@@ -27,7 +27,7 @@ jobs:
 
       - name: Rename artifact
         run:
-          mv download/plugin.zip download/${{ github.event.repository.name }}-${{ github.ref_name }}.zip
+          unzip download/plugin.zip -d download && rm download/plugin.zip
 
       - name: Create release
         uses: 'marvinpinto/action-automatic-releases@latest'

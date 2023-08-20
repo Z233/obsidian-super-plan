@@ -74,13 +74,7 @@ export class MiniTracker {
     if (__DEV__) {
       this.win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'window/mini-tracker/index.html')
     } else {
-      const filePath = normalizePath(`${windowFolderPath}/mini-tracker/index.html`)
-
-      const fs = require('node:fs/promises')
-      const buffer = await fs.readFile(filePath)
-      const content = buffer.toString('utf8')
-
-      this.win.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(content)}`)
+      this.win.loadURL(`data:text/html;charset=UTF-8,__MINI_TRACKER_HTML__`)
     }
 
     this.tracker.addObserver(this.trackerObserver)

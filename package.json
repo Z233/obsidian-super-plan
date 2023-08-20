@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "npm run clear && cross-env NODE_ENV=development run-p dev:*",
     "dev:js": "npm run build:js -- --mode development",
-    "dev:web": "vite dev --config vite.config.window.ts",
+    "dev:web": "vite dev --config vite.config.web.ts",
     "build": "cross-env NODE_ENV=production run-s clear build:web build:js ",
     "build:js": "vite build --config vite.config.ts",
-    "build:web": "vite build --config vite.config.window.ts",
+    "build:web": "vite build --config vite.config.web.ts",
     "release": "run-s build pack",
-    "pack": "rimraf plugin.zip && bestzip plugin.zip window main.js styles.css manifest.json",
+    "pack": "rimraf plugin.zip && bestzip plugin.zip main.js styles.css manifest.json",
     "clear": "rimraf assets window main.js styles.css",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "typecheck": "tsc --noEmit"
