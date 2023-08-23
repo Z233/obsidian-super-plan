@@ -128,9 +128,9 @@ export const renderStartCell: FC<CellProps> = ({
 
   return (
     <DefaultInput
+      className="!w-full"
       ref={setElRef}
       type="text"
-      className="!w-10"
       value={input}
       onChange={handleChange}
       onBlur={handleBlur}

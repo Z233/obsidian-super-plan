@@ -1,4 +1,4 @@
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import {
   useEffect,
   useState,
@@ -28,39 +28,57 @@ import { TableRow } from './TableRow'
 import type { CellPosition, PlanTableColumnDef } from './types'
 import { focusCellAtom, highlightingRowIdAtom } from './atoms'
 import { useAtom } from 'jotai'
+import clsx from 'clsx'
 
 export const tableColumns: PlanTableColumnDef[] = [
   {
     header: 'F',
+    id: ColumnKeys.F,
     accessorKey: ColumnKeys.F,
     cell: renderCheckboxCell,
   },
   {
     header: 'Start',
+    id: ColumnKeys.Start,
     accessorKey: ColumnKeys.Start,
     cell: renderStartCell,
   },
   {
     header: 'Activity',
+    id: ColumnKeys.Activity,
     accessorKey: ColumnKeys.Activity,
     cell: renderActivityCell,
   },
   {
     header: 'Length',
+    id: ColumnKeys.Length,
     accessorKey: ColumnKeys.Length,
     cell: renderLengthCell,
   },
   {
     header: 'R',
+    id: ColumnKeys.R,
     accessorKey: ColumnKeys.R,
     cell: renderCheckboxCell,
   },
   {
     header: 'ActLen',
+    id: ColumnKeys.ActLen,
     accessorKey: ColumnKeys.ActLen,
     cell: renderActLenCell,
   },
 ]
+
+const tableWidthDict: {
+  [K in Exclude<ColumnKeys, ColumnKeys.ID>]: `${number}%`
+} = {
+  [ColumnKeys.F]: '6%',
+  [ColumnKeys.Start]: '10%',
+  [ColumnKeys.Activity]: '46%',
+  [ColumnKeys.Length]: '13%',
+  [ColumnKeys.R]: '6%',
+  [ColumnKeys.ActLen]: '12%',
+}
 
 type PlanTableProps = { data: PlanData }
 
@@ -162,19 +180,31 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   }, [])
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <DragLayer
         parentOffsetY={tableWrapperInfo?.offsetY ?? 0}
         parentHeight={tableWrapperInfo?.height ?? 0}
         width={tableWrapperInfo?.width ?? 0}
       />
-      <table ref={tableWrapperRef} className="relative">
+      <table ref={tableWrapperRef} className="relative w-full table-fixed">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
-              <th className={indexCellStyle}>#</th>
+              <th className={indexCellStyle} width="7%">
+                #
+              </th>
               {headerGroup.headers.map((header) => (
-                <th key={header.column.id}>
+                <th
+                  key={header.column.id}
+                  class={
+                    '!px-[calc(var(--font-text-size)*0.5)] !px-[calc(var(--font-text-size)*0.25)]'
+                  }
+                  width={
+                    tableWidthDict[
+                      header.column.columnDef.id as Exclude<ColumnKeys, ColumnKeys.ID>
+                    ] as string
+                  }
+                >
                   {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
               ))}
@@ -199,7 +229,10 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
                     onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
                     onBlur={handleBlur}
                     onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
-                    className={isFocus ? highlightingStyle : ''}
+                    className={clsx(
+                      isFocus ? highlightingStyle : '',
+                      '!px-[calc(var(--font-text-size)*0.5)] !px-[calc(var(--font-text-size)*0.25)]'
+                    )}
                   >
                     {flexRender<CellProps>(cell.column.columnDef.cell, cell.getContext())}
                   </td>
