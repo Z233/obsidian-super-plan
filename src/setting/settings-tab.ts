@@ -99,8 +99,8 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
             text: 'Requires the ',
           })
           el.createEl('a', {
-            text: 'obsidian-dataview',
-            href: 'https://github.com/blacksmithgu/obsidian-dataview',
+            text: 'modified version of obsidian-dataview',
+            href: 'https://github.com/z233/obsidian-dataview-modified',
           })
           el.appendText(' to be enabled.')
 
