@@ -56,7 +56,7 @@ there's an ongoing activity, its information will be displayed in the status bar
 
 This feature utilizes a modified version of obsidian-dataview. To enable this feature, you must
 install this modified version first, which is available for download in
-[the plugin's release files](https://github.com/Z233/obsidian-super-plan/releases/latest).
+[the plugin's release files](https://github.com/Z233/obsidian-dataview-modified/releases/latest).
 
 ### Mini-Tracker Window
 
