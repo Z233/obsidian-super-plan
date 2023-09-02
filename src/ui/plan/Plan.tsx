@@ -36,9 +36,8 @@ type MteLoader = ({
   endRow: number
 }) => MdTableEditor
 
-const MemorizedPlanTable = memo(
-  PlanTable,
-  (prev, next) => prev.data.every((d, i) => shallowCompare(d, next.data[i]))
+const MemorizedPlanTable = memo(PlanTable, (prev, next) =>
+  prev.data.every((d, i) => shallowCompare(d, next.data[i]))
 )
 
 const Plan: FC<{
@@ -98,7 +97,7 @@ const Plan: FC<{
 
   return (
     <PlanProvider mte={mte} app={app} settings={settings}>
-      <MemorizedPlanTable data={scheduledData} />
+      <MemorizedPlanTable data={scheduledData} totalMins={scheduler.getTotalMins()} />
     </PlanProvider>
   )
 }

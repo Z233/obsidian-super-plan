@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, type FC, type ForwardedRef } from 'preact/compat'
+import { forwardRef, useEffect, useRef, type FC, type ForwardedRef, useMemo } from 'preact/compat'
 import type { JSX } from 'preact/jsx-runtime'
 import { getIcon } from 'obsidian'
 import clsx from 'clsx'
@@ -50,4 +50,15 @@ export const Icon: FC<
   }, [])
 
   return <span ref={wrapperRef} className={clsx('flex [&>svg]:m-auto', className)} {...rest}></span>
+}
+
+export const TotalHoursLabel: FC<{
+  totalMins: number
+}> = ({ totalMins }) => {
+  const hours = Math.floor(totalMins / 60)
+  const mins = totalMins % 60
+
+  return <div className="text-xs text-gray">Total: {hours} h{
+    mins > 0 ? ` ${mins} m` : ''
+  }</div>
 }

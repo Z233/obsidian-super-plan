@@ -117,7 +117,6 @@ export function usePlan() {
     deleteRow,
     insertRowBelow,
     moveRow,
-    duplicateRow,
-    isApplying: mte.isApplying,
+    duplicateRow
   }
 }

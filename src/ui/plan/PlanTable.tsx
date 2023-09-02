@@ -3,10 +3,7 @@ import {
   useEffect,
   useState,
   type FC,
-  createElement,
   useRef,
-  useLayoutEffect,
-  useCallback,
 } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
@@ -25,10 +22,11 @@ import { usePlan } from './context'
 import { DragLayer } from './DragLayer'
 import { highlightStyle as highlightingStyle, indexCellStyle } from './styles'
 import { TableRow } from './TableRow'
-import type { CellPosition, PlanTableColumnDef } from './types'
+import type { PlanTableColumnDef } from './types'
 import { focusCellAtom, highlightingRowIdAtom } from './atoms'
 import { useAtom } from 'jotai'
 import clsx from 'clsx'
+import { TotalHoursLabel } from './lib'
 
 export const tableColumns: PlanTableColumnDef[] = [
   {
@@ -74,13 +72,13 @@ const tableWidthDict: {
 } = {
   [ColumnKeys.F]: '6%',
   [ColumnKeys.Start]: '10%',
-  [ColumnKeys.Activity]: '46%',
+  [ColumnKeys.Activity]: '44%',
   [ColumnKeys.Length]: '13%',
   [ColumnKeys.R]: '6%',
-  [ColumnKeys.ActLen]: '12%',
+  [ColumnKeys.ActLen]: '14%',
 }
 
-type PlanTableProps = { data: PlanData }
+type PlanTableProps = { data: PlanData; totalMins: number }
 
 export const PlanTable: FC<PlanTableProps> = (props) => {
   const { data } = props
@@ -180,68 +178,76 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   }, [])
 
   return (
-    <div className="relative w-full">
-      <DragLayer
-        parentOffsetY={tableWrapperInfo?.offsetY ?? 0}
-        parentHeight={tableWrapperInfo?.height ?? 0}
-        width={tableWrapperInfo?.width ?? 0}
-      />
-      <table ref={tableWrapperRef} className="relative w-full table-fixed">
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
-              <th className={indexCellStyle} width="7%">
-                #
-              </th>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.column.id}
-                  class={
-                    '!px-[calc(var(--font-text-size)*0.5)] !px-[calc(var(--font-text-size)*0.25)]'
-                  }
-                  width={
-                    tableWidthDict[
-                      header.column.columnDef.id as Exclude<ColumnKeys, ColumnKeys.ID>
-                    ] as string
-                  }
-                >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
+    <div>
+      <div className="relative w-full">
+        <DragLayer
+          parentOffsetY={tableWrapperInfo?.offsetY ?? 0}
+          parentHeight={tableWrapperInfo?.height ?? 0}
+          width={tableWrapperInfo?.width ?? 0}
+        />
+        <table
+          ref={tableWrapperRef}
+          className="relative w-full table-fixed"
+          style={{
+            marginBlockEnd: 0,
+          }}
+        >
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id} className="![&>*:nth-child(2)]:border-l-0">
+                <th className={indexCellStyle} width="7%">
+                  #
                 </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.original.id} row={row} highlightRow={setHighlightingRowId}>
-              {row.getVisibleCells().map((cell) => {
-                const isFocus =
-                  highlightingRowId === '' &&
-                  focusCell?.rowIndex === row.index &&
-                  focusCell?.columnKey === cell.column.id
-
-                return (
-                  <td
-                    key={`${cell.column.id}-${row.original[cell.column.id as ColumnKeys]}`}
-                    data-row={row.index}
-                    data-column={cell.column.id}
-                    onMouseDown={handleCellMouseDown}
-                    onKeyDown={(e) => handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)}
-                    onBlur={handleBlur}
-                    onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
-                    className={clsx(
-                      isFocus ? highlightingStyle : '',
-                      '!px-[calc(var(--font-text-size)*0.5)] !px-[calc(var(--font-text-size)*0.25)]'
-                    )}
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.column.id}
+                    class={'!px-2 !px-1'}
+                    width={
+                      tableWidthDict[
+                        header.column.columnDef.id as Exclude<ColumnKeys, ColumnKeys.ID>
+                      ] as string
+                    }
                   >
-                    {flexRender<CellProps>(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                )
-              })}
-            </TableRow>
-          ))}
-        </tbody>
-      </table>
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.original.id} row={row} highlightRow={setHighlightingRowId}>
+                {row.getVisibleCells().map((cell) => {
+                  const isFocus =
+                    highlightingRowId === '' &&
+                    focusCell?.rowIndex === row.index &&
+                    focusCell?.columnKey === cell.column.id
+
+                  return (
+                    <td
+                      key={`${cell.column.id}-${row.original[cell.column.id as ColumnKeys]}`}
+                      data-row={row.index}
+                      data-column={cell.column.id}
+                      onMouseDown={handleCellMouseDown}
+                      onKeyDown={(e) =>
+                        handleCellKeyDown(e, row.index, cell.column.id as ColumnKeys)
+                      }
+                      onBlur={handleBlur}
+                      onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
+                      className={clsx(isFocus ? highlightingStyle : '', '!px-2 !px-1')}
+                    >
+                      {flexRender<CellProps>(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex mt-1 px-2 justify-end">
+        <TotalHoursLabel totalMins={props.totalMins} />
+      </div>
     </div>
   )
 }

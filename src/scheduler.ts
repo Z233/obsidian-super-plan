@@ -160,7 +160,7 @@ export class Scheduler {
       if (act.isRigid && !isAllRigid) {
         actLen = act.length
       } else {
-        let floatLen = (duration - offsetValue) * (act.length / (total - offsetValue)) 
+        let floatLen = (duration - offsetValue) * (act.length / (total - offsetValue))
         floatLen = Number.isNaN(floatLen) ? 0 : floatLen
         actLen = Math.round(floatLen)
         floatOffsetValue += floatLen - actLen
@@ -196,5 +196,14 @@ export class Scheduler {
       r: act.isRigid ? 'x' : '',
       actLen: formatNumberCell(act.actLen),
     }))
+  }
+
+  getTotalMins() {
+    const first = this.activities.at(0)
+    const last = this.activities.at(-1)
+
+    if (!first?.start || !last?.stop) return 0
+
+    return last.stop - first.start
   }
 }

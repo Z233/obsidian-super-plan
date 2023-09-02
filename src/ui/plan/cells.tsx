@@ -1,4 +1,4 @@
-import type { CellContext } from '@tanstack/react-table'
+import type { CellContext, HeaderContext } from '@tanstack/react-table'
 import {
   useEffect,
   useState,
@@ -6,10 +6,11 @@ import {
   type ChangeEventHandler,
   type FC,
   useLayoutEffect,
+  useMemo,
 } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
 import { ColumnKeysMap, Columns, type ColumnKeys } from 'src/constants'
-import type { PlanDataItem } from 'src/schemas'
+import type { PlanData, PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
 import { check } from 'src/util/helper'
 import { usePlan } from './context'
@@ -43,11 +44,7 @@ const useAutoFocus = (position: CellPosition) => {
   }
 }
 
-export const renderCheckboxCell: FC<CellProps> = ({
-  getValue,
-  row,
-  column,
-}) => {
+export const renderCheckboxCell: FC<CellProps> = ({ getValue, row, column }) => {
   const { updateCell } = usePlan()
   const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
@@ -79,11 +76,7 @@ export const renderCheckboxCell: FC<CellProps> = ({
   )
 }
 
-export const renderActivityCell: FC<CellProps> = ({
-  getValue,
-  row,
-  column,
-}) => {
+export const renderActivityCell: FC<CellProps> = ({ getValue, row, column }) => {
   const { updateCell } = usePlan()
   const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
@@ -101,11 +94,7 @@ export const renderActivityCell: FC<CellProps> = ({
   return <ActivityInput ref={setElRef} value={input} onChange={setInput} onBlur={handleBlur} />
 }
 
-export const renderStartCell: FC<CellProps> = ({
-  getValue,
-  row,
-  column,
-}) => {
+export const renderStartCell: FC<CellProps> = ({ getValue, row, column }) => {
   const { updateCell } = usePlan()
   const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
@@ -138,11 +127,7 @@ export const renderStartCell: FC<CellProps> = ({
   )
 }
 
-export const renderLengthCell: FC<CellProps> = ({
-  getValue,
-  row,
-  column,
-}) => {
+export const renderLengthCell: FC<CellProps> = ({ getValue, row, column }) => {
   const { updateCell } = usePlan()
   const { setElRef } = useAutoFocus({ rowIndex: row.index, columnKey: column.id as ColumnKeys })
 
