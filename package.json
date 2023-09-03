@@ -1,6 +1,6 @@
 {
   "name": "obsidian-super-plan",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0",
   "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
   "main": "main.js",
   "scripts": {
