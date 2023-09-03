@@ -140,13 +140,14 @@ export default class SuperPlan extends Plugin {
 
     this.registerEditorExtension(
       EditorView.updateListener.of((update) => {
-        const doc = update.view.state.doc
-        if (!update.docChanged || !(doc as any).text) return
+        if (!update.docChanged) return
+          
+        const doc = update.state.doc
         update.changes.iterChanges((fromA, toA, fromB, toB) => {
           // Get the starting and ending line numbers for the changed lines
           const changedLineStart = doc.lineAt(fromB).number - 1
           const changedLineEnd = doc.lineAt(toB).number - 1
-
+          
           // Notify the change to the sync.
           if (activeFile && filesMap.has(activeFile)) {
             const { sync } = filesMap.get(activeFile)!
@@ -154,7 +155,7 @@ export default class SuperPlan extends Plugin {
 
             if (changedLineStart >= lineStart + 1 && changedLineEnd <= lineEnd - 1) {
               sync.notify({
-                source: ((doc as any).text as string[]).slice(lineStart + 1, lineEnd).join('\n'),
+                source: [...doc.iterLines(lineStart + 2, lineEnd + 1)].join('\n')
               })
             }
           }

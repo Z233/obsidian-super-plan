@@ -103,8 +103,6 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   }
 
   const handleCellKeyDown = async (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
-    console.log(e)
-
     switch (e.key) {
       case Keys.Enter:
         // Move to next column or create new row

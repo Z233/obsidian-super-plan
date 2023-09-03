@@ -1,15 +1,7 @@
 import { MdTableParser } from 'src/parser'
 import { planDataSchema, type PlanData } from 'src/schemas'
 import { render } from 'preact'
-import {
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type FC,
-  memo,
-} from 'preact/compat'
+import { useRef, useSyncExternalStore, type FC, memo } from 'preact/compat'
 import { PlanTable } from './PlanTable'
 import { MdTableEditor } from 'src/editor/md-table-editor'
 import type { Table } from '@tgrosinger/md-advanced-tables'
@@ -20,9 +12,7 @@ import type { CodeBlockSync } from 'src/editor/code-block-sync'
 import { Scheduler } from 'src/scheduler'
 import type { ColumnKeys } from 'src/constants'
 import { shallowCompare } from 'src/util/helper'
-import { Events, GlobalMediator } from 'src/mediator'
 import type { SuperPlanSettings } from 'src/setting/settings'
-
 /**
  * Markdown Table Editor Loader
  */
