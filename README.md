@@ -15,14 +15,18 @@ with it, you can get started by exploring the following resources:
 
 ## Limitations
 
-The algorithm used for scheduling may differ from the original SuperMemo Plan and is still
-undergoing improvement.
+The algorithm used for scheduling is minimal implementation of the original SuperMemo Plan. Some
+factor like `OptStart` and `Delay` are not implemented yet. The algorithm is still undergoing
+improvement.
 
 ## Installation
 
-To install the plugin, simply download the latest zip file from the
-[Github Releases page](https://github.com/Z233/obsidian-super-plan/releases/latest), and extract the
-contents to the plugins folder in your Obsidian vault.
+There are two ways to install the plugin:
+
+1. Use the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).
+2. Download the latest release from the
+   [GitHub Releases page](https://github.com/Z233/obsidian-super-plan/releases/latest), and put the
+   contents to the plugins folder in your Obsidian vault.
 
 ## How to Use
 
@@ -44,7 +48,7 @@ While editing the plan table:
 | Enter       | Move to the next cell and insert a new activity if needed |
 | Alt + B     | Begin or unfixed activity under cursor                    |
 
-More hotkeys are WIP...
+More hotkeys are WIP, feature requests are welcome.
 
 ## Features
 
@@ -64,5 +68,3 @@ install this modified version first, which is available for download in
 This feature opens an independent window outside of Obsidian to track the progress of the ongoing
 activity. This window stays on top of other windows, allowing you to drag and position it as
 desired.
-
-## WIP...
