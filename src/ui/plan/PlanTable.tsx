@@ -1,12 +1,7 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
-import {
-  useEffect,
-  useState,
-  type FC,
-  useRef,
-} from 'preact/compat'
+import { useEffect, useState, type FC, useRef } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
-import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
+import { ColumnKeys, ColumnKeysMap, Columns, Keys } from 'src/constants'
 import { Events, GlobalMediator } from 'src/mediator'
 import type { PlanData, PlanDataItem } from 'src/schemas'
 import type { Maybe } from 'src/types'
@@ -27,6 +22,7 @@ import { focusCellAtom, highlightingRowIdAtom } from './atoms'
 import { useAtom } from 'jotai'
 import clsx from 'clsx'
 import { TotalHoursLabel } from './lib'
+import { parseMins2Time, getNowMins, check } from 'src/util/helper'
 
 export const tableColumns: PlanTableColumnDef[] = [
   {
@@ -82,7 +78,7 @@ type PlanTableProps = { data: PlanData; totalMins: number }
 
 export const PlanTable: FC<PlanTableProps> = (props) => {
   const { data } = props
-  const { insertRowBelow } = usePlan()
+  const { insertRowBelow, updateCell } = usePlan()
 
   const [focusCell, setFocusCell] = useAtom(focusCellAtom)
 
@@ -106,34 +102,52 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
     }
   }
 
-  const handleCellKeyDown = (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
-    const { key } = e
-    // Binding Enter
-    // TODO: change highlighted to focus
-    if (key === 'Enter') {
-      // Move to next column or create new row
-      const column = ColumnKeysMap[columnKey]
-      const tableHeight = table.getRowModel().rows.length
+  const handleCellKeyDown = async (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
+    console.log(e)
 
-      let nextColumn = (column + 1) as Columns
-      let nextRowIndex = rowIndex
+    switch (e.key) {
+      case Keys.Enter:
+        // Move to next column or create new row
+        const column = ColumnKeysMap[columnKey]
+        const tableHeight = table.getRowModel().rows.length
 
-      const isLastColumn = nextColumn > Columns.R
+        let nextColumn = (column + 1) as Columns
+        let nextRowIndex = rowIndex
 
-      if (isLastColumn) {
-        nextColumn = Columns.Activity
-        nextRowIndex += 1
-      }
+        const isLastColumn = nextColumn > Columns.R
 
-      const isLastRow = nextRowIndex === tableHeight - 1
-      if (isLastColumn && isLastRow) {
-        insertRowBelow(rowIndex).then(() => {
+        if (isLastColumn) {
+          nextColumn = Columns.Activity
+          nextRowIndex += 1
+        }
+
+        const isLastRow = nextRowIndex === tableHeight - 1
+        if (isLastColumn && isLastRow) {
+          await insertRowBelow(rowIndex)
           setFocusCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
-        })
-        return
-      }
+          return
+        }
 
-      setFocusCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+        setFocusCell({ rowIndex: nextRowIndex, columnKey: ColumnKeysMap[nextColumn] })
+
+        break
+
+      case Keys.B:
+        if (!e.altKey) return
+        // Begin or Unfixed Activity
+        if (check(data[rowIndex].f)) {
+          await updateCell(rowIndex, ColumnKeys.F, '')
+        } else {
+          await Promise.all([
+            updateCell(rowIndex, ColumnKeys.F, 'x'),
+            updateCell(rowIndex, ColumnKeys.Start, parseMins2Time(getNowMins())),
+          ])
+        }
+        setFocusCell({ rowIndex, columnKey })
+        break
+
+      default:
+        break
     }
   }
 

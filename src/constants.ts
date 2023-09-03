@@ -6,11 +6,9 @@ export const ACTIVITY_TR_ID_PREFIX = 'activity-tr-'
 
 export const UpdateFlag: unique symbol = Symbol('super-plan-update-flag')
 
-export const PlanLinesLiteral = {
-  header: `| F   | Start | Activity | Length | R   | ActLen |`,
-  divider: `| --- | ----- | -------- | ------ | --- | ------ |`,
-  newActivityRow: `| x   | 00:00 |          | 0      |     | 0      |`,
-  endRow: `| x   | 00:00 | END      | 0      |     | 0      |`,
+export enum Keys {
+  Enter = 'Enter',
+  B = 'b'
 }
 
 export enum Columns {

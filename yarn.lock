@@ -898,13 +898,6 @@
     "@unocss/core" "0.55.4"
     "@unocss/extractor-arbitrary-variants" "0.55.4"
 
-"@unocss/preset-rem-to-px@^0.55.4":
-  version "0.55.4"
-  resolved "https://registry.yarnpkg.com/@unocss/preset-rem-to-px/-/preset-rem-to-px-0.55.4.tgz#56a1dd89326db6e62a34eb5885a8e4806ad40dbf"
-  integrity sha512-ku5kq6CKkieR0Cq/iXhS+V9PMVuu2WkmbrxKoJamoEC19n5sVxM/qaiitspbIJL7cGbr7jy8CwhtPo7X6tOqIg==
-  dependencies:
-    "@unocss/core" "0.55.4"
-
 "@unocss/preset-tagify@0.55.4":
   version "0.55.4"
   resolved "https://registry.yarnpkg.com/@unocss/preset-tagify/-/preset-tagify-0.55.4.tgz#e8b180778e07304599563566a5a8819292abd381"
@@ -2900,15 +2893,7 @@ obsidian-dataview@^0.5.55:
     parsimmon "^1.18.0"
     preact "^10.6.5"
 
-obsidian@^1.2.8:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/obsidian/-/obsidian-1.4.0.tgz#2253b119fd53f675dedd89431d29b9c2f4ab1c02"
-  integrity sha512-fsZMPlxgflGSBSP6P4BjQi5+0MqZl3h6FEDEZ3CNnweNdDw0doyqN3FMO/PGWfuxPT77WicVwUxekuI3e6eCGg==
-  dependencies:
-    "@types/codemirror" "5.60.8"
-    moment "2.29.4"
-
-obsidian@obsidianmd/obsidian-api#master:
+obsidian@^1.4.4, obsidian@obsidianmd/obsidian-api#master:
   version "1.4.4"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/5178e27f0eb12741c79914f52146de8ff827e390"
   dependencies:

@@ -150,29 +150,4 @@ export class Parser {
 
     return activitiesData
   }
-
-  transformActivitiesData(activitiesData: Activity[]): Table {
-    const emptyTable = readTable(
-      [PlanLinesLiteral.header, PlanLinesLiteral.divider],
-      this.settings.asOptions()
-    )
-
-    const activitiesRows = activitiesData.map(
-      (data) =>
-        new TableRow(
-          Array.from(
-            { length: emptyTable.getHeaderWidth() },
-            (_, i) => new TableCell(data[getActivityDataKey(i) ?? ''])
-          ),
-          '',
-          ''
-        )
-    )
-
-    const table = activitiesRows.reduce((t, row, i) => insertRow(t, 2 + i, row), emptyTable)
-
-    const formatted = formatTable(table, this.settings.asOptions())
-
-    return formatted.table
-  }
 }

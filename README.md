@@ -42,6 +42,7 @@ While editing the plan table:
 | Tab         | Navigate to the next cell                                 |
 | Shift + Tab | Navigate to the previous cell                             |
 | Enter       | Move to the next cell and insert a new activity if needed |
+| Alt + B     | Begin or unfixed activity under cursor                    |
 
 More hotkeys are WIP...
 

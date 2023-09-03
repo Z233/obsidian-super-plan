@@ -5,7 +5,6 @@ import builtins from 'builtin-modules'
 import { isDev } from './scripts/utils'
 import { preact } from '@preact/preset-vite'
 import UnoCSS from 'unocss/vite'
-import presetRemToPx from '@unocss/preset-rem-to-px'
 import presetWind from 'unocss/preset-wind'
 import fs from 'fs'
 
