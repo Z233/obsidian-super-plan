@@ -8,7 +8,9 @@ export const UpdateFlag: unique symbol = Symbol('super-plan-update-flag')
 
 export enum Keys {
   Enter = 'Enter',
-  B = 'b'
+  B = 'b',
+  ArrowDown = 'ArrowDown',
+  ArrowUp = 'ArrowUp',
 }
 
 export enum Columns {

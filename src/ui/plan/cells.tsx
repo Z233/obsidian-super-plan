@@ -9,9 +9,8 @@ import {
   useMemo,
 } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
-import { ColumnKeysMap, Columns, type ColumnKeys } from 'src/constants'
-import type { PlanData, PlanDataItem } from 'src/schemas'
-import type { Maybe } from 'src/types'
+import { ColumnKeysMap, Columns, type ColumnKeys, Keys } from 'src/constants'
+import type { PlanDataItem } from 'src/schemas'
 import { check } from 'src/util/helper'
 import { usePlan } from './context'
 import { DefaultInput } from './lib'
@@ -147,6 +146,12 @@ export const renderLengthCell: FC<CellProps> = ({ getValue, row, column }) => {
     }
   }
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ([Keys.ArrowUp, Keys.ArrowDown].includes(e.key as Keys)) {
+      e.preventDefault()
+    }
+  }
+
   return (
     <DefaultInput
       ref={setElRef}
@@ -155,6 +160,7 @@ export const renderLengthCell: FC<CellProps> = ({ getValue, row, column }) => {
       value={input}
       onChange={handleChange}
       onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
     />
   )
 }

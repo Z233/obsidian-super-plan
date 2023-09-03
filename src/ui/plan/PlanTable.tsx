@@ -78,7 +78,7 @@ type PlanTableProps = { data: PlanData; totalMins: number }
 
 export const PlanTable: FC<PlanTableProps> = (props) => {
   const { data } = props
-  const { insertRowBelow, updateCell } = usePlan()
+  const { insertRowBelow, updateCell, cutRow, getRowText, insertRawRowBelow } = usePlan()
 
   const [focusCell, setFocusCell] = useAtom(focusCellAtom)
 
@@ -144,8 +144,52 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
         setFocusCell({ rowIndex, columnKey })
         break
 
+      case Keys.ArrowUp:
+        // Move focus up
+        let nextRowIndexUp = rowIndex - 1
+        if (rowIndex === 0) {
+          nextRowIndexUp = data.length - 1
+        }
+        setFocusCell({ rowIndex: nextRowIndexUp, columnKey })
+        break
+
+      case Keys.ArrowDown:
+        // Move focus down
+        let nextRowIndexDown = rowIndex + 1
+        if (rowIndex === data.length - 1) {
+          nextRowIndexDown = 0
+        }
+        setFocusCell({ rowIndex: nextRowIndexDown, columnKey })
+        break
+
       default:
         break
+    }
+  }
+
+  const handleCopy = async (e: ClipboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
+    const selection = window.getSelection()
+    if (selection && selection.type === 'Range') return
+
+    e.preventDefault()
+    const text = getRowText(rowIndex)
+    e.clipboardData?.setData('text/plain', text)
+  }
+
+  const handleCut = async (e: ClipboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
+    e.preventDefault()
+    const text = await cutRow(rowIndex)
+    await navigator.clipboard.writeText(text)
+    setFocusCell({ rowIndex, columnKey })
+  }
+
+  const handlePaste = async (e: ClipboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
+    const text = e.clipboardData?.getData('text/plain')
+
+    // TODO Try to use more robust way to check if the text is copied from a table
+    if (text && text.split(/(?=\|.)/).length === Object.keys(ColumnKeys).length) {
+      e.preventDefault()
+      insertRawRowBelow(rowIndex, text)
     }
   }
 
@@ -238,6 +282,7 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
                   return (
                     <td
                       key={`${cell.column.id}-${row.original[cell.column.id as ColumnKeys]}`}
+                      className={clsx(isFocus ? highlightingStyle : '', '!px-2 !px-1')}
                       data-row={row.index}
                       data-column={cell.column.id}
                       onMouseDown={handleCellMouseDown}
@@ -246,7 +291,9 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
                       }
                       onBlur={handleBlur}
                       onFocus={() => handleCellFocus(row.index, cell.column.id as ColumnKeys)}
-                      className={clsx(isFocus ? highlightingStyle : '', '!px-2 !px-1')}
+                      onCopy={(e) => handleCopy(e, row.index, cell.column.id as ColumnKeys)}
+                      onCut={(e) => handleCut(e, row.index, cell.column.id as ColumnKeys)}
+                      onPaste={(e) => handlePaste(e, row.index, cell.column.id as ColumnKeys)}
                     >
                       {flexRender<CellProps>(cell.column.columnDef.cell, cell.getContext())}
                     </td>

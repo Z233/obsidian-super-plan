@@ -50,6 +50,10 @@ export class MdTableEditor {
   getRow(row: number) {
     return this._table.getRows()[row]
   }
+  
+  getLine(row: number) {
+    return this._table.toLines()[row + 2]
+  }
 
   setRange(startRow: number, endRow: number) {
     this._startRow = startRow
@@ -84,7 +88,7 @@ export class MdTableEditor {
     const newTable = readTable(lines, defaultOptions)
     this._updateTable(newTable)
   }
-
+  
   setFocusState(focusState: Maybe<{ row: number; col: number }>) {
     this._focusState = focusState ?? null
   }

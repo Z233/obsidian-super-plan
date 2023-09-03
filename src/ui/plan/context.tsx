@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
+import { TableCell, TableRow, defaultOptions, readTable } from '@tgrosinger/md-advanced-tables'
 import { nanoid } from 'nanoid'
 import type { App } from 'obsidian'
 import { createContext, useContext, useRef, type FC, useCallback } from 'preact/compat'
@@ -58,6 +58,9 @@ type PlanActions = {
   insertRowBelow: (row: number) => PlanActionReturnType
   moveRow: (from: number, to: number) => PlanActionReturnType
   duplicateRow: (row: number) => PlanActionReturnType
+  cutRow: (row: number) => Promise<string>
+  getRowText: (row: number) => string
+  insertRawRowBelow: (row: number, line: string) => PlanActionReturnType
 }
 
 export function usePlan() {
@@ -91,6 +94,16 @@ export function usePlan() {
     [mte]
   )
 
+  const insertRawRowBelow: PlanActions['insertRawRowBelow'] = useCallback(
+    (row, line) => {
+      const table = readTable([line], defaultOptions)
+      const tableRow = table.getRows()[0]
+      mte.insertRow(tableRow.setCellAt(0, generateId()), row + 1)
+      return mte.applyChanges()
+    },
+    [mte]
+  )
+
   const moveRow: PlanActions['moveRow'] = useCallback(
     (from, to) => {
       mte.moveRow(from, to)
@@ -112,11 +125,30 @@ export function usePlan() {
     [mte]
   )
 
+  const cutRow: PlanActions['cutRow'] = useCallback(
+    async (row) => {
+      const line = mte.getLine(row)
+      mte.deleteRow(row)
+      return mte.applyChanges().then(() => line)
+    },
+    [mte]
+  )
+
+  const getRowText = useCallback(
+    (row: number) => {
+      return mte.getLine(row)
+    },
+    [mte]
+  )
+
   return {
     updateCell,
     deleteRow,
     insertRowBelow,
     moveRow,
-    duplicateRow
+    duplicateRow,
+    cutRow,
+    getRowText,
+    insertRawRowBelow,
   }
 }
