@@ -46,6 +46,7 @@ export const ActivityInput = forwardRef(
               }}
               onBlur={() => props.onBlur(value)}
               onChange={handleInputChange}
+              className="!w-full"
             />
             {enableSuggester && open && comboRef.current?.base && (
               <ActivitySuggesterPopup
