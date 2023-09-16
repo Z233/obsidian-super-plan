@@ -5,6 +5,8 @@ import {
   Platform,
   TFile,
   type MarkdownPostProcessorContext,
+  WorkspaceLeaf,
+  WorkspaceTabs,
 } from 'obsidian'
 import { defaultSettings, SuperPlanSettings } from './setting/settings'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
@@ -126,28 +128,36 @@ export default class SuperPlan extends Plugin {
 
     let activeFile: Maybe<TFile> = this.app.workspace.getActiveFile()
 
-    if (!activeFile) {
-      this.registerEvent(
-        this.app.workspace.on('active-leaf-change', (leaf) => {
-          activeFile = this.app.workspace.getActiveFile()
-          if (queue.size) {
-            queue.forEach((fn) => fn())
-            queue.clear()
+    this.registerEvent(
+      this.app.workspace.on('active-leaf-change', (leaf) => {
+        const leafFile = this.app.workspace.getActiveFile()
+        activeFile = leafFile
+
+        if (leaf) {
+          leaf.view.onunload = () => {
+            if (leafFile && filesMap.has(leafFile)) {
+              filesMap.delete(leafFile)
+            }
           }
-        })
-      )
-    }
+        }
+
+        if (queue.size) {
+          queue.forEach((fn) => fn())
+          queue.clear()
+        }
+      })
+    )
 
     this.registerEditorExtension(
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return
-          
+
         const doc = update.state.doc
         update.changes.iterChanges((fromA, toA, fromB, toB) => {
           // Get the starting and ending line numbers for the changed lines
           const changedLineStart = doc.lineAt(fromB).number - 1
           const changedLineEnd = doc.lineAt(toB).number - 1
-          
+
           // Notify the change to the sync.
           if (activeFile && filesMap.has(activeFile)) {
             const { sync } = filesMap.get(activeFile)!
@@ -155,7 +165,7 @@ export default class SuperPlan extends Plugin {
 
             if (changedLineStart >= lineStart + 1 && changedLineEnd <= lineEnd - 1) {
               sync.notify({
-                source: [...doc.iterLines(lineStart + 2, lineEnd + 1)].join('\n')
+                source: [...doc.iterLines(lineStart + 2, lineEnd + 1)].join('\n'),
               })
             }
           }
