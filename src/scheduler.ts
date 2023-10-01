@@ -168,7 +168,9 @@ export class Scheduler {
 
       // Assign floatOffsetValue to last activity
       if (i === activities.length - 1) {
-        actLen += Math.round(floatOffsetValue)
+        if (actLen > 0) {
+          actLen += Math.round(floatOffsetValue)
+        }
       }
 
       const start = i > 0 ? arr[i - 1].stop : act.start
