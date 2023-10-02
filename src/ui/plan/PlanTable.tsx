@@ -102,6 +102,7 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
     }
   }
 
+  // TODO Move to a separate file, make it more generic
   const handleCellKeyDown = async (e: KeyboardEvent, rowIndex: number, columnKey: ColumnKeys) => {
     switch (e.key) {
       case Keys.Enter:
@@ -132,15 +133,11 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
 
       case Keys.B:
         if (!e.altKey) return
-        // Begin or Unfixed Activity
-        if (check(data[rowIndex].f)) {
-          await updateCell(rowIndex, ColumnKeys.F, '')
-        } else {
-          await Promise.all([
-            updateCell(rowIndex, ColumnKeys.F, 'x'),
-            updateCell(rowIndex, ColumnKeys.Start, parseMins2Time(getNowMins())),
-          ])
-        }
+        await Promise.all([
+          updateCell(rowIndex, ColumnKeys.F, 'x'),
+          updateCell(rowIndex, ColumnKeys.Start, parseMins2Time(getNowMins())),
+        ])
+
         setFocusCell({ rowIndex, columnKey })
         break
 
