@@ -35,12 +35,12 @@ export class MiniTracker {
 
   close() {
     if (this.isOpen) {
-      this.onCloseCallbacks.forEach((cb) => cb())
       this.win?.close()
     }
 
+    this.onCloseCallbacks.forEach((cb) => cb())
+    
     this.tracker.removeObserver(this.trackerObserver)
-
     this.win?.removeAllListeners()
   }
 
@@ -80,6 +80,7 @@ export class MiniTracker {
     this.tracker.addObserver(this.trackerObserver)
 
     this.win.on('move', debounce(this.handleWindowMove, 500).bind(this))
+    this.win.on('close', this.close.bind(this))
 
     window.addEventListener('pagehide', (e) => {
       MiniTracker.clean()

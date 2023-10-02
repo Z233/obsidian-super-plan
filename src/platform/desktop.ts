@@ -55,7 +55,7 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
 
   let miniTracker: Maybe<MiniTracker> = null
 
-  const showMiniTracker = () => {
+  function showMiniTracker() {
     miniTracker = MiniTracker.new(store, tracker)
 
     let windowFolder: string | undefined
@@ -71,28 +71,40 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
     }
 
     miniTracker.open(windowFolder)
+
     ribbon.firstChild?.remove()
     ribbon.appendChild(openedIconSVG)
+
+    plugin.settings.update({
+      showMiniTracker: true,
+    })
+
+    miniTracker.onClose(() => {
+      closeMiniTracker()
+    })
+
+  }
+
+  function closeMiniTracker() {
+    ribbon.firstChild?.remove()
+    ribbon.appendChild(closedIconSVG)
+
+    if (miniTracker?.isOpen) {
+      miniTracker?.close()
+    }
+
+    plugin.settings.update({
+      showMiniTracker: false,
+    })
   }
 
   if (open) showMiniTracker()
 
   ribbon.onclick = () => {
     if (settings.showMiniTracker) {
-      // Disable mini tracker
-      ribbon.firstChild?.remove()
-      ribbon.appendChild(closedIconSVG)
-      miniTracker?.close()
-
-      plugin.settings.update({
-        showMiniTracker: false,
-      })
+      closeMiniTracker()
     } else {
       showMiniTracker()
-
-      plugin.settings.update({
-        showMiniTracker: true,
-      })
     }
   }
 }
