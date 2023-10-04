@@ -4,6 +4,8 @@ import { isDev, r } from './scripts/utils'
 import { windi } from 'svelte-windicss-preprocess'
 import { join } from 'path'
 import { viteSingleFile } from 'vite-plugin-singlefile'
+import UnoCSS from 'unocss/vite'
+import presetWind from 'unocss/preset-wind'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -28,5 +30,8 @@ export default defineConfig({
       preprocess: [vitePreprocess(), windi({})],
     }),
     viteSingleFile(),
+    UnoCSS({
+      presets: [presetWind()],
+    })
   ],
 })

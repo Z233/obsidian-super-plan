@@ -943,6 +943,11 @@
   resolved "https://registry.yarnpkg.com/@unocss/reset/-/reset-0.55.4.tgz#9f038799ed62a0392e1c6c6d4360d2b4e4e4d6ac"
   integrity sha512-USn/uZiXDplwQwhodyE3wBm7SU9BUDbRJ3sl5SuULAC4uMkh2JE/EV+X88Vm4N9dEIAbuWLfG20fCuiEKA5+hA==
 
+"@unocss/reset@^0.56.4":
+  version "0.56.4"
+  resolved "https://registry.yarnpkg.com/@unocss/reset/-/reset-0.56.4.tgz#159237df367ede4f8f11c88d7e342c947dc3c1c8"
+  integrity sha512-7o3Jpog49ORWW+Rpz7bzYY+CStfLMyBXAeDOzhM2PQjftuQl4ZQOvIdXi6zrXDEN2SJQsi279s2t50ERZN8YcA==
+
 "@unocss/scope@0.55.4":
   version "0.55.4"
   resolved "https://registry.yarnpkg.com/@unocss/scope/-/scope-0.55.4.tgz#bacc657b5ce7f7b815e36b537f41a2a066241ff8"

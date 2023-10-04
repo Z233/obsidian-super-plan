@@ -45,7 +45,7 @@ function desktopInit(plugin: SuperPlan) {
 
 function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
   const { settings, store, manifest } = plugin
-  const open = settings.showMiniTracker
+  let open = settings.enableMiniTracker
 
   const ribbonIconId = open ? 'alarm-clock-off' : 'alarm-clock'
   const ribbon = plugin.addRibbonIcon(ribbonIconId, 'Toggle mini tracker', () => void 0)
@@ -75,14 +75,12 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
     ribbon.firstChild?.remove()
     ribbon.appendChild(openedIconSVG)
 
-    plugin.settings.update({
-      showMiniTracker: true,
-    })
-
     miniTracker.onClose(() => {
+      if (__DEV__) return
       closeMiniTracker()
     })
 
+    open = true
   }
 
   function closeMiniTracker() {
@@ -92,16 +90,14 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
     if (miniTracker?.isOpen) {
       miniTracker?.close()
     }
-
-    plugin.settings.update({
-      showMiniTracker: false,
-    })
+    
+    open = false
   }
 
   if (open) showMiniTracker()
 
   ribbon.onclick = () => {
-    if (settings.showMiniTracker) {
+    if (open) {
       closeMiniTracker()
     } else {
       showMiniTracker()

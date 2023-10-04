@@ -1,5 +1,3 @@
-import { atom, createStore } from 'jotai'
-import { atomWithStorage } from 'jotai/utils'
 import type SuperPlan from './main'
 import type { ISettings } from './setting/settings'
 
