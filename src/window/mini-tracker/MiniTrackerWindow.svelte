@@ -14,7 +14,6 @@
   $: {
     if (now) {
       estimatedLeftMins = leftMins - (leftMins % 5) 
-      console.log({ leftMins, estimatedLeftMins, timeoutMins, next })
       estimatedLeftMins = estimatedLeftMins >= 0 ? estimatedLeftMins : 5
     }
   }
@@ -101,12 +100,16 @@
     <div 
       on:click={handleSnapStop}
       on:keypress={ e => e.key === 'Enter' ? handleSnapStop() : void 0 }
-      class="absolute h-full w-2 bg-gray-100 transition hover:bg-[hsla(254,80%,50%,1)] hover:shadow-md"
+      class="absolute h-full w-2.5 bg-gray-100 transition text-gray-400  grid place-content-center
+        hover:bg-[hsla(254,80%,68%,1)] hover:text-gray-50 hover:shadow-md"
       class:right-0={snapped === 'l'}
       class:left-0={snapped === 'r'}
-    /> 
+    >
+      <svg class:rotate-180={snapped === 'r'} width="5" height="12" viewBox="0 0 5 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L3.96913 5.94855C3.98813 5.98022 3.98813 6.01978 3.96913 6.05145L1 11" stroke="currentColor" stroke-width="2" stroke-miterlimit="16" stroke-linecap="round"/>
+      </svg>
+    </div> 
   {/if}
-  
 
   {#if snapped !== null && !isViewingSnapped}
     <div
