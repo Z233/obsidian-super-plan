@@ -17,7 +17,12 @@ export type TrackerState = {
   upcoming: Upcoming | null
 }
 
-type Ongoing = { activity: ScheduledActivity; leftSecs: number; progress: number }
+type Ongoing = {
+  activity: ScheduledActivity
+  leftMins: number
+  timeoutMins: number
+  progress: number
+}
 type Upcoming = { activity: ScheduledActivity }
 
 export type Observer = {
@@ -138,7 +143,7 @@ export class PlanTracker {
       progress: 0,
       leftSecs: 0,
       leftMins: 0,
-      isAllDone: false,
+      timeoutMins: 0,
     }
 
     if (!this.scheduler) return initialState
@@ -149,38 +154,35 @@ export class PlanTracker {
       (a) => nowMins >= a.start && a.isFixed
     )
     const now = this.scheduler.activities[nowIndex]
-
-    if (nowIndex === this.scheduler.activities.length - 1 && nowMins >= now.stop) {
-      return {
-        ...initialState,
-        now,
-        isAllDone: true,
-      }
-    }
+    const nowIsLast = nowIndex === this.scheduler.activities.length - 1
 
     const durationMins = nowMins - now.start
     const durationSecs = durationMins * 60 + new Date().getSeconds()
     const totalMins = now.actLen
     const totalSecs = totalMins * 60
-    const progress = (durationSecs / totalSecs) * 100
+    const progress = totalMins > 0 ? (durationSecs / totalSecs) * 100 : 100
+    
+    console.log({ durationMins, durationSecs, totalMins, progress, totalSecs })
 
-    const next = find(this.scheduler.activities, (a) => a.actLen >= 0, nowIndex + 1)
-
+    const next = nowIsLast
+      ? null
+      : find(this.scheduler.activities, (a) => a.actLen >= 0, nowIndex + 1)
+      
     return {
       ...initialState,
       now,
       next,
-      progress: progress <= 100 ? progress : 100,
+      progress,
       leftSecs: totalSecs - durationSecs,
       leftMins: totalMins - durationMins,
-      isAllDone: false,
+      timeoutMins: durationMins - totalMins,
     }
   }
 
   private async onTick() {
     if (!this.scheduler) return
 
-    const { leftSecs, ...props } = this.computeProgress()
+    const { leftMins, timeoutMins, ...props } = this.computeProgress()
 
     this.updateStatusBar(props)
     const { now, next, progress } = props
@@ -190,20 +192,21 @@ export class PlanTracker {
       this.now = now
     }
 
-    const ongoing: Ongoing | null = now
+    const ongoing: Maybe<Ongoing> = now
       ? {
           activity: now,
-          leftSecs,
+          leftMins,
+          timeoutMins,
           progress,
         }
       : null
 
-    const upcoming: Upcoming | null = next
+    const upcoming: Maybe<Upcoming> = next
       ? {
           activity: next,
         }
       : null
-
+      
     this.notifyObservers({ ongoing, upcoming })
 
     // ================== Notification ==================

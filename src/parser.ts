@@ -26,6 +26,7 @@ import {
 import { getActivityDataKey } from './util/helper'
 import { isArray, isNumber } from 'lodash-es'
 import type { Column } from '@tanstack/react-table'
+import { planRecordSchema } from './schemas'
 
 export class MdTableParser {
   static parse(markupOrLines: string | string[]) {
@@ -136,6 +137,7 @@ export class Parser {
     const activitiesRows = table
       .getRows()
       .slice(2)
+      .filter(row => row.getWidth() === (Object.keys(planRecordSchema.shape).length))
       .map((row) => row.getCells().map((cell) => cell.content))
 
     const activitiesData: Activity[] = activitiesRows.map((row) =>

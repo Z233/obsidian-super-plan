@@ -36,7 +36,7 @@ export class Scheduler {
         actLen: 0,
       }
     })
-
+    
     this.activities = activities
     this.schedule()
 
@@ -70,7 +70,7 @@ export class Scheduler {
       duration: p.duration,
       activities: this.schedulePart(p.duration, p.activities),
     }))
-
+    
     const scheduledActivities: ScheduledActivity[] = this.mergeParts(parts)
     this.activities = scheduledActivities
   }

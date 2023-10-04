@@ -9,7 +9,7 @@ const SNAPPING_DISTANCE = 24
 const SNAPPING_VISIBLE_EDGE = 16
 
 const Size = {
-  WIDTH: 180,
+  WIDTH: 200,
   HEIGHT: 60,
 }
 
@@ -22,8 +22,6 @@ export class MiniTracker {
   private static instance: Maybe<MiniTracker> = null
 
   private onCloseCallbacks: (() => void)[] = []
-
-  private isSnapping = false
 
   private constructor(private store: DataStore, private tracker: PlanTracker) {}
 

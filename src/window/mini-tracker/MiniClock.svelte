@@ -2,7 +2,7 @@
   export let progress = 0
   export let size: number
 
-  $: angle = (360 * progress) / 100
+  $: angle = progress >= 0 && progress <= 100 ? (360 * progress) / 100 : 360
 </script>
 
 <div

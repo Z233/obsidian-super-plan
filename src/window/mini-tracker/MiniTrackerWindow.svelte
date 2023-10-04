@@ -7,7 +7,18 @@
   let now: Maybe<ScheduledActivity> = null
   let next: Maybe<ScheduledActivity> = null
   let progress = 0
-
+  let leftMins = 0
+  let timeoutMins = 0
+  
+  let estimatedLeftMins = 0
+  $: {
+    if (now) {
+      estimatedLeftMins = leftMins - (leftMins % 5) 
+      console.log({ leftMins, estimatedLeftMins, timeoutMins, next })
+      estimatedLeftMins = estimatedLeftMins >= 0 ? estimatedLeftMins : 5
+    }
+  }
+  
   const ipcRenderer = require('electron').ipcRenderer
   ipcRenderer.on('update', (e, payload: TrackerState) => {
     if (!payload) return
@@ -16,6 +27,8 @@
     if (ongoing) {
       now = ongoing.activity
       progress = ongoing.progress
+      leftMins = ongoing.leftMins
+      timeoutMins = -leftMins
     }
     
     if (upcoming) {
@@ -78,7 +91,8 @@
     <div class="col-span-3 space-y-1">
       <div class="text-gray-900 truncate">{now?.activity ?? 'No activity'}</div>
       <div class="text-xs text-gray-400 truncate">
-        {next ? `Next: ${next.activity}` : 'All done'}
+        { timeoutMins < 0 ? `~${estimatedLeftMins}` : `+${timeoutMins}` } mins
+        { next ? `> ${next.activity}` : ''}
       </div>
     </div>
   </div>
