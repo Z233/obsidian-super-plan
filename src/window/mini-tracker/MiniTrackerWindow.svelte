@@ -101,7 +101,7 @@
     <div 
       on:click={handleSnapStop}
       on:keypress={ e => e.key === 'Enter' ? handleSnapStop() : void 0 }
-      class="absolute h-full w-2.5 bg-gray-100 transition text-gray-400  grid place-content-center
+      class="absolute h-full w-4 bg-gray-100 transition text-gray-400  grid place-content-center
         hover:bg-[hsla(254,80%,68%,1)] hover:text-gray-50 hover:shadow-md"
       class:right-0={snapped === 'l'}
       class:left-0={snapped === 'r'}
