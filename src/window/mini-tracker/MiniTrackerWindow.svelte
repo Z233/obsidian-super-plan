@@ -70,6 +70,7 @@
   ipcRenderer.on('snapped', (e, direction) => {
     if (direction) {
       snapped = direction
+      isViewingSnapped = false
     }
   }) 
 
