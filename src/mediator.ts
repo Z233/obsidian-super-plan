@@ -2,7 +2,7 @@ export enum Events {
   JUMP_TO_ACTIVITY = 'JUMP_TO_ACTIVITY',
 }
 
-type EventsMap = {
+interface EventsMap {
   [Events.JUMP_TO_ACTIVITY]: {
     activityId: string
   }
@@ -18,38 +18,38 @@ export class GlobalMediator {
   private constructor() {}
 
   public static getInstance(): GlobalMediator {
-    if (!GlobalMediator.instance) {
+    if (!GlobalMediator.instance)
       GlobalMediator.instance = new GlobalMediator()
-    }
+
     return GlobalMediator.instance
   }
 
   subscribe<K extends AllEvents>(eventName: K, callback: (data: EventsMap[K]) => void): () => void {
-    if (!this.listeners[eventName]) {
+    if (!this.listeners[eventName])
       this.listeners[eventName] = []
-    }
 
     this.listeners[eventName]!.push(callback)
 
     if (this.messages[eventName] && this.messages[eventName]!.length > 0) {
-      this.messages[eventName]!.forEach((message) => callback(message))
+      this.messages[eventName]!.forEach(message => callback(message))
       delete this.messages[eventName]
     }
 
     return () => {
       this.listeners[eventName] = this.listeners[eventName]!.filter(
-        (listener) => listener !== callback
+        listener => listener !== callback,
       )
     }
   }
 
   send<K extends AllEvents>(eventName: K, data: EventsMap[K]): void {
     if (this.listeners[eventName]) {
-      this.listeners[eventName]!.forEach((callback) => callback(data))
-    } else {
-      if (!this.messages[eventName]) {
+      this.listeners[eventName]!.forEach(callback => callback(data))
+    }
+    else {
+      if (!this.messages[eventName])
         this.messages[eventName] = []
-      }
+
       this.messages[eventName]!.push(data)
     }
   }

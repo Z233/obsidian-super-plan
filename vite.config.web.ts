@@ -1,11 +1,11 @@
-import { defineConfig } from 'vite'
-import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte'
-import { isDev, r } from './scripts/utils'
+import { join } from 'node:path'
 import { windi } from 'svelte-windicss-preprocess'
-import { join } from 'path'
+import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte'
+import { defineConfig } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 import UnoCSS from 'unocss/vite'
 import presetWind from 'unocss/preset-wind'
+import { isDev, r } from './scripts/utils'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -32,6 +32,6 @@ export default defineConfig({
     viteSingleFile(),
     UnoCSS({
       presets: [presetWind()],
-    })
+    }),
   ],
 })

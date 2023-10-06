@@ -1,18 +1,12 @@
-import type { SuperPlanSettings } from '../setting/settings'
-import type { Activity } from '../types'
-import type { App, TFile, Editor } from 'obsidian'
-import {
-  Point,
+/* eslint-disable no-console */
+import type { App, Editor, TFile } from 'obsidian'
+import type {
   Range,
-  TableCell,
-  TableRow,
-  ITextEditor,
-  Table,
-  readTable,
-  formatTable,
 } from '@tgrosinger/md-advanced-tables'
-import { ActivityDataColumn } from '../constants'
-import { getActivityDataIndex } from '../util/helper'
+import {
+  ITextEditor,
+  Point,
+} from '@tgrosinger/md-advanced-tables'
 
 export class ObsidianTextEditor extends ITextEditor {
   private readonly app: App
@@ -41,7 +35,7 @@ export class ObsidianTextEditor extends ITextEditor {
     console.debug('setSelectionRange was called')
     this.editor.setSelection(
       { line: range.start.row, ch: range.start.column },
-      { line: range.end.row, ch: range.end.column }
+      { line: range.end.row, ch: range.end.column },
     )
   }
 
@@ -54,16 +48,15 @@ export class ObsidianTextEditor extends ITextEditor {
     console.debug(`acceptsTableEdit was called on row ${row}`)
 
     const cache = this.app.metadataCache.getFileCache(this.file)!
-    if (!cache.sections) {
+    if (!cache.sections)
       return true
-    }
 
     const table = cache.sections.find(
       (section): boolean =>
-        section.position.start.line <= row &&
-        section.position.end.line >= row &&
-        section.type !== 'code' &&
-        section.type !== 'math'
+        section.position.start.line <= row
+        && section.position.end.line >= row
+        && section.type !== 'code'
+        && section.type !== 'math',
     )
     if (table === undefined) {
       console.debug('acceptsTableEdit returning false, table not found')
@@ -76,9 +69,8 @@ export class ObsidianTextEditor extends ITextEditor {
     const preceedingLineIndex = table.position.start.line
     if (preceedingLineIndex >= 0) {
       const preceedingLine = this.getLine(preceedingLineIndex)
-      if (preceedingLine === '-tx-') {
+      if (preceedingLine === '-tx-')
         return false
-      }
     }
 
     return true
@@ -93,11 +85,10 @@ export class ObsidianTextEditor extends ITextEditor {
     console.debug(`insertLine was called at line ${row}`)
     console.debug(`New line: ${line}`)
 
-    if (row > this.getLastRow()) {
-      this.editor.replaceRange('\n' + line, { line: row, ch: 0 })
-    } else {
-      this.editor.replaceRange(line + '\n', { line: row, ch: 0 })
-    }
+    if (row > this.getLastRow())
+      this.editor.replaceRange(`\n${line}`, { line: row, ch: 0 })
+    else
+      this.editor.replaceRange(`${line}\n`, { line: row, ch: 0 })
   }
 
   public deleteLine = (row: number): void => {
@@ -108,7 +99,8 @@ export class ObsidianTextEditor extends ITextEditor {
     if (row === this.getLastRow()) {
       const rowContents = this.getLine(row)
       this.editor.replaceRange('', { line: row, ch: 0 }, { line: row, ch: rowContents.length })
-    } else {
+    }
+    else {
       this.editor.replaceRange('', { line: row, ch: 0 }, { line: row + 1, ch: 0 })
     }
   }
@@ -122,7 +114,7 @@ export class ObsidianTextEditor extends ITextEditor {
     this.editor.replaceRange(
       lines.join('\n'),
       { line: startRow, ch: 0 },
-      { line: realEndRow, ch: endRowFinalIndex }
+      { line: realEndRow, ch: endRowFinalIndex },
     )
   }
 

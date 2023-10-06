@@ -1,13 +1,13 @@
-import { Modal, Notice, type App } from 'obsidian'
-import type { ScheduledActivity, Activity } from 'src/types'
+import { type App, Modal } from 'obsidian'
+import type { Activity } from 'src/types'
 import { getNowMins, parseTime2Mins } from '../util/helper'
 
-type SplitData = {
+interface SplitData {
   firstLength: number
   secondLength: number
 }
 
-type Result<T = unknown> = {
+interface Result<T = unknown> {
   ok: boolean
   data?: T
 }
@@ -17,7 +17,7 @@ export class SplitConfirmModalV2 extends Modal {
   private activity: Activity
   private closeResolve: (value: Result<SplitData>) => void
   private modalPromise = () =>
-    new Promise<Result<SplitData>>((resolve) => (this.closeResolve = resolve))
+    new Promise<Result<SplitData>>(resolve => (this.closeResolve = resolve))
 
   constructor(app: App, activity: Activity) {
     super(app)

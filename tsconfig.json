@@ -1,22 +1,23 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "lib": ["DOM", "ES5", "ES6", "ES7", "ES2021", "ESNext"],
     "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "types": ["node", "svelte"],
+    "allowJs": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "importHelpers": true,
     "inlineSourceMap": false,
     "inlineSources": false,
-    "module": "ESNext",
-    "target": "ES6",
-    "allowJs": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "importHelpers": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
-    "strictNullChecks": true,
-    "lib": ["DOM", "ES5", "ES6", "ES7", "ES2021"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "skipDefaultLibCheck": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "scripts/*"]
 }

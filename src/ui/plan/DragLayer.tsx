@@ -9,21 +9,20 @@ export const DragLayer: FC<{
   width: number
 }> = (props) => {
   const { parentOffsetY, parentHeight, width } = props
-  const { isDragging, item, initialOffset, currentOffset, clientOffset } = useDragLayer(
-    (monitor) => ({
+  const { isDragging, currentOffset } = useDragLayer(
+    monitor => ({
       item: monitor.getItem(),
       initialOffset: monitor.getInitialSourceClientOffset(),
       currentOffset: monitor.getSourceClientOffset(),
       isDragging: monitor.isDragging(),
       clientOffset: monitor.getClientOffset(),
-    })
+    }),
   )
 
-  if (!isDragging || !currentOffset) {
+  if (!isDragging || !currentOffset)
     return null
-  }
 
-  const { x, y: currentY } = currentOffset
+  const { y: currentY } = currentOffset
 
   let y = currentY - parentOffsetY
   y = y < 0 ? 0 : y

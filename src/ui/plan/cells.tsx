@@ -1,36 +1,35 @@
-import type { CellContext, HeaderContext } from '@tanstack/react-table'
+import type { CellContext } from '@tanstack/react-table'
 import {
-  useEffect,
-  useState,
-  useRef,
   type ChangeEventHandler,
   type FC,
+  useEffect,
   useLayoutEffect,
-  useMemo,
+  useRef,
+  useState,
 } from 'preact/compat'
 import type { JSXInternal } from 'preact/src/jsx'
-import { ColumnKeysMap, Columns, type ColumnKeys, Keys } from 'src/constants'
+import { type ColumnKeys, ColumnKeysMap, Columns, Keys } from 'src/constants'
 import type { PlanDataItem } from 'src/schemas'
 import { check } from 'src/util/helper'
+import { useAtom } from 'jotai'
 import { usePlan } from './context'
 import { DefaultInput } from './lib'
 import type { CellPosition } from './types'
 import { ActivityInput } from './ActivityInput'
 import { focusCellAtom } from './atoms'
-import { useAtom } from 'jotai'
 
 export type CellProps = CellContext<PlanDataItem, unknown>
 
-const useAutoFocus = (position: CellPosition) => {
+function useAutoFocus(position: CellPosition) {
   const [elRef, setElRef] = useState<HTMLElement | null>(null)
   const [focusCell] = useAtom(focusCellAtom)
 
   useLayoutEffect(() => {
     if (
-      elRef !== null &&
-      focusCell !== null &&
-      focusCell.rowIndex === position.rowIndex &&
-      focusCell.columnKey === position.columnKey
+      elRef !== null
+      && focusCell !== null
+      && focusCell.rowIndex === position.rowIndex
+      && focusCell.columnKey === position.columnKey
     ) {
       requestAnimationFrame(() => {
         elRef.focus()
@@ -105,7 +104,7 @@ export const renderStartCell: FC<CellProps> = ({ getValue, row, column }) => {
     setInput(value)
   }
 
-  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = () => {
     if (input !== prevValueRef.current) {
       prevValueRef.current = input
 
@@ -138,7 +137,7 @@ export const renderLengthCell: FC<CellProps> = ({ getValue, row, column }) => {
     setInput(value)
   }
 
-  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = (e) => {
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLInputElement> = () => {
     if (input !== prevValueRef.current) {
       prevValueRef.current = input
 
@@ -147,9 +146,8 @@ export const renderLengthCell: FC<CellProps> = ({ getValue, row, column }) => {
   }
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if ([Keys.ArrowUp, Keys.ArrowDown].includes(e.key as Keys)) {
+    if ([Keys.ArrowUp, Keys.ArrowDown].includes(e.key as Keys))
       e.preventDefault()
-    }
   }
 
   return (
@@ -165,6 +163,6 @@ export const renderLengthCell: FC<CellProps> = ({ getValue, row, column }) => {
   )
 }
 
-export const renderActLenCell: FC<CellProps> = ({ getValue, row, column }) => {
+export const renderActLenCell: FC<CellProps> = ({ getValue }) => {
   return <>{getValue()}</>
 }

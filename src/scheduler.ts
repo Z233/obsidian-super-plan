@@ -1,10 +1,9 @@
-import { nanoid } from 'nanoid'
 import { INVAlID_NUMBER_LITERAL } from './constants'
 import type { PlanData } from './schemas'
 import type { Activity, ScheduledActivity } from './types'
 import { check, formatNumberCell, getNowMins, parseMins2Time, parseTime2Mins } from './util/helper'
 
-type SchedulerPart = {
+interface SchedulerPart {
   duration: number
   activities: ScheduledActivity[]
 }
@@ -36,7 +35,7 @@ export class Scheduler {
         actLen: 0,
       }
     })
-    
+
     this.activities = activities
     this.schedule()
 
@@ -44,7 +43,7 @@ export class Scheduler {
     this.endMins = this.activities[this.activities.length - 1].start
 
     // Compute startUnix and endUnix
-    let d = new Date()
+    const d = new Date()
     d.setSeconds(0, 0)
 
     const nowMins = getNowMins()
@@ -66,11 +65,11 @@ export class Scheduler {
   }
 
   schedule() {
-    const parts = this.divideParts(this.activities).map((p) => ({
+    const parts = this.divideParts(this.activities).map(p => ({
       duration: p.duration,
       activities: this.schedulePart(p.duration, p.activities),
     }))
-    
+
     const scheduledActivities: ScheduledActivity[] = this.mergeParts(parts)
     this.activities = scheduledActivities
   }
@@ -105,16 +104,16 @@ export class Scheduler {
 
       parts[partIndex].activities.push(activity)
 
-      if (!nextActivity?.isFixed) continue
+      if (!nextActivity?.isFixed)
+        continue
 
       const lastPart = parts[partIndex]
 
-      let lastPartStart = lastPart.activities[0].start
+      const lastPartStart = lastPart.activities[0].start
       let lastPartEnd = nextActivity.start
 
-      while (lastPartEnd < lastPartStart) {
+      while (lastPartEnd < lastPartStart)
         lastPartEnd += 24 * 60
-      }
 
       lastPart.duration = lastPartEnd - lastPartStart
 
@@ -141,25 +140,25 @@ export class Scheduler {
 
     const total = activities.reduce((sum, act) => sum + act.length, 0)
 
-    const isAllRigid = activities.length > 1 && activities.every((a) => a.isRigid)
+    const isAllRigid = activities.length > 1 && activities.every(a => a.isRigid)
 
     const rigidTotal = activities
-      .filter((act) => act.isRigid)
+      .filter(act => act.isRigid)
       .reduce((sum, act) => sum + act.length, 0)
 
     let offsetValue = rigidTotal
     let floatOffsetValue = 0
 
-    if (isAllRigid) {
+    if (isAllRigid)
       offsetValue = 0
-    }
 
     const ret = activities.reduce((arr, act, i) => {
       let actLen = 0
 
       if (act.isRigid && !isAllRigid) {
         actLen = act.length
-      } else {
+      }
+      else {
         let floatLen = (duration - offsetValue) * (act.length / (total - offsetValue))
         floatLen = Number.isNaN(floatLen) ? 0 : floatLen
         actLen = Math.round(floatLen)
@@ -168,9 +167,8 @@ export class Scheduler {
 
       // Assign floatOffsetValue to last activity
       if (i === activities.length - 1) {
-        if (actLen > 0) {
+        if (actLen > 0)
           actLen += Math.round(floatOffsetValue)
-        }
       }
 
       const start = i > 0 ? arr[i - 1].stop : act.start
@@ -189,7 +187,7 @@ export class Scheduler {
   }
 
   getData(): PlanData {
-    return this.activities.map((act) => ({
+    return this.activities.map(act => ({
       id: act.id,
       f: act.isFixed ? 'x' : '',
       start: Number.isNaN(act.start) ? INVAlID_NUMBER_LITERAL : parseMins2Time(act.start),
@@ -204,7 +202,8 @@ export class Scheduler {
     const first = this.activities.at(0)
     const last = this.activities.at(-1)
 
-    if (!first?.start || !last?.stop) return 0
+    if (!first?.start || !last?.stop)
+      return 0
 
     return last.stop - first.start
   }

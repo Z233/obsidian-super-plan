@@ -32,7 +32,7 @@ export function loadIcons() {
     </clipPath>
   </defs>
 </svg>
-`
+`,
   )
 
   addIcon(
@@ -65,7 +65,7 @@ export function loadIcons() {
     </clipPath>
   </defs>
 </svg>
-`
+`,
   )
 
   addIcon(
@@ -106,7 +106,7 @@ export function loadIcons() {
     </clipPath>
   </defs>
 </svg>
-`
+`,
   )
 
   addIcon(
@@ -146,7 +146,7 @@ export function loadIcons() {
     </clipPath>
   </defs>
 </svg>
-`
+`,
   )
 
   addIcon(
@@ -194,6 +194,6 @@ export function loadIcons() {
     </clipPath>
   </defs>
 </svg>
-`
+`,
   )
 }

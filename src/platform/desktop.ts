@@ -4,7 +4,7 @@ import type SuperPlan from 'src/main'
 import { Parser } from 'src/parser'
 import { PlanTracker } from 'src/tracker/plan-tracker'
 import { Timer } from 'src/tracker/timer'
-import type { Maybe, Activity } from 'src/types'
+import type { Activity, Maybe } from 'src/types'
 import { shallowCompare } from 'src/util/helper'
 import { MiniTracker } from 'src/window'
 
@@ -30,7 +30,8 @@ function desktopInit(plugin: SuperPlan) {
           lastActivitiesData = activitiesData
           tracker.setData(activitiesData, tableInfo)
         }
-      } else {
+      }
+      else {
         tracker.setData(null, null)
       }
     }
@@ -48,7 +49,7 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
   let open = settings.enableMiniTracker
 
   const ribbonIconId = open ? 'alarm-clock-off' : 'alarm-clock'
-  const ribbon = plugin.addRibbonIcon(ribbonIconId, 'Toggle mini tracker', () => void 0)
+  const ribbon = plugin.addRibbonIcon(ribbonIconId, 'Toggle mini tracker', () => undefined)
 
   const openedIconSVG = getIcon('alarm-clock-off')!
   const closedIconSVG = getIcon('alarm-clock')!
@@ -60,12 +61,13 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
 
     let windowFolder: string | undefined
     const pluginDir = manifest.dir
-    if (app.vault.adapter instanceof FileSystemAdapter && pluginDir) {
+    if (app.vault.adapter instanceof FileSystemAdapter && pluginDir)
       windowFolder = app.vault.adapter.getFullPath(`${pluginDir}/window`)
-    }
 
     if (!windowFolder) {
       const errMsg = `can't init mini tracker window.`
+      // FIXME
+      // eslint-disable-next-line no-new
       new Notice(`Error: ${errMsg}`)
       throw new Error(errMsg)
     }
@@ -76,7 +78,8 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
     ribbon.appendChild(openedIconSVG)
 
     miniTracker.onClose(() => {
-      if (__DEV__) return
+      if (__DEV__)
+        return
       closeMiniTracker()
     })
 
@@ -87,21 +90,20 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
     ribbon.firstChild?.remove()
     ribbon.appendChild(closedIconSVG)
 
-    if (miniTracker?.isOpen) {
+    if (miniTracker?.isOpen)
       miniTracker?.close()
-    }
-    
+
     open = false
   }
 
-  if (open) showMiniTracker()
+  if (open)
+    showMiniTracker()
 
   ribbon.onclick = () => {
-    if (open) {
+    if (open)
       closeMiniTracker()
-    } else {
+    else
       showMiniTracker()
-    }
   }
 }
 

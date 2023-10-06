@@ -2,7 +2,6 @@ import { FormatType, optionsWithDefaults } from '@tgrosinger/md-advanced-tables'
 import type { Options } from '@tgrosinger/md-advanced-tables'
 import { DEFAULT_NOTE_FORMAT, ProgressType } from '../constants'
 import type SuperPlan from '../main'
-import { checkIsDataviewEnabled } from '../util/helper'
 
 interface PlanEditorSettings {
   planTableId: string
@@ -76,7 +75,7 @@ export class SuperPlanSettings implements ISettings {
   update(options: Partial<ISettings>) {
     Object.assign(this, options)
     this.plugin.saveSettings()
-    this.updateCbs.forEach((fn) => fn(options))
+    this.updateCbs.forEach(fn => fn(options))
   }
 
   onUpdate(cb: SettingsUpdateCallback) {
@@ -86,9 +85,8 @@ export class SuperPlanSettings implements ISettings {
   serialize() {
     const obj: Record<string, string> = {}
     for (const key in this) {
-      if (['string', 'number', 'boolean'].includes(typeof this[key])) {
+      if (['string', 'number', 'boolean'].includes(typeof this[key]))
         obj[key] = this[key] as any
-      }
     }
     return obj as unknown as ISettings
   }

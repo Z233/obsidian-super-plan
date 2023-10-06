@@ -1,17 +1,19 @@
-import {
-  defaultOptions,
-  formatTable,
+import type {
   Table,
-  TableEditor,
-  readTable,
   TableRow,
 } from '@tgrosinger/md-advanced-tables'
-import { MarkdownView, type App, type TFile } from 'obsidian'
+import {
+  TableEditor,
+  defaultOptions,
+  formatTable,
+  readTable,
+} from '@tgrosinger/md-advanced-tables'
+import { type App, MarkdownView, type TFile } from 'obsidian'
 import type { Maybe } from 'src/types'
 import { debounceRAFPromise } from 'src/util/helper'
 import { ObsidianTextEditor } from './obsidian-text-editor'
 
-type MdTableEditorOptions = {
+interface MdTableEditorOptions {
   app: App
   file: TFile
   table: Table
@@ -19,7 +21,7 @@ type MdTableEditorOptions = {
   endRow: number
 }
 
-type FocusState = {
+interface FocusState {
   row: number
   col: number
 }
@@ -50,7 +52,7 @@ export class MdTableEditor {
   getRow(row: number) {
     return this._table.getRows()[row]
   }
-  
+
   getLine(row: number) {
     return this._table.toLines()[row + 2]
   }
@@ -88,7 +90,7 @@ export class MdTableEditor {
     const newTable = readTable(lines, defaultOptions)
     this._updateTable(newTable)
   }
-  
+
   setFocusState(focusState: Maybe<{ row: number; col: number }>) {
     this._focusState = focusState ?? null
   }
@@ -104,7 +106,7 @@ export class MdTableEditor {
   applyChanges = debounceRAFPromise(this._applyChangesOrigin.bind(this) as typeof this._applyChangesOrigin)
 
   private _applyChangesOrigin() {
-    this._isApplying = true 
+    this._isApplying = true
 
     this._ensureEditorLoaded()
 
@@ -117,15 +119,17 @@ export class MdTableEditor {
     const newLines = formatted.table.toLines()
 
     this._mte._updateLines(this._startRow, this._endRow + 1, newLines)
-    
+
     this._isApplying = false
   }
 
   private _ensureEditorLoaded() {
-    if (this._mte) return
+    if (this._mte)
+      return
     const editor = this._app.workspace.getActiveViewOfType(MarkdownView)?.editor
 
-    if (!editor) throw new Error('No active editor')
+    if (!editor)
+      throw new Error('No active editor')
 
     const ote = new ObsidianTextEditor(app, this._file, editor)
     this._mte = new TableEditor(ote)

@@ -1,7 +1,7 @@
-import type { Focus, Table, TableCell, TableRow, Range } from '@tgrosinger/md-advanced-tables'
+import type { Focus, Range, Table, TableCell, TableRow } from '@tgrosinger/md-advanced-tables'
 import type { Editor, EditorRange, WorkspaceLeaf } from 'obsidian'
-import type { UpdateFlag } from './constants'
 import type { UnionToIntersection } from 'type-fest'
+import type { UpdateFlag } from './constants'
 
 // Extend global
 declare global {
@@ -27,7 +27,7 @@ export interface UnsafeEditor extends Editor {
   removeHighlights: (unknownArg?: any) => void
 }
 
-export type PlanRecord = {
+export interface PlanRecord {
   F: string
   Start: string
   Activity: string
@@ -35,7 +35,7 @@ export type PlanRecord = {
   R: string
 }
 
-export type UserData = {
+export interface UserData {
   miniTracker: {
     position: {
       x: number
@@ -44,7 +44,7 @@ export type UserData = {
   }
 }
 
-export type ScheduledActivity = {
+export interface ScheduledActivity {
   id: string
   activity: string
   length: number
@@ -55,7 +55,7 @@ export type ScheduledActivity = {
   actLen: number
 }
 
-export type Activity = {
+export interface Activity {
   id: string
   activity: string
   length: string
@@ -66,7 +66,7 @@ export type Activity = {
 }
 
 export type PlanCellType = keyof Activity
-export type PlanTableState = {
+export interface PlanTableState {
   type: PlanCellType
   cell: TableCell
   row: TableRow
@@ -74,7 +74,7 @@ export type PlanTableState = {
   focus: Focus
 }
 
-export type PlanTableInfo = {
+export interface PlanTableInfo {
   /**
    * The range of the table
    */

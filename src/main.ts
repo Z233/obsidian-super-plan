@@ -1,14 +1,15 @@
 import {
-  Editor,
-  MarkdownView,
-  Plugin,
   Platform,
-  TFile,
-  type MarkdownPostProcessorContext,
-  WorkspaceLeaf,
-  WorkspaceTabs,
+  Plugin,
 } from 'obsidian'
-import { defaultSettings, SuperPlanSettings } from './setting/settings'
+import type {
+  Editor,
+  MarkdownPostProcessorContext,
+  TFile,
+} from 'obsidian'
+import { EditorView } from '@codemirror/view'
+import sentinel from 'sentinel-js'
+import { SuperPlanSettings, defaultSettings } from './setting/settings'
 import { SuperPlanSettingsTab } from './setting/settings-tab'
 import type { Maybe } from './types'
 import { MiniTracker } from './window'
@@ -19,10 +20,8 @@ import { Timer } from './tracker/timer'
 import './style.css'
 import { renderPlan } from './ui/plan/Plan'
 import { CodeBlockSync } from './editor/code-block-sync'
-import { EditorView } from '@codemirror/view'
 import { PlanBuilder } from './editor/plan-builder'
 import { generateId, getNowMins, parseMins2Time } from './util/helper'
-import sentinel from 'sentinel-js'
 import { ACTIVITY_TR_ID_PREFIX, CODE_BLOCK_LANG } from './constants'
 
 type FilesMap = WeakMap<
@@ -59,7 +58,7 @@ export default class SuperPlan extends Plugin {
       id: 'insert-new-plan',
       name: 'Insert new plan',
       icon: 'list-plus',
-      editorCallback: (editor: Editor, view: MarkdownView) => {
+      editorCallback: (editor: Editor) => {
         const builder = new PlanBuilder()
 
         const firstId = generateId()
@@ -86,13 +85,13 @@ export default class SuperPlan extends Plugin {
           .build()
 
         const lines = plan.getLines()
-        const codeLines = ['```' + CODE_BLOCK_LANG, ...lines, '```']
+        const codeLines = [`\`\`\`${CODE_BLOCK_LANG}`, ...lines, '```']
 
         const cursor = editor.getCursor()
 
         const isEmptyLine = editor.getLine(cursor.line).trim() === ''
 
-        editor.replaceRange(codeLines.join('\n') + '\n', {
+        editor.replaceRange(`${codeLines.join('\n')}\n`, {
           line: isEmptyLine ? cursor.line : cursor.line + 1,
           ch: 0,
         })
@@ -135,22 +134,22 @@ export default class SuperPlan extends Plugin {
 
         if (leaf) {
           leaf.view.onunload = () => {
-            if (leafFile && filesMap.has(leafFile)) {
+            if (leafFile && filesMap.has(leafFile))
               filesMap.delete(leafFile)
-            }
           }
         }
 
         if (queue.size) {
-          queue.forEach((fn) => fn())
+          queue.forEach(fn => fn())
           queue.clear()
         }
-      })
+      }),
     )
 
     this.registerEditorExtension(
       EditorView.updateListener.of((update) => {
-        if (!update.docChanged) return
+        if (!update.docChanged)
+          return
 
         const doc = update.state.doc
         update.changes.iterChanges((fromA, toA, fromB, toB) => {
@@ -170,7 +169,7 @@ export default class SuperPlan extends Plugin {
             }
           }
         })
-      })
+      }),
     )
 
     /**
@@ -180,9 +179,10 @@ export default class SuperPlan extends Plugin {
     this.registerMarkdownCodeBlockProcessor(CODE_BLOCK_LANG, (source, el, ctx) => {
       const fn = () => this._processCodeBlock({ source, el, ctx, filesMap })
 
-      if (activeFile) {
+      if (activeFile)
         Promise.resolve().then(() => fn())
-      } else queue.add(fn)
+
+      else queue.add(fn)
     })
   }
 
@@ -204,7 +204,8 @@ export default class SuperPlan extends Plugin {
     const selection = ctx.getSectionInfo(el)
     const file = this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile
 
-    if (!selection) return
+    if (!selection)
+      return
 
     let { sync, container } = filesMap.get(file) || {
       sync: new CodeBlockSync(),
@@ -217,15 +218,16 @@ export default class SuperPlan extends Plugin {
       const newContainer = (container = document.createElement('div'))
       renderPlan({ container, sync, app: this.app, file, settings: this.settings })
       filesMap.set(file, { sync, container: newContainer })
-    } else {
+    }
+    else {
       parent = container.closest<HTMLElement>(cmPreviewCodeBlockSelector)
     }
 
     if (
-      parent &&
-      parent !== el.closest(cmPreviewCodeBlockSelector) &&
-      parent.offsetWidth > 0 &&
-      parent.offsetHeight > 0
+      parent
+      && parent !== el.closest(cmPreviewCodeBlockSelector)
+      && parent.offsetWidth > 0
+      && parent.offsetHeight > 0
     ) {
       const div = this._createErrorDiv('A file can only have one plan.')
       el.insertBefore(div, null)

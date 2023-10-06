@@ -1,19 +1,19 @@
-import { useEffect, useState, useCallback, type FC } from 'preact/compat'
+import { type FC, useCallback, useEffect, useState } from 'preact/compat'
 import type { Row } from '@tanstack/react-table'
 import type { PlanDataItem } from 'src/schemas'
 import clsx from 'clsx'
-import { dropOverStyle, highlightStyle, indexCellStyle } from './styles'
 import { getIcon } from 'obsidian'
-import { usePlan } from './context'
 import { useDrag, useDrop } from 'react-dnd'
-import { Icon } from './lib'
 import { getEmptyImage } from 'react-dnd-html5-backend'
-import { PlanMenu, type PlanMenuItem } from './menu'
 import { ACTIVITY_TR_ID_PREFIX, ColumnKeys } from 'src/constants'
 import { check, getNowMins, parseMins2Time } from 'src/util/helper'
+import { useAtom } from 'jotai'
 import { SplitConfirmModalV2 } from '../modals'
 import { focusCellAtom, highlightingRowIdAtom } from './atoms'
-import { useAtom } from 'jotai'
+import { PlanMenu, type PlanMenuItem } from './menu'
+import { Icon } from './lib'
+import { usePlan } from './context'
+import { dropOverStyle, highlightStyle, indexCellStyle } from './styles'
 
 function useTableRowActions(row: Row<PlanDataItem>) {
   const { deleteRow, updateCell, duplicateRow } = usePlan()
@@ -66,12 +66,12 @@ export const TableRow: FC<{
   const { row, highlightRow } = props
   const activityId = row.original.id
   const { insertRowBelow, moveRow } = usePlan()
-  const [highlightingRowId, setHighlightingRowId] = useAtom(highlightingRowIdAtom)
+  const [highlightingRowId] = useAtom(highlightingRowIdAtom)
 
   const [isHover, setIsHover] = useState(false)
 
-  const [{ isDragging }, dragRef, dragPreview] = useDrag({
-    collect: (monitor) => ({
+  const [, dragRef, dragPreview] = useDrag({
+    collect: monitor => ({
       isDragging: monitor.isDragging(),
     }),
     item: () => row,
@@ -85,7 +85,7 @@ export const TableRow: FC<{
       const to = row.index
       from > to ? moveRow(from, to + 1) : moveRow(from, to)
     },
-    collect: (monitor) => ({
+    collect: monitor => ({
       isOver: monitor.isOver(),
     }),
   })
@@ -130,9 +130,9 @@ export const TableRow: FC<{
       icon: 'trash',
       callback: handleDelete,
     },
-  ].filter((item) => item.callback !== undefined)
+  ].filter(item => item.callback !== undefined)
 
-  const handleContextMenu = (e: MouseEvent, rowIndex: number) => {
+  const handleContextMenu = (e: MouseEvent) => {
     e.preventDefault()
 
     highlightRow(activityId)
@@ -159,13 +159,14 @@ export const TableRow: FC<{
         [dropOverStyle]: true,
         '!after:visible': isOver,
       })}
-      onContextMenu={(e) => handleContextMenu(e, row.index)}
+      onContextMenu={e => handleContextMenu(e)}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
       <td className={indexCellStyle}>
         {(() =>
-          isHover ? (
+          isHover
+            ? (
             <div className="relative">
               <span
                 ref={dragRef}
@@ -179,9 +180,10 @@ export const TableRow: FC<{
                 className="hover:text-$interactive-accent"
               />
             </div>
-          ) : (
+              )
+            : (
             <div className="w-6">{row.index + 1}</div>
-          ))()}
+              ))()}
       </td>
 
       {props.children}

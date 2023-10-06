@@ -1,6 +1,5 @@
 import type { BrowserWindow } from 'electron'
-import { debounce, normalizePath } from 'obsidian'
-import { UserDataKey, type DataStore, type MiniTrackerData, type Position } from 'src/store'
+import { type DataStore, type MiniTrackerData, type Position, UserDataKey } from 'src/store'
 import type { Observer, PlanTracker } from 'src/tracker/plan-tracker'
 import type { Maybe } from 'src/types'
 import { getElectronAPI } from 'src/window/utils'
@@ -26,12 +25,14 @@ export class MiniTracker {
   private constructor(private store: DataStore, private tracker: PlanTracker) {}
 
   static new(store: DataStore, tracker: PlanTracker) {
-    if (MiniTracker.instance) return MiniTracker.instance
+    if (MiniTracker.instance)
+      return MiniTracker.instance
     return (MiniTracker.instance = new MiniTracker(store, tracker))
   }
 
   static clean() {
-    if (!MiniTracker.instance) return
+    if (!MiniTracker.instance)
+      return
     const instance = MiniTracker.instance
     instance.close()
     MiniTracker.instance = null
@@ -42,11 +43,10 @@ export class MiniTracker {
   }
 
   close() {
-    if (this.isOpen) {
+    if (this.isOpen)
       this.win?.close()
-    }
 
-    this.onCloseCallbacks.forEach((cb) => cb())
+    this.onCloseCallbacks.forEach(cb => cb())
 
     this.tracker.removeObserver(this.trackerObserver)
     this.win?.removeAllListeners()
@@ -56,7 +56,7 @@ export class MiniTracker {
     return !this.win?.isDestroyed() && this.win?.isVisible()
   }
 
-  async open(windowFolderPath: string) {
+  async open() {
     const electronAPI = getElectronAPI()
     const { BrowserWindow } = electronAPI
 
@@ -80,13 +80,14 @@ export class MiniTracker {
     })
 
     if (__DEV__) {
-      this.win.loadURL(import.meta.env.VITE_DEV_SERVER_URL + 'window/mini-tracker/index.html')
+      this.win.loadURL(`${import.meta.env.VITE_DEV_SERVER_URL}window/mini-tracker/index.html`)
       // Enable DevTools
       this.win.webContents.openDevTools()
       this.win.webContents.executeJavaScript(
-        'console.log("%c====== MiniTracker DevTools ======", "color: red; font-size: 20px;")'
+        'console.log("%c====== MiniTracker DevTools ======", "color: red; font-size: 20px;")',
       )
-    } else {
+    }
+    else {
       this.win.loadURL(`data:text/html;charset=UTF-8,__MINI_TRACKER_HTML__`)
     }
 
@@ -96,7 +97,7 @@ export class MiniTracker {
     this.win.on('close', this.close.bind(this))
 
     // Close Mini Tracker when Obsidian main window close
-    window.addEventListener('pagehide', (e) => {
+    window.addEventListener('pagehide', () => {
       MiniTracker.clean()
     })
   }
@@ -108,7 +109,8 @@ export class MiniTracker {
   }
 
   private async handleWindowMove() {
-    if (!this.win) return
+    if (!this.win)
+      return
 
     const { x, y, width } = this.win.getBounds()
 
@@ -145,7 +147,8 @@ export class MiniTracker {
       makeAppRegionChangesWork()
 
       this.win.webContents.on('ipc-message', (event, channel) => {
-        if (!this.win || snapped === null) return
+        if (!this.win || snapped === null)
+          return
 
         if (channel === 'snapped-stop') {
           snapped === 'l'
@@ -163,7 +166,7 @@ export class MiniTracker {
         if (channel === 'snapped-view-end') {
           snapped === 'l'
             ? snapToLeft()
-            : snapToRight() 
+            : snapToRight()
         }
       })
     }
@@ -173,7 +176,7 @@ export class MiniTracker {
 
   private async saveData(data: Partial<MiniTrackerData>) {
     const userData = await this.store.get(UserDataKey)
-    const miniTrackerData = userData?.['miniTracker']
+    const miniTrackerData = userData?.miniTracker
     this.store.set(UserDataKey, {
       ...userData,
       miniTracker: Object.assign({}, miniTrackerData, data),

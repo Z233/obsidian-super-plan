@@ -65,12 +65,12 @@ export const TriggerScheduleColumn: PlanCellType[] = ['length', 'start', 'f', 'r
 export const HIGHLIGHT_CLASS_NAME = 'obsidian-super-plan highlight'
 
 export enum ActivityDataColumn {
-  'f',
-  'start',
-  'activity',
-  'length',
-  'r',
-  'actLen',
+  f,
+  start,
+  activity,
+  length,
+  r,
+  actLen,
 }
 
 export enum ProgressType {

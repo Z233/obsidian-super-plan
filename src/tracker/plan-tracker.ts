@@ -1,31 +1,31 @@
-import type { ScheduledActivity, Maybe, PlanTableInfo, UnsafeEditor, Activity } from '../types'
+import { find, findLastIndex, isEqual } from 'lodash-es'
+import { type App, MarkdownView } from 'obsidian'
+import { Scheduler } from 'src/scheduler'
+import { Events, GlobalMediator } from 'src/mediator'
+import type { Activity, Maybe, PlanTableInfo, ScheduledActivity, UnsafeEditor } from '../types'
 import { getNowMins } from '../util/helper'
 import type { Parser } from '../parser'
 import type { PlanFile } from '../file'
 import type { SuperPlanSettings } from '../setting/settings'
-import { find, findLastIndex, isEqual } from 'lodash-es'
-import { MarkdownView, type App } from 'obsidian'
 import StatusBar from './status-bar/StatusBar.svelte'
-import { Scheduler } from 'src/scheduler'
 import { Timer } from './timer'
-import { Events, GlobalMediator } from 'src/mediator'
 
 type StatusBarProps = StatusBar['$$prop_def']
 
-export type TrackerState = {
+export interface TrackerState {
   ongoing: Ongoing | null
   upcoming: Upcoming | null
 }
 
-type Ongoing = {
+interface Ongoing {
   activity: ScheduledActivity
   leftMins: number
   timeoutMins: number
   progress: number
 }
-type Upcoming = { activity: ScheduledActivity }
+interface Upcoming { activity: ScheduledActivity }
 
-export type Observer = {
+export interface Observer {
   update: (state: TrackerState) => void
 }
 
@@ -49,13 +49,12 @@ export class PlanTracker {
 
   removeObserver(observer: Observer): void {
     const index = this.observers.indexOf(observer)
-    if (index !== -1) {
+    if (index !== -1)
       this.observers.splice(index, 1)
-    }
   }
 
   notifyObservers(params: Parameters<Observer['update']>[0]): void {
-    this.observers.forEach((observer) => observer.update(params))
+    this.observers.forEach(observer => observer.update(params))
   }
 
   constructor(
@@ -63,7 +62,7 @@ export class PlanTracker {
     private parser: Parser,
     private file: PlanFile,
     private settings: SuperPlanSettings,
-    private statusBar: HTMLElement
+    private statusBar: HTMLElement,
   ) {}
 
   init() {
@@ -79,7 +78,7 @@ export class PlanTracker {
     })
 
     this.settings.onUpdate((options) => {
-      if (options['progressType']) {
+      if (options.progressType) {
         this.statusBarComp.$set({
           progressType: options.progressType,
         })
@@ -94,17 +93,19 @@ export class PlanTracker {
     this.statusBarComp.$set(props)
   }
 
-  private async beginActivity(activity: ScheduledActivity) {
+  private async beginActivity() {
     throw new Error('Method not implemented.')
   }
 
   private async jump2ActivityRow(activity: ScheduledActivity) {
-    if (!this.tableInfo || !this.scheduler) return
+    if (!this.tableInfo || !this.scheduler)
+      return
     const { workspace } = this.app
 
     const file = this.file.todayFile
 
-    if (!file) return
+    if (!file)
+      return
 
     const activeView = workspace.getActiveViewOfType(MarkdownView)
     const shouldOpenFile = !(activeView && file && activeView.file === file)
@@ -146,12 +147,13 @@ export class PlanTracker {
       timeoutMins: 0,
     }
 
-    if (!this.scheduler) return initialState
+    if (!this.scheduler)
+      return initialState
 
     const nowMins = getNowMins()
     const nowIndex = findLastIndex(
       this.scheduler.activities,
-      (a) => nowMins >= a.start && a.isFixed
+      a => nowMins >= a.start && a.isFixed,
     )
     const now = this.scheduler.activities[nowIndex]
     const nowIsLast = nowIndex === this.scheduler.activities.length - 1
@@ -161,13 +163,11 @@ export class PlanTracker {
     const totalMins = now.actLen
     const totalSecs = totalMins * 60
     const progress = totalMins > 0 ? (durationSecs / totalSecs) * 100 : 100
-    
-    console.log({ durationMins, durationSecs, totalMins, progress, totalSecs })
 
     const next = nowIsLast
       ? null
-      : find(this.scheduler.activities, (a) => a.actLen >= 0, nowIndex + 1)
-      
+      : find(this.scheduler.activities, a => a.actLen >= 0, nowIndex + 1)
+
     return {
       ...initialState,
       now,
@@ -180,7 +180,8 @@ export class PlanTracker {
   }
 
   private async onTick() {
-    if (!this.scheduler) return
+    if (!this.scheduler)
+      return
 
     const { leftMins, timeoutMins, ...props } = this.computeProgress()
 
@@ -206,7 +207,7 @@ export class PlanTracker {
           activity: next,
         }
       : null
-      
+
     this.notifyObservers({ ongoing, upcoming })
 
     // ================== Notification ==================
@@ -217,23 +218,24 @@ export class PlanTracker {
 
       // a fixed activity will begin
       const isNextWillStart = Boolean(
-        next &&
-          next.isFixed &&
-          nowMinsSecs === 59 &&
-          nowMins + 1 >= next.start - this.settings.minsLeftToSendNotification
+        next
+          && next.isFixed
+          && nowMinsSecs === 59
+          && nowMins + 1 >= next.start - this.settings.minsLeftToSendNotification,
       )
       const isNowWillStop = Boolean(
-        this.now && nowMins >= this.now.stop - this.settings.minsLeftToSendNotification
+        this.now && nowMins >= this.now.stop - this.settings.minsLeftToSendNotification,
       )
 
       // check this.prev: prevent sending a notification at the start
       if (
-        ((this.prev && isNowWillStop) || isNextWillStart) &&
-        this.lastSendNotificationActivity !== this.now
+        ((this.prev && isNowWillStop) || isNextWillStart)
+        && this.lastSendNotificationActivity !== this.now
       ) {
         const content = isNextWillStart
           ? `A fixed activity will start soon, time to move on.`
           : `It's time to begin the next activity!`
+        // eslint-disable-next-line no-new
         new Notification(content)
         this.lastSendNotificationActivity = this.now
 

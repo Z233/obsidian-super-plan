@@ -1,31 +1,26 @@
-import type { SuperPlanSettings } from './setting/settings'
-import type { Activity, Maybe, PlanTableInfo } from './types'
-import {
-  readTable,
+import type {
   Table,
-  TableCell,
-  TableRow,
-  insertRow,
-  formatTable,
-  Range,
-  Point,
-  defaultOptions,
 } from '@tgrosinger/md-advanced-tables'
 import {
-  _createIsTableFormulaRegex,
+  Point,
+  Range,
+  defaultOptions,
+  formatTable,
+  readTable,
+} from '@tgrosinger/md-advanced-tables'
+import {
   _createIsTableRowRegex,
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
-import {
-  ActivityDataColumn,
-  CODE_BLOCK_LANG,
-  ColumnKeys,
-  ColumnKeysMap,
+import { isArray } from 'lodash-es'
+import type { SuperPlanSettings } from './setting/settings'
+import type { Activity, Maybe, PlanTableInfo } from './types'
+import type {
   Columns,
-  PlanLinesLiteral,
 } from './constants'
-import { getActivityDataKey } from './util/helper'
-import { isArray, isNumber } from 'lodash-es'
-import type { Column } from '@tanstack/react-table'
+import {
+  CODE_BLOCK_LANG,
+  ColumnKeysMap,
+} from './constants'
 import { planRecordSchema } from './schemas'
 
 export class MdTableParser {
@@ -47,7 +42,7 @@ export class MdTableParser {
     const headers = table
       .getRows()[0]
       .getCells()
-      .map((cell) => cell.content)
+      .map(cell => cell.content)
 
     const records: Record<string, string>[] = []
 
@@ -78,9 +73,10 @@ export class Parser {
 
   findPlanTableV2(content: string): Maybe<PlanTableInfo> {
     // const re = /(?<=^```super-plan\n)[\s\S]*(?=```$)/gm
-    const re = new RegExp('(?<=^```' + CODE_BLOCK_LANG + '\\n)[\\s\\S]*(?=```$)', 'gm')
+    const re = new RegExp(`(?<=^\`\`\`${CODE_BLOCK_LANG}\\n)[\\s\\S]*(?=\`\`\`$)`, 'gm')
     const match = re.exec(content)
-    if (!match) return null
+    if (!match)
+      return null
 
     const lines = match[0].split('\n')
 
@@ -112,7 +108,8 @@ export class Parser {
         if (startRow === undefined) {
           startRow = i
           endRow = i
-        } else if (i - endRow <= 1) {
+        }
+        else if (i - endRow <= 1) {
           endRow = i
         }
 
@@ -123,7 +120,7 @@ export class Parser {
     const table = readTable(lines, this.settings.asOptions())
     const range = new Range(
       new Point(startRow!, 0),
-      new Point(endRow, lines[lines.length - 1].length)
+      new Point(endRow, lines[lines.length - 1].length),
     )
 
     return {
@@ -138,16 +135,16 @@ export class Parser {
       .getRows()
       .slice(2)
       .filter(row => row.getWidth() === (Object.keys(planRecordSchema.shape).length))
-      .map((row) => row.getCells().map((cell) => cell.content))
+      .map(row => row.getCells().map(cell => cell.content))
 
-    const activitiesData: Activity[] = activitiesRows.map((row) =>
+    const activitiesData: Activity[] = activitiesRows.map(row =>
       row.reduce(
         (data, v, i) => ({
           ...data,
           [ColumnKeysMap[i as Columns]]: v,
         }),
-        {} as Activity
-      )
+        {} as Activity,
+      ),
     )
 
     return activitiesData

@@ -1,7 +1,7 @@
 import {
   useEffect,
   useRef,
-} from 'preact/compat';
+} from 'preact/compat'
 
 /**
  * Helps tracking the props changes made in a react functional component.
@@ -22,24 +22,24 @@ import {
  *
  * @see https://stackoverflow.com/a/51082563/2391795
  */
-export const useRenderingTrace = (componentName: string, propsAndStates: any, level: 'debug' | 'info' | 'log' = 'debug') => {
-  const prev = useRef(propsAndStates);
+export function useRenderingTrace(componentName: string, propsAndStates: any, level: 'debug' | 'info' | 'log' = 'debug') {
+  const prev = useRef(propsAndStates)
 
   useEffect(() => {
-    const changedProps: { [key: string]: { old: any, new: any } } = Object.entries(propsAndStates).reduce((property: any, [key, value]: [string, any]) => {
+    const changedProps: { [key: string]: { old: any; new: any } } = Object.entries(propsAndStates).reduce((property: any, [key, value]: [string, any]) => {
       if (prev.current[key] !== value) {
         property[key] = {
           old: prev.current[key],
           new: value,
-        };
+        }
       }
-      return property;
-    }, {});
+      return property
+    }, {})
 
-    if (Object.keys(changedProps).length > 0) {
-      console[level](`[${componentName}] Changed props:`, changedProps);
-    }
+    if (Object.keys(changedProps).length > 0)
+      // eslint-disable-next-line no-console
+      console[level](`[${componentName}] Changed props:`, changedProps)
 
-    prev.current = propsAndStates;
-  });
-};
+    prev.current = propsAndStates
+  })
+}

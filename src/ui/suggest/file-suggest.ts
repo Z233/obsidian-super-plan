@@ -1,11 +1,11 @@
 // Credits go to Liam's Periodic Notes Plugin: https://github.com/liamcain/obsidian-periodic-notes
 
-import { App, Scope } from 'obsidian'
-import type { ISuggestOwner } from 'obsidian'
+import { Scope } from 'obsidian'
+import type { App, ISuggestOwner } from 'obsidian'
 import { createPopper } from '@popperjs/core'
 import type { Instance as PopperInstance } from '@popperjs/core'
 
-const wrapAround = (value: number, size: number): number => {
+function wrapAround(value: number, size: number): number {
   return ((value % size) + size) % size
 }
 
@@ -75,9 +75,8 @@ class Suggest<T> {
 
   useSelectedItem(event: MouseEvent | KeyboardEvent) {
     const currentValue = this.values[this.selectedItem]
-    if (currentValue) {
+    if (currentValue)
       this.owner.selectSuggestion(currentValue, event)
-    }
   }
 
   setSelectedItem(selectedIndex: number, scrollIntoView: boolean) {
@@ -90,9 +89,8 @@ class Suggest<T> {
 
     this.selectedItem = normalizedIndex
 
-    if (scrollIntoView) {
+    if (scrollIntoView)
       selectedSuggestion.scrollIntoView(false)
-    }
   }
 }
 
@@ -135,16 +133,15 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 
     if (suggestions.length > 0) {
       this.suggest.setSuggestions(suggestions)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.open((<any>this.app).dom.appContainerEl, this.inputEl)
-    } else {
+      this.open((<any> this.app).dom.appContainerEl, this.inputEl)
+    }
+    else {
       this.close()
     }
   }
 
   open(container: HTMLElement, inputEl: HTMLElement): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(<any>this.app).keymap.pushScope(this.scope)
+    ;(<any> this.app).keymap.pushScope(this.scope)
 
     container.appendChild(this.suggestEl)
     this.popper = createPopper(inputEl, this.suggestEl, {
@@ -159,9 +156,9 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
             // second pass - position it with the width bound to the reference element
             // we need to early exit to avoid an infinite loop
             const targetWidth = `${state.rects.reference.width}px`
-            if (state.styles.popper.width === targetWidth) {
+            if (state.styles.popper.width === targetWidth)
               return
-            }
+
             state.styles.popper.width = targetWidth
             instance.update()
           },
@@ -173,11 +170,11 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
   }
 
   close(): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(<any>this.app).keymap.popScope(this.scope)
+    ;(<any> this.app).keymap.popScope(this.scope)
 
     this.suggest.setSuggestions([])
-    if (this.popper) this.popper.destroy()
+    if (this.popper)
+      this.popper.destroy()
     this.suggestEl.detach()
   }
 

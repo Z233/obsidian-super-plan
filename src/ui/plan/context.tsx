@@ -1,15 +1,16 @@
 import { TableCell, TableRow, defaultOptions, readTable } from '@tgrosinger/md-advanced-tables'
 import { nanoid } from 'nanoid'
 import type { App } from 'obsidian'
-import { createContext, useContext, useRef, type FC, useCallback } from 'preact/compat'
+import { type FC, createContext, useCallback, useContext } from 'preact/compat'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { ColumnKeys, ColumnKeysMap, Columns } from 'src/constants'
+import type { ColumnKeys } from 'src/constants'
+import { ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { SuperPlanSettings } from 'src/setting/settings'
 import { generateId } from 'src/util/helper'
 
-type PlanContextValue = {
+interface PlanContextValue {
   mte: MdTableEditor
   app: App
   settings: SuperPlanSettings
@@ -17,15 +18,13 @@ type PlanContextValue = {
 
 const PlanContext = createContext<PlanContextValue>(null as unknown as PlanContextValue)
 
-const IGNORED_CELLS: ColumnKeys[] = [ColumnKeys.Activity]
-
-export type FocusPosition = {
+export interface FocusPosition {
   rowIndex: number
   columnKey: ColumnKeys
 }
 
 export const PlanProvider: FC<{ mte: MdTableEditor; app: App; settings: SuperPlanSettings }> = (
-  props
+  props,
 ) => {
   const { mte, app, settings } = props
 
@@ -44,15 +43,15 @@ export const PlanProvider: FC<{ mte: MdTableEditor; app: App; settings: SuperPla
 
 export function usePlanContext() {
   const context = useContext(PlanContext)
-  if (!context) {
+  if (!context)
     throw new Error('usePlanContext must be used within <PlanProvider />')
-  }
+
   return context
 }
 
 type PlanActionReturnType = ReturnType<MdTableEditor['applyChanges']>
 
-type PlanActions = {
+interface PlanActions {
   updateCell: (row: number, columnKey: ColumnKeys, value: string) => PlanActionReturnType
   deleteRow: (row: number) => PlanActionReturnType
   insertRowBelow: (row: number) => PlanActionReturnType
@@ -71,7 +70,7 @@ export function usePlan() {
       mte.setCellAt(row, ColumnKeysMap[columnKey], value)
       return mte.applyChanges()
     },
-    [mte]
+    [mte],
   )
 
   const deleteRow: PlanActions['deleteRow'] = useCallback(
@@ -79,19 +78,17 @@ export function usePlan() {
       mte.deleteRow(row)
       return mte.applyChanges()
     },
-    [mte]
+    [mte],
   )
 
   const insertRowBelow: PlanActions['insertRowBelow'] = useCallback(
     (row) => {
-      const cells = Array.from({ length: mte.getHeaderWidth() }, (_, i) =>
-        i === 0 ? new TableCell(generateId()) : new TableCell(' ')
-      )
+      const cells = Array.from({ length: mte.getHeaderWidth() }, (_, i) => i === 0 ? new TableCell(generateId()) : new TableCell(' '))
       const tableRow = new TableRow(cells, '', '')
       mte.insertRow(tableRow, row + 1)
       return mte.applyChanges()
     },
-    [mte]
+    [mte],
   )
 
   const insertRawRowBelow: PlanActions['insertRawRowBelow'] = useCallback(
@@ -101,7 +98,7 @@ export function usePlan() {
       mte.insertRow(tableRow.setCellAt(0, generateId()), row + 1)
       return mte.applyChanges()
     },
-    [mte]
+    [mte],
   )
 
   const moveRow: PlanActions['moveRow'] = useCallback(
@@ -109,7 +106,7 @@ export function usePlan() {
       mte.moveRow(from, to)
       return mte.applyChanges()
     },
-    [mte]
+    [mte],
   )
 
   const duplicateRow: PlanActions['duplicateRow'] = useCallback(
@@ -122,7 +119,7 @@ export function usePlan() {
       mte.insertRow(duplicatedRow, row + 1)
       return mte.applyChanges()
     },
-    [mte]
+    [mte],
   )
 
   const cutRow: PlanActions['cutRow'] = useCallback(
@@ -131,14 +128,14 @@ export function usePlan() {
       mte.deleteRow(row)
       return mte.applyChanges().then(() => line)
     },
-    [mte]
+    [mte],
   )
 
   const getRowText = useCallback(
     (row: number) => {
       return mte.getLine(row)
     },
-    [mte]
+    [mte],
   )
 
   return {

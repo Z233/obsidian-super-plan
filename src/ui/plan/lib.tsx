@@ -1,11 +1,10 @@
-import { forwardRef, useEffect, useRef, type FC, type ForwardedRef, useMemo } from 'preact/compat'
+import { type FC, type ForwardedRef, forwardRef, useEffect, useRef } from 'preact/compat'
 import type { JSX } from 'preact/jsx-runtime'
-import { getIcon } from 'obsidian'
 import clsx from 'clsx'
 
 export const DefaultInput = forwardRef(
   (props: JSX.HTMLAttributes<HTMLInputElement>, ref: ForwardedRef<HTMLInputElement>) => {
-    const { ref: unused, ...rest } = props
+    const { ref: _unused, ...rest } = props
 
     return (
       <input
@@ -16,12 +15,12 @@ export const DefaultInput = forwardRef(
         {...rest}
       />
     )
-  }
+  },
 )
 
 export const DefaultButton = forwardRef(
   (props: JSX.HTMLAttributes<HTMLButtonElement>, ref: ForwardedRef<HTMLButtonElement>) => {
-    const { ref: unused, ...rest } = props
+    const { ref: _unused, ...rest } = props
 
     return (
       <button
@@ -32,7 +31,7 @@ export const DefaultButton = forwardRef(
         {...rest}
       />
     )
-  }
+  },
 )
 
 export const Icon: FC<
@@ -44,9 +43,8 @@ export const Icon: FC<
   const wrapperRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    if (wrapperRef.current) {
+    if (wrapperRef.current)
       wrapperRef.current.appendChild(svg)
-    }
   }, [])
 
   return <span ref={wrapperRef} className={clsx('flex [&>svg]:m-auto', className)} {...rest}></span>

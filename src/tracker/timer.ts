@@ -13,12 +13,14 @@ export class Timer extends EventEmitter {
   }
 
   static new() {
-    if (Timer.instance) return Timer.instance
+    if (Timer.instance)
+      return Timer.instance
     else return (Timer.instance = new Timer())
   }
 
   static clean() {
-    if (this.instance) this.instance.removeListener()
+    if (this.instance)
+      this.instance.removeListener()
     this.instance = null
   }
 }

@@ -1,12 +1,13 @@
 import { Combobox } from '@headlessui/react'
 import clsx from 'clsx'
-import { Result, Success, getAPI } from 'obsidian-dataview'
-import { Fragment, createPortal, type FC, useState } from 'preact/compat'
+import type { Result, Success } from 'obsidian-dataview'
+import { getAPI } from 'obsidian-dataview'
+import { type FC, Fragment, createPortal, useState } from 'preact/compat'
 import useSWR from 'swr'
-import { usePlanContext } from './context'
 import { normalizePath } from 'obsidian'
+import { usePlanContext } from './context'
 
-type Segment = {
+interface Segment {
   left: string
   middle: string
   right: string
@@ -16,7 +17,8 @@ type Segment = {
 function divide(text: string, keyword: string): Segment | null {
   const re = new RegExp(`(^.*?)(${keyword})(.*)`, 'i')
   const match = text.match(re)
-  if (!match) return null
+  if (!match)
+    return null
 
   const [, left, middle, right] = match
 
@@ -33,7 +35,8 @@ function checkIsQuerySuccess(query: Result<unknown, unknown>): query is Success<
 }
 
 function useActivitiesQuery(keyword: string) {
-  if (keyword.trim().length === 0) return []
+  if (keyword.trim().length === 0)
+    return []
 
   const { settings } = usePlanContext()
 
@@ -41,25 +44,27 @@ function useActivitiesQuery(keyword: string) {
     ['ACTIVITIES', keyword],
     async () => {
       const dv = getAPI()
-      if (!dv) return []
+      if (!dv)
+        return []
 
       const query = await dv.query(
         `LIST A.activity FROM "${normalizePath(settings.dailyPlanNoteFolder)}"
         FLATTEN file.plans AS P
         FLATTEN P.activities AS A
-        WHERE icontains(A.activity, "${keyword}")`
+        WHERE icontains(A.activity, "${keyword}")`,
       )
 
-      if (!checkIsQuerySuccess(query)) return []
+      if (!checkIsQuerySuccess(query))
+        return []
 
-      const activities: string[] = query.value.values.map((x) => x.value).filter((x) => x)
+      const activities: string[] = query.value.values.map(x => x.value).filter(x => x)
       const uniqueActivities = [...new Set(activities)]
 
-      return uniqueActivities.map((act) => divide(act, keyword)).filter((x) => !!x) as Segment[]
+      return uniqueActivities.map(act => divide(act, keyword)).filter(x => !!x) as Segment[]
     },
     {
       fallbackData: [],
-    }
+    },
   )
 
   return data
@@ -74,7 +79,8 @@ export const ActivitySuggesterPopup: FC<{
 
   const segments = useActivitiesQuery(keyword)
 
-  if (segments.length === 0) return null
+  if (segments.length === 0)
+    return null
 
   return createPortal(
     <div
@@ -87,7 +93,7 @@ export const ActivitySuggesterPopup: FC<{
     >
       <Combobox.Options as={Fragment}>
         <div className="suggestion">
-          {segments.map((segment) => (
+          {segments.map(segment => (
             <Combobox.Option as={Fragment} key={segment.fullText} value={segment.fullText}>
               {({ active }: { selected: boolean; active: boolean }) => (
                 <div className={clsx('suggestion-item', active && 'is-selected')}>
@@ -101,6 +107,6 @@ export const ActivitySuggesterPopup: FC<{
         </div>
       </Combobox.Options>
     </div>,
-    document.body
+    document.body,
   )
 }

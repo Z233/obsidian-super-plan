@@ -1,14 +1,14 @@
 import { Scheduler } from 'src/scheduler'
 import {
   Table,
-  TableRow,
   TableCell,
+  TableRow,
   defaultOptions,
   formatTable,
 } from '@tgrosinger/md-advanced-tables'
 import { ColumnKeys } from 'src/constants'
 import type { PlanData } from 'src/schemas'
-import type { Activity, ScheduledActivity, UnionToTuple } from 'src/types'
+import type { Activity, UnionToTuple } from 'src/types'
 
 class Plan {
   private _data: PlanData = []
@@ -23,22 +23,22 @@ class Plan {
     const headerColumns = Object.keys(ColumnKeys) as UnionToTuple<keyof typeof ColumnKeys>
 
     const headerRow = new TableRow(
-      headerColumns.map((col) => new TableCell(col)),
+      headerColumns.map(col => new TableCell(col)),
       '',
-      ''
+      '',
     )
 
     const dividerRow = new TableRow(
-      headerColumns.map((_) => new TableCell('-')),
+      headerColumns.map(() => new TableCell('-')),
       '',
-      ''
+      '',
     )
 
     const activitiesRows = this._data.map((act) => {
       const cells = []
-      for (const [_, value] of Object.entries(act)) {
+      for (const [, value] of Object.entries(act))
         cells.push(new TableCell(value))
-      }
+
       return new TableRow(cells, '', '')
     })
 

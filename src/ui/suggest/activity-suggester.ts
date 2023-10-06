@@ -1,24 +1,25 @@
 import {
-  Editor,
   EditorSuggest,
-  TFile,
+} from 'obsidian'
+import type {
+  App,
+  EditorPosition,
+  EditorSuggestContext,
+  EditorSuggestTriggerInfo,
+  KeymapEventHandler,
   Scope,
-  type App,
-  type EditorPosition,
-  type EditorSuggestContext,
-  type EditorSuggestTriggerInfo,
-  type KeymapEventHandler,
+  TFile,
 } from 'obsidian'
 import type { SuperPlanSettings } from '../../setting/settings'
 import type { ActivityProvider } from './activity-provider'
 
-type ActivitySuggestValue = {
+interface ActivitySuggestValue {
   value: string
   valueHtml: string
   context: EditorSuggestContext
 }
 
-type Match = { value: string; html: string }
+interface Match { value: string; html: string }
 
 // This is an unsafe code..!!
 interface UnsafeEditorSuggestInterface {
@@ -30,8 +31,7 @@ interface UnsafeEditorSuggestInterface {
 
 export class ActivitySuggester
   extends EditorSuggest<ActivitySuggestValue>
-  implements UnsafeEditorSuggestInterface
-{
+  implements UnsafeEditorSuggestInterface {
   scope: UnsafeEditorSuggestInterface['scope']
   suggestions: UnsafeEditorSuggestInterface['suggestions']
   // Used to avoid re-registration
@@ -42,7 +42,7 @@ export class ActivitySuggester
   constructor(
     private app: App,
     private provider: ActivityProvider,
-    private settings: SuperPlanSettings
+    private settings: SuperPlanSettings,
   ) {
     super(app)
     this.registerKeymaps()
@@ -50,31 +50,32 @@ export class ActivitySuggester
 
   private registerKeymaps() {
     // Clear
-    this.keymapEventHandlers.forEach((x) => this.scope.unregister(x))
+    this.keymapEventHandlers.forEach(x => this.scope.unregister(x))
     this.keymapEventHandlers = []
 
     this.keymapEventHandlers.push(
       this.scope.register([], 'Tab', () => {
         this.suggestions.useSelectedItem({})
         return true
-      })
+      }),
     )
   }
 
   private shouldPreventTrigger(cursor: EditorPosition, file: TFile) {
     const cache = this.app.metadataCache.getFileCache(file)
-    if (!cache || !cache.sections) return false
+    if (!cache || !cache.sections)
+      return false
 
     return !cache.sections.some(
-      (sec) =>
-        sec.position.start.line <= cursor.line &&
-        sec.position.end.line >= cursor.line &&
-        sec.type === 'table' &&
-        sec.id === this.settings.planTableId
+      sec =>
+        sec.position.start.line <= cursor.line
+        && sec.position.end.line >= cursor.line
+        && sec.type === 'table'
+        && sec.id === this.settings.planTableId,
     )
   }
 
-  onTrigger(cursor: EditorPosition, editor: Editor, file: TFile): EditorSuggestTriggerInfo | null {
+  onTrigger(): EditorSuggestTriggerInfo | null {
     throw new Error('Need to be reimplemented.')
 
     // if (!checkIsDataviewEnabled()) return null
@@ -110,7 +111,8 @@ export class ActivitySuggester
 
     let step = record.length
     while (step--) {
-      if (cursor < query.length && query.charAt(cursor) === record.charAt(cursor)) cursor++
+      if (cursor < query.length && query.charAt(cursor) === record.charAt(cursor))
+        cursor++
       else break
     }
 
@@ -129,14 +131,15 @@ export class ActivitySuggester
     const activities = this.provider.activityNames
 
     let matches: Match[] = []
-    activities.forEach((record, idx) => {
+    activities.forEach((record) => {
       const match = this.search(context.query, record)
-      if (match) matches.push(match)
+      if (match)
+        matches.push(match)
     })
 
     matches = matches.sort((a, b) => a.value.length - b.value.length)
 
-    return matches.map((x) => ({
+    return matches.map(x => ({
       value: x.value,
       valueHtml: x.html,
       context,
@@ -147,7 +150,7 @@ export class ActivitySuggester
     el.innerHTML = value.valueHtml
   }
 
-  selectSuggestion(value: ActivitySuggestValue, evt: MouseEvent | KeyboardEvent): void {
+  selectSuggestion(value: ActivitySuggestValue): void {
     const { editor, query } = value.context
     const { value: selectedValue } = value
     const { ch, line } = editor.getCursor()
@@ -167,11 +170,11 @@ export class ActivitySuggester
       {
         ch: queryStartCh + query.length,
         line,
-      }
+      },
     )
 
     editor.setCursor({
-      line: line,
+      line,
       ch: afterInsertCh,
     })
   }

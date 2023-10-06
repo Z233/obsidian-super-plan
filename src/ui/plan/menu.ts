@@ -1,6 +1,6 @@
 import { Menu } from 'obsidian'
 
-export type PlanMenuItem = {
+export interface PlanMenuItem {
   title: string
   icon: string
   callback?: PlanMenuCallback
@@ -22,5 +22,4 @@ export class PlanMenu extends Menu {
       })
     })
   }
-
 }

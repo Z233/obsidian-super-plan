@@ -27,7 +27,7 @@ export const planDataItemSchema = z.object({
 
 export type PlanDataItem = z.infer<typeof planDataItemSchema>
 
-const planRecordsTransformer = (input: z.infer<typeof planRecordsSchema>) => {
+function planRecordsTransformer(input: z.infer<typeof planRecordsSchema>) {
   const output: PlanDataItem[] = []
   for (const record of input) {
     const item: PlanDataItem = {

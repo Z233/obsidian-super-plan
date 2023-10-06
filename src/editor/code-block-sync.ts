@@ -1,4 +1,4 @@
-type CodeBlockSyncInfo = {
+interface CodeBlockSyncInfo {
   source: string
   lineStart: number
   lineEnd: number
@@ -23,7 +23,7 @@ export class CodeBlockSync {
 
   notify(info: Partial<CodeBlockSyncInfo>) {
     this._info = { ...this._info, ...info }
-    this._listeners.forEach((listener) => listener())
+    this._listeners.forEach(listener => listener())
   }
 
   getInfo() {

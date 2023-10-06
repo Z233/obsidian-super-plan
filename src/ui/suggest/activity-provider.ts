@@ -1,6 +1,7 @@
 import { uniq } from 'lodash-es'
 import { normalizePath } from 'obsidian'
-import { getAPI, Result, Success } from 'obsidian-dataview'
+import type { Result, Success } from 'obsidian-dataview'
+import { getAPI } from 'obsidian-dataview'
 import type { SuperPlanSettings } from 'src/setting/settings'
 
 const SUB_ACTIVITY_RE = /(\s+\(#\d+\))+$/g
@@ -12,18 +13,19 @@ export class ActivityProvider {
 
   async refresh() {
     const dv = getAPI()
-    if (!dv) return
+    if (!dv)
+      return
 
     const query = await dv.query(
       `LIST P.Activity FROM "${normalizePath(
-        this.settings.dailyPlanNoteFolder
-      )}" FLATTEN file.tables.plan AS P`
+        this.settings.dailyPlanNoteFolder,
+      )}" FLATTEN file.tables.plan AS P`,
     )
 
     if (this.checkIsQuerySuccessful(query)) {
-      let activities = query.value.values
-        .map((x) => x.value && this.formatActivityName(x.value))
-        .filter((x) => x)
+      const activities = query.value.values
+        .map(x => x.value && this.formatActivityName(x.value))
+        .filter(x => x)
 
       this.activityNames = uniq(activities)
     }
@@ -34,7 +36,7 @@ export class ActivityProvider {
   }
 
   private checkIsQuerySuccessful(
-    query: Result<unknown, unknown>
+    query: Result<unknown, unknown>,
   ): query is Success<unknown, unknown> {
     return query.successful
   }

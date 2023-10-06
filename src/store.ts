@@ -4,20 +4,20 @@ import type { ISettings } from './setting/settings'
 export const SettingsDataKey = 'settingsData' as const
 export const UserDataKey = 'userData' as const
 
-export type UserData = {
+export interface UserData {
   miniTracker: MiniTrackerData
 }
 
-export type MiniTrackerData = {
+export interface MiniTrackerData {
   position: Record<string, Position | undefined>
 }
 
-export type Position = {
+export interface Position {
   x: number
   y: number
 }
 
-type Data = {
+interface Data {
   [UserDataKey]?: UserData
   [SettingsDataKey]?: ISettings
 }

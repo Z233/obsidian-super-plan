@@ -11,12 +11,13 @@ export class TemplaterError extends Error {
 export async function errorWrapper<T>(fn: () => Promise<T>, msg: string): Promise<T | null> {
   try {
     return await fn()
-  } catch (e) {
-    if (!(e instanceof TemplaterError)) {
+  }
+  catch (e) {
+    if (!(e instanceof TemplaterError))
       log_error(new TemplaterError(msg, e.message))
-    } else {
+    else
       log_error(e)
-    }
+
     return null
   }
 }
@@ -24,7 +25,8 @@ export async function errorWrapper<T>(fn: () => Promise<T>, msg: string): Promis
 export function errorWrapperSync<T>(fn: () => T, msg: string): T | null {
   try {
     return fn()
-  } catch (e) {
+  }
+  catch (e) {
     log_error(new TemplaterError(msg, e.message))
     return null
   }

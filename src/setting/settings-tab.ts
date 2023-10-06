@@ -1,4 +1,5 @@
-import { App, normalizePath, PluginSettingTab, Setting } from 'obsidian'
+import type { App } from 'obsidian'
+import { PluginSettingTab, Setting, normalizePath } from 'obsidian'
 import { ProgressType } from '../constants'
 import { FolderSuggest } from '../ui/suggest/file-suggester'
 import type SuperPlan from '../main'
@@ -14,14 +15,12 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
   }
 
   private validateFolder(folder: string): string {
-    if (!folder || folder === '/') {
+    if (!folder || folder === '/')
       return ''
-    }
 
     const { vault } = window.app
-    if (!vault.getAbstractFileByPath(normalizePath(folder))) {
+    if (!vault.getAbstractFileByPath(normalizePath(folder)))
       return 'Folder not found in vault'
-    }
 
     return ''
   }
@@ -32,7 +31,8 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
         text: 'Reload to apply changes.',
         cls: 'option-restart-hint mod-warning',
       })
-    } else {
+    }
+    else {
       const hintEl = el.querySelector('.option-restart-hint')
       hintEl && hintEl.remove()
     }
@@ -51,6 +51,8 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       .setName('Daily Plan Note Folder')
       .setDesc('The folder where the daily plan attempts to detect.')
       .addSearch((cb) => {
+        // FIXME
+        // eslint-disable-next-line no-new
         new FolderSuggest(this.app, cb.inputEl)
 
         cb.setPlaceholder('Folder')
@@ -89,7 +91,7 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
       })
     })
 
-    let lastEnableActivityAutoCompletion = this.plugin.settings.enableActivityAutoCompletion
+    const lastEnableActivityAutoCompletion = this.plugin.settings.enableActivityAutoCompletion
     new Setting(containerEl)
       .setName('Enable Activity Name Auto-Completion')
       .setDesc(
@@ -112,7 +114,7 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
           }
 
           return fragment
-        })()
+        })(),
       )
       .addToggle((comp) => {
         comp.disabled = !checkIsDataviewEnabled()
@@ -141,7 +143,7 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
             })
           })
       })
-    
+
     createSetting()
       .setName('Enable Notification')
       .setDesc('Send a notification when the current activity ends.')
@@ -156,15 +158,15 @@ export class SuperPlanSettingsTab extends PluginSettingTab {
     createSetting()
       .setName('Minutes Left To Send Notice')
       .setDesc('The minutes before the current activity ends to send a notification.')
-      .addText((comp) =>
-        comp.setValue(this.plugin.settings.minsLeftToSendNotification.toString()).onChange((value) =>
+      .addText(comp =>
+        comp.setValue(this.plugin.settings.minsLeftToSendNotification.toString()).onChange(value =>
           this.plugin.settings.update({
             minsLeftToSendNotification: +value,
-          })
-        )
+          }),
+        ),
       )
 
-    let lastEnableMiniTracker = this.plugin.settings.enableMiniTracker
+    const lastEnableMiniTracker = this.plugin.settings.enableMiniTracker
     createSetting()
       .setName('Enable Mini Tracker')
       .setDesc('Display a small tracking window that stays on top of all other windows.')

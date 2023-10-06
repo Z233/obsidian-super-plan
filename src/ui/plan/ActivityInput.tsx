@@ -2,15 +2,19 @@ import {
   forwardRef,
   useRef,
   useState,
+} from 'preact/compat'
+import type {
+  type ChangeEventHandler,
+
   Component,
   type ForwardedRef,
-  type ChangeEventHandler,
 } from 'preact/compat'
 import { Combobox } from '@headlessui/react'
-import { ActivitySuggesterPopup } from './ActivitySuggesterPopup'
-import { usePlanContext } from './context'
 import { getAPI } from 'obsidian-dataview'
 import { Keys } from 'src/constants'
+import { ActivitySuggesterPopup } from './ActivitySuggesterPopup'
+import { usePlanContext } from './context'
+
 interface IActivityInputProps {
   value: string
   onChange: (value: string) => void
@@ -23,7 +27,7 @@ export const ActivityInput = forwardRef(
     const { settings } = usePlanContext()
     const [value, setValue] = useState(() => props.value)
     const [enableSuggester] = useState(
-      () => settings.enableActivityAutoCompletion && Boolean(getAPI())
+      () => settings.enableActivityAutoCompletion && Boolean(getAPI()),
     )
 
     const handleChange = (value: string) => {
@@ -37,9 +41,8 @@ export const ActivityInput = forwardRef(
     }
 
     const handleKeyDown = (e: KeyboardEvent, open: boolean) => {
-      if (!open && [Keys.ArrowUp, Keys.ArrowDown].includes(e.key as Keys)) {
+      if (!open && [Keys.ArrowUp, Keys.ArrowDown].includes(e.key as Keys))
         e.preventDefault()
-      }
     }
 
     return (
@@ -66,5 +69,5 @@ export const ActivityInput = forwardRef(
         )}
       </Combobox>
     )
-  }
+  },
 )
