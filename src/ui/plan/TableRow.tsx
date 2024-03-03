@@ -9,10 +9,9 @@ import { ACTIVITY_TR_ID_PREFIX, ColumnKeys } from 'src/constants'
 import { check, getNowMins, parseMins2Time } from 'src/util/helper'
 import { useAtom } from 'jotai'
 import { SplitConfirmModalV2 } from '../modals'
-import { focusCellAtom, highlightingRowIdAtom } from './atoms'
 import { PlanMenu, type PlanMenuItem } from './menu'
 import { Icon } from './lib'
-import { usePlan } from './context'
+import { usePlan, usePlanAtoms } from './context'
 import { dropOverStyle, highlightStyle, indexCellStyle } from './styles'
 
 function useTableRowActions(row: Row<PlanDataItem>) {
@@ -66,6 +65,7 @@ export const TableRow: FC<{
   const { row, highlightRow } = props
   const activityId = row.original.id
   const { insertRowBelow, moveRow } = usePlan()
+  const { highlightingRowIdAtom } = usePlanAtoms()
   const [highlightingRowId] = useAtom(highlightingRowIdAtom)
 
   const [isHover, setIsHover] = useState(false)
@@ -94,6 +94,7 @@ export const TableRow: FC<{
     dragPreview(getEmptyImage(), { captureDraggingState: true })
   }, [])
 
+  const { focusCellAtom } = usePlanAtoms()
   const [, setFocusCell] = useAtom(focusCellAtom)
 
   const handlePlusClick = (rowIndex: number) => {

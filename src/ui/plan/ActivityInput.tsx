@@ -4,10 +4,9 @@ import {
   useState,
 } from 'preact/compat'
 import type {
-  type ChangeEventHandler,
-
+  ChangeEventHandler,
   Component,
-  type ForwardedRef,
+  ForwardedRef,
 } from 'preact/compat'
 import { Combobox } from '@headlessui/react'
 import { getAPI } from 'obsidian-dataview'

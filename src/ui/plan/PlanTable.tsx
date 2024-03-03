@@ -16,12 +16,11 @@ import {
   renderLengthCell,
   renderStartCell,
 } from './cells'
-import { usePlan } from './context'
+import { usePlan, usePlanAtoms } from './context'
 import { DragLayer } from './DragLayer'
 import { highlightStyle as highlightingStyle, indexCellStyle } from './styles'
 import { TableRow } from './TableRow'
 import type { PlanTableColumnDef } from './types'
-import { focusCellAtom, highlightingRowIdAtom } from './atoms'
 import { TotalHoursLabel } from './lib'
 
 export const tableColumns: PlanTableColumnDef[] = [
@@ -80,8 +79,8 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
   const { data } = props
   const { insertRowBelow, updateCell, cutRow, getRowText, insertRawRowBelow } = usePlan()
 
+  const { focusCellAtom, highlightingRowIdAtom } = usePlanAtoms()
   const [focusCell, setFocusCell] = useAtom(focusCellAtom)
-
   const [highlightingRowId, setHighlightingRowId] = useAtom(highlightingRowIdAtom)
 
   const table = useReactTable({
@@ -197,23 +196,23 @@ export const PlanTable: FC<PlanTableProps> = (props) => {
     }
   }
 
-  const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
-    highlightingRowId && setHighlightingRowId('')
-
-    const relatedTarget = e.relatedTarget as Maybe<HTMLElement>
-    const isWithinTable = Boolean(
-      relatedTarget && relatedTarget.matchParent('[data-row][data-column]'),
-    )
-
-    !isWithinTable && setFocusCell(null)
-  }
-
   const tableWrapperRef = useRef<HTMLTableElement>(null)
   const [tableWrapperInfo, setTableWrapperInfo] = useState<{
     offsetY: number
     height: number
     width: number
   }>()
+
+  const handleBlur: JSXInternal.FocusEventHandler<HTMLElement> = (e) => {
+    highlightingRowId && setHighlightingRowId('')
+
+    const relatedTarget = e.relatedTarget as Maybe<HTMLElement>
+    const isWithinTable = Boolean(
+      relatedTarget && relatedTarget.matchParent('table') === tableWrapperRef.current,
+    )
+
+    !isWithinTable && setFocusCell(null)
+  }
 
   useEffect(() => {
     if (tableWrapperRef.current) {

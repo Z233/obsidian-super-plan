@@ -12,16 +12,16 @@ import { type ColumnKeys, ColumnKeysMap, Columns, Keys } from 'src/constants'
 import type { PlanDataItem } from 'src/schemas'
 import { check } from 'src/util/helper'
 import { useAtom } from 'jotai'
-import { usePlan } from './context'
+import { usePlan, usePlanAtoms } from './context'
 import { DefaultInput } from './lib'
 import type { CellPosition } from './types'
 import { ActivityInput } from './ActivityInput'
-import { focusCellAtom } from './atoms'
 
 export type CellProps = CellContext<PlanDataItem, unknown>
 
 function useAutoFocus(position: CellPosition) {
   const [elRef, setElRef] = useState<HTMLElement | null>(null)
+  const { focusCellAtom } = usePlanAtoms()
   const [focusCell] = useAtom(focusCellAtom)
 
   useLayoutEffect(() => {

@@ -5,28 +5,23 @@ interface CodeBlockSyncInfo {
 }
 
 export class CodeBlockSync {
-  private _listeners: Set<() => void> = new Set()
-  private _info: CodeBlockSyncInfo = {
-    source: '',
-    lineStart: -1,
-    lineEnd: -1,
-  }
+  private listeners: Set<() => void> = new Set()
 
-  constructor() {}
+  constructor(private info: CodeBlockSyncInfo) {}
 
   subscribe(listener: () => void) {
-    this._listeners.add(listener)
+    this.listeners.add(listener)
     return () => {
-      this._listeners.delete(listener)
+      this.listeners.delete(listener)
     }
   }
 
   notify(info: Partial<CodeBlockSyncInfo>) {
-    this._info = { ...this._info, ...info }
-    this._listeners.forEach(listener => listener())
+    this.info = { ...this.info, ...info }
+    this.listeners.forEach(listener => listener())
   }
 
   getInfo() {
-    return this._info
+    return this.info
   }
 }

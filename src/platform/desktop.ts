@@ -72,7 +72,7 @@ function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {
       throw new Error(errMsg)
     }
 
-    miniTracker.open(windowFolder)
+    miniTracker.open()
 
     ribbon.firstChild?.remove()
     ribbon.appendChild(openedIconSVG)

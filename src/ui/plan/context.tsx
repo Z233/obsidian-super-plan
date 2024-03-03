@@ -1,4 +1,5 @@
 import { TableCell, TableRow, defaultOptions, readTable } from '@tgrosinger/md-advanced-tables'
+import type { atom } from 'jotai'
 import { nanoid } from 'nanoid'
 import type { App } from 'obsidian'
 import { type FC, createContext, useCallback, useContext } from 'preact/compat'
@@ -9,6 +10,7 @@ import { ColumnKeysMap, Columns } from 'src/constants'
 import type { MdTableEditor } from 'src/editor/md-table-editor'
 import type { SuperPlanSettings } from 'src/setting/settings'
 import { generateId } from 'src/util/helper'
+import type { CellPosition } from './types'
 
 interface PlanContextValue {
   mte: MdTableEditor
@@ -148,4 +150,23 @@ export function usePlan() {
     getRowText,
     insertRawRowBelow,
   }
+}
+
+interface PlanAtoms {
+  highlightingRowIdAtom: ReturnType<typeof atom<string>>
+  focusCellAtom: ReturnType<typeof atom<CellPosition | null>>
+}
+
+const AtomsContext = createContext<PlanAtoms>(null as unknown as PlanAtoms)
+
+export const PlanAtomsProvider: FC<PlanAtoms> = (props) => {
+  return <AtomsContext.Provider value={props}>{props.children}</AtomsContext.Provider>
+}
+
+export function usePlanAtoms() {
+  const context = useContext(AtomsContext)
+  if (!context)
+    throw new Error('usePlanAtoms must be used within <PlanAtomsProvider />')
+
+  return context
 }

@@ -11,8 +11,10 @@ import { Scheduler } from 'src/scheduler'
 import type { ColumnKeys } from 'src/constants'
 import { shallowCompare } from 'src/util/helper'
 import type { SuperPlanSettings } from 'src/setting/settings'
-import { PlanProvider } from './context'
+import { atom } from 'jotai'
+import { PlanAtomsProvider, PlanProvider } from './context'
 import { PlanTable } from './PlanTable'
+import type { CellPosition } from './types'
 
 /**
  * Markdown Table Editor Loader
@@ -114,5 +116,13 @@ export function renderPlan({
   const mteLoader: MteLoader = ({ table, startRow, endRow }) =>
     new MdTableEditor({ app, file, table, startRow, endRow })
 
-  render(<Plan app={app} sync={sync} mteLoader={mteLoader} settings={settings} />, container)
+  const highlightingRowIdAtom = atom<string>('')
+  const focusCellAtom = atom<CellPosition | null>(null)
+
+  render(
+    <PlanAtomsProvider highlightingRowIdAtom={ highlightingRowIdAtom } focusCellAtom={ focusCellAtom }>
+      <Plan app={app} sync={sync} mteLoader={mteLoader} settings={settings} />
+    </PlanAtomsProvider>,
+    container,
+  )
 }
