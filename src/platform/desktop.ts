@@ -12,27 +12,26 @@ function desktopInit(plugin: SuperPlan) {
   const app = plugin.app
   const settings = plugin.settings
   const statusBar = plugin.addStatusBarItem()
-
+  
   const parser = new Parser(settings)
   const file = new PlanFile(app.vault, parser, settings)
   const timer = Timer.new()
 
   const tracker = new PlanTracker(app, parser, file, settings, statusBar)
 
-  let lastActivitiesData: Maybe<Activity[]> = null
+  let prevActGroups: Maybe<Activity[][]> = null
   const tick = async () => {
     const content = await file.getTodayPlanFileContent()
     if (content) {
-      const tableInfo = parser.findPlanTableV2(content)
-      if (tableInfo) {
-        const activitiesData = parser.transformTable(tableInfo.table)
-        if (!lastActivitiesData || !shallowCompare(activitiesData, lastActivitiesData)) {
-          lastActivitiesData = activitiesData
-          tracker.setData(activitiesData, tableInfo)
+      const tableInfos = parser.extractPlanTables(content)
+      if (tableInfos && tableInfos.length) {
+        const actGroups = tableInfos.map((info) => parser.transformTable(info.table))
+        if (!prevActGroups || !shallowCompare(actGroups, prevActGroups)) {
+          prevActGroups = actGroups
+          tracker.setData(actGroups)
         }
-      }
-      else {
-        tracker.setData(null, null)
+      } else {
+        tracker.setData(null)
       }
     }
   }

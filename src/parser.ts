@@ -71,63 +71,34 @@ export class Parser {
 
   checkIsTemplate() {}
 
-  findPlanTableV2(content: string): Maybe<PlanTableInfo> {
-    // const re = /(?<=^```super-plan\n)[\s\S]*(?=```$)/gm
-    const re = new RegExp(`(?<=^\`\`\`${CODE_BLOCK_LANG}\\n)[\\s\\S]*(?=\`\`\`$)`, 'gm')
-    const match = re.exec(content)
-    if (!match)
-      return null
+  extractPlanTables(content: string): Maybe<PlanTableInfo[]> {
+    const re = new RegExp(`\`\`\`${CODE_BLOCK_LANG}\n([\\s\\S]+?)\n\`\`\``, 'g')
 
-    const lines = match[0].split('\n')
-
-    const posStart = match.index
-    const lineStart = content.slice(0, posStart - 1).split('\n').length
-    const lineEnd = lineStart + lines.length - 2
-
-    const table = readTable(lines, defaultOptions)
-    return {
-      range: new Range(new Point(lineStart, 0), new Point(lineEnd, 0)),
-      lines,
-      table,
+    const matches: RegExpExecArray [] = []
+    let match: RegExpExecArray | null = null
+    
+    while ((match = re.exec(content)) !== null) {
+      matches.push(match) 
     }
-  }
 
-  findPlanTable(contentOrLines: string | string[]): Maybe<PlanTableInfo> {
-    const rows = isArray(contentOrLines) ? contentOrLines : contentOrLines.split('\n')
-    const re = _createIsTableRowRegex(this.settings.asOptions().leftMarginChars)
+    if (!matches.length) return null
+    
+    const tableInfos = matches.map((m) => {
+      const lines = m[1].split('\n')
 
-    const lines: string[] = []
+      const matchStartLine = content.slice(0, m.index).split(/(?<=\n)/).length
+      const matchEndLine = matchStartLine + lines.length + 1
 
-    let startRow: number | undefined
-    let endRow = 0
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i]
-
-      if (re.test(row)) {
-        if (startRow === undefined) {
-          startRow = i
-          endRow = i
-        }
-        else if (i - endRow <= 1) {
-          endRow = i
-        }
-
-        lines.push(row)
+      const table = readTable(lines, defaultOptions)
+      
+      return {
+        range: new Range(new Point(matchStartLine + 1, 0), new Point(matchEndLine - 1, 0)),
+        lines,
+        table,
       }
-    }
+    })
 
-    const table = readTable(lines, this.settings.asOptions())
-    const range = new Range(
-      new Point(startRow!, 0),
-      new Point(endRow, lines[lines.length - 1].length),
-    )
-
-    return {
-      range,
-      lines,
-      table,
-    }
+    return tableInfos;
   }
 
   transformTable(table: Table): Activity[] {

@@ -30,11 +30,9 @@ export interface Observer {
 }
 
 export class PlanTracker {
+  private sources: ScheduledActivity[][] = [];
   private observers: Observer[] = []
-
   private scheduler: Maybe<Scheduler>
-  private tableInfo: Maybe<PlanTableInfo>
-
   private statusBarComp: StatusBar
 
   now: Maybe<ScheduledActivity>
@@ -96,10 +94,26 @@ export class PlanTracker {
   private async beginActivity() {
     throw new Error('Method not implemented.')
   }
+  
+  private getCurrentActivity() {
+    const nowMins = getNowMins();
 
+    const curActs = this.sources.at(
+      this.sources.findIndex(
+        (acts) => nowMins >= acts[0].start && nowMins <= acts[acts.length - 1].stop
+      )
+    )!
+      
+    const curActIdx = findLastIndex(curActs, (a) => nowMins >= a.start && a.isFixed)
+    const curIsLast = curActIdx === curActs.length - 1
+
+    const curAct = curIsLast ? null : curActs.at(curActIdx)!
+    const nextAct = curIsLast ? null : find(curActs, a => a.actLen >= 0, curActIdx + 1)
+    
+    return [curAct, nextAct] as const
+  }
+  
   private async jump2ActivityRow(activity: ScheduledActivity) {
-    if (!this.tableInfo || !this.scheduler)
-      return
     const { workspace } = this.app
 
     const file = this.file.todayFile
@@ -147,31 +161,24 @@ export class PlanTracker {
       timeoutMins: 0,
     }
 
-    if (!this.scheduler)
-      return initialState
+    if (!this.sources) return initialState
+    
+    const [curAct, nextAct] = this.getCurrentActivity()
+    
+    if (!curAct) return initialState
 
     const nowMins = getNowMins()
-    const nowIndex = findLastIndex(
-      this.scheduler.activities,
-      a => nowMins >= a.start && a.isFixed,
-    )
-    const now = this.scheduler.activities[nowIndex]
-    const nowIsLast = nowIndex === this.scheduler.activities.length - 1
 
-    const durationMins = nowMins - now.start
+    const durationMins = nowMins - curAct.start
     const durationSecs = durationMins * 60 + new Date().getSeconds()
-    const totalMins = now.actLen
+    const totalMins = curAct.actLen
     const totalSecs = totalMins * 60
     const progress = totalMins > 0 ? (durationSecs / totalSecs) * 100 : 100
 
-    const next = nowIsLast
-      ? null
-      : find(this.scheduler.activities, a => a.actLen >= 0, nowIndex + 1)
-
     return {
       ...initialState,
-      now,
-      next,
+      now: curAct,
+      next: nextAct,
       progress,
       leftSecs: totalSecs - durationSecs,
       leftMins: totalMins - durationMins,
@@ -180,9 +187,6 @@ export class PlanTracker {
   }
 
   private async onTick() {
-    if (!this.scheduler)
-      return
-
     const { leftMins, timeoutMins, ...props } = this.computeProgress()
 
     this.updateStatusBar(props)
@@ -245,9 +249,21 @@ export class PlanTracker {
     }
   }
 
-  setData(activitiesData: Maybe<Activity[]>, tableInfo: Maybe<PlanTableInfo>) {
-    this.scheduler = activitiesData ? new Scheduler(activitiesData) : null
-    this.tableInfo = tableInfo
+  setData(rawSources: Maybe<Activity[][]>) {
+    if (rawSources) {
+      const scheduler = new Scheduler(rawSources.flat())
+      const actCounts = rawSources.map((acts) => acts.length)
+      this.sources = scheduler.activities.reduce((acc, cur, idx)=> {
+        const groupIdx = acc.length - 1;
+        const prevGroupCount = groupIdx > 0 ? acc[groupIdx - 1].length : 0
+        if (idx + 1 - prevGroupCount > actCounts[groupIdx]) {
+          acc[groupIdx + 1] = [cur]
+        } else {
+          acc[groupIdx].push(cur)
+        }
+        return acc
+      }, [[]] as ScheduledActivity[][])
+    }
     this.updateStatusBar(this.computeProgress())
   }
 }
