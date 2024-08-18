@@ -9,11 +9,10 @@ import { shallowCompare } from 'src/util/helper'
 import { MiniTracker } from 'src/window'
 
 function desktopInit(plugin: SuperPlan) {
-  const app = plugin.app
+/*   const app = plugin.app
   const settings = plugin.settings
   const statusBar = plugin.addStatusBarItem()
   
-  const parser = new Parser(settings)
   const file = new PlanFile(app.vault, parser, settings)
   const timer = Timer.new()
 
@@ -23,7 +22,7 @@ function desktopInit(plugin: SuperPlan) {
   const tick = async () => {
     const content = await file.getTodayPlanFileContent()
     if (content) {
-      const tableInfos = parser.extractPlanTables(content)
+      const tableInfos = parser.extractPlans(content)
       if (tableInfos && tableInfos.length) {
         const actGroups = tableInfos.map((info) => parser.transformTable(info.table))
         if (!prevActGroups || !shallowCompare(actGroups, prevActGroups)) {
@@ -40,7 +39,7 @@ function desktopInit(plugin: SuperPlan) {
   timer.onTick(tick)
   tracker.init()
 
-  settings.enableMiniTracker && miniTrackerInit(plugin, tracker)
+  settings.enableMiniTracker && miniTrackerInit(plugin, tracker) */
 }
 
 function miniTrackerInit(plugin: SuperPlan, tracker: PlanTracker) {

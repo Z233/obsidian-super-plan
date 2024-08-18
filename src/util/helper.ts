@@ -144,3 +144,9 @@ export function shallowCompare(obj1: Record<any, any>, obj2: Record<any, any>) {
 }
 
 export const generateId = () => nanoid(6)
+
+export function getFileTitle(path: string): string {
+    if (path.includes("/")) path = path.substring(path.lastIndexOf("/") + 1);
+    if (path.endsWith(".md")) path = path.substring(0, path.length - 3);
+    return path;
+}

@@ -13,25 +13,26 @@ import { PlanBuilder } from './editor/plan-builder'
 import { generateId, getNowMins, parseMins2Time } from './util/helper'
 import { ACTIVITY_TR_ID_PREFIX, CODE_BLOCK_LANG } from './constants'
 import { PlanTableManager } from './plan-table-manager'
+import { PlanIndex } from './plan-index/plan-index'
 
 export default class SuperPlan extends Plugin {
-  settings: SuperPlanSettings
-  store: DataStore
+  settings: SuperPlanSettings = new SuperPlanSettings(this, defaultSettings)
+  store: DataStore = new DataStore(this)
 
-  private planTableManager: PlanTableManager
-
+  private planTableManager: PlanTableManager = PlanTableManager.new(this.app, this.settings)
+  
   async onload() {
-    this.store = new DataStore(this)
-
     await this.loadSettings()
     this.addSettingTab(new SuperPlanSettingsTab(this.app, this))
+    
+    PlanIndex.new(this.app).initialize()
 
     if (Platform.isDesktopApp) {
       const timer = Timer.new()
 
       this.registerInterval(timer.intervalId)
 
-      desktopInit(this)
+      // desktopInit(this)
     }
 
     this.planTableManager = PlanTableManager.new(this.app, this.settings)

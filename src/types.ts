@@ -91,6 +91,13 @@ export interface PlanTableInfo {
   table: Table
 }
 
+export interface PagePlanData {
+  day: moment.Moment
+  plans: {
+    activities: Activity[] 
+  }[]
+}
+
 // https://stackoverflow.com/a/52490977
 export type Tuple<T, N extends number> = N extends N
   ? number extends N

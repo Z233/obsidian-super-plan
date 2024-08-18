@@ -65,6 +65,7 @@
     "obsidian-dataview": "^0.5.67",
     "prettier": "^2.8.8",
     "rimraf": "^4.4.1",
+    "rollup-plugin-web-worker-loader": "^1.6.1",
     "simple-git-hooks": "^2.11.1",
     "svelte": "^3.59.2",
     "svelte-preprocess": "^5.1.4",

@@ -13,7 +13,7 @@ import {
 } from '@tgrosinger/md-advanced-tables/lib/table-editor'
 import { isArray } from 'lodash-es'
 import type { SuperPlanSettings } from './setting/settings'
-import type { Activity, Maybe, PlanTableInfo } from './types'
+import type { Activity, Maybe, PagePlanData, PlanTableInfo } from './types'
 import type {
   Columns,
 } from './constants'
@@ -22,6 +22,9 @@ import {
   ColumnKeysMap,
 } from './constants'
 import { planRecordSchema } from './schemas'
+import moment from 'moment'
+import { getFileTitle } from './util/helper'
+import type { FileStats } from 'obsidian'
 
 export class MdTableParser {
   static parse(markupOrLines: string | string[]) {
@@ -62,16 +65,45 @@ export class MdTableParser {
   }
 }
 
-export class Parser {
-  private readonly settings: SuperPlanSettings
-
-  constructor(settings: SuperPlanSettings) {
-    this.settings = settings
+function extractDate(str: string): moment.Moment | undefined {
+  let dateMatch = /(\d{4})-(\d{2})-(\d{2})/.exec(str);
+  if (!dateMatch) dateMatch = /(\d{4})(\d{2})(\d{2})/.exec(str);
+  if (dateMatch) {
+      let year = Number.parseInt(dateMatch[1]);
+      let month = Number.parseInt(dateMatch[2]);
+      let day = Number.parseInt(dateMatch[3]);
+      return moment({ year, month, day })
   }
 
-  checkIsTemplate() {}
+  return undefined;
+}
 
-  extractPlanTables(content: string): Maybe<PlanTableInfo[]> {
+export function parsePagePlanData(path: string, contents: string, stats: FileStats): PagePlanData {
+    
+  const tableInfos = Parser.parseTableInfos(contents)
+  const activityGroups = tableInfos?.map((info) => Parser.parseActivities(info.table))
+  
+  return {
+    day: extractDate(getFileTitle(path)) ?? moment.unix(stats.ctime),
+    plans: activityGroups?.map((activities) => ({ activities })) ?? [],
+  }
+}
+
+export class Parser {
+  
+  
+  static parsePagePlanData(path: string, contents: string, stats: FileStats): PagePlanData {
+    
+    const tableInfos = Parser.parseTableInfos(contents)
+    const activityGroups = tableInfos?.map((info) => Parser.parseActivities(info.table))
+    
+    return {
+      day: extractDate(getFileTitle(path)) ?? moment.unix(stats.ctime),
+      plans: activityGroups?.map((activities) => ({ activities })) ?? [],
+    }
+  }
+  
+  static parseTableInfos(content: string): Maybe<PlanTableInfo[]> {
     const re = new RegExp(`\`\`\`${CODE_BLOCK_LANG}\n([\\s\\S]+?)\n\`\`\``, 'g')
 
     const matches: RegExpExecArray [] = []
@@ -101,7 +133,7 @@ export class Parser {
     return tableInfos;
   }
 
-  transformTable(table: Table): Activity[] {
+  static parseActivities(table: Table): Activity[] {
     const activitiesRows = table
       .getRows()
       .slice(2)

@@ -82,7 +82,7 @@ export class MiniTracker {
     if (__DEV__) {
       this.win.loadURL(`${import.meta.env.VITE_DEV_SERVER_URL}window/mini-tracker/index.html`)
       // Enable DevTools
-      this.win.webContents.openDevTools()
+      // this.win.webContents.openDevTools()
       this.win.webContents.executeJavaScript(
         'console.log("%c====== MiniTracker DevTools ======", "color: red; font-size: 20px;")',
       )
